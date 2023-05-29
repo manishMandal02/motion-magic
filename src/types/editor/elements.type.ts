@@ -6,6 +6,10 @@ export interface IElementPosition {
   x: number;
   y: number;
 }
+export interface IElementFrameDuration {
+  startFrame: number;
+  endFrame: number;
+}
 
 export type IUpdateElSize = (size: IElementSize) => void;
 
@@ -15,8 +19,7 @@ type ICommonElProps = {
   id: string;
   position: IElementPosition;
   size: IElementSize;
-  startFrame: number;
-  endFrame: number;
+  timeFrame: IElementFrameDuration;
 };
 
 export enum IElementTypes {
@@ -27,13 +30,13 @@ export enum IElementTypes {
 export type IElementTypes1 = 'SHAPE' | 'TEXT';
 
 export interface ITextElement extends ICommonElProps {
-  type: IElementTypes.TEXT | 'TEXT';
+  type: IElementTypes.TEXT;
   value: string;
   fontSize: number;
 }
 
 export interface IShapeElement extends ICommonElProps {
-  type: IElementTypes.SHAPE | 'SHAPE';
+  type: IElementTypes.SHAPE;
   borderRadius?: number;
 }
 

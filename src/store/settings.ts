@@ -7,7 +7,6 @@ import { IElementsState } from './elements';
 export interface IEditorSettingsState {
   scale: number;
   fps: number;
-
   videoResolution: IVideoResolution;
   activeMenu: SideMenuItems;
   setActiveMenu: (menu: SideMenuItems) => void;

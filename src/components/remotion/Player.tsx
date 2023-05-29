@@ -17,8 +17,6 @@ export const ArtBoardPlayer: React.FC = () => {
     }
   }, [currentFrame]);
 
-  console.log('scale', playerRef.current?.getScale());
-
   const renderLoading: RenderLoading = useCallback(({ height, width }) => {
     return (
       <AbsoluteFill style={{ backgroundColor: 'gray' }}>

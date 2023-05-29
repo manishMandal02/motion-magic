@@ -35,6 +35,7 @@ const ArtBoardElementWrapper = ({ children, id, size, position, setPosition, set
     }
   };
 
+  //TODO: handling click outside the element
   // const handleClickOutside = (ev: MouseEvent) => {
   //   const elementWrapper = document.getElementById('element-wrapper');
   //   if (!elementWrapper) return;

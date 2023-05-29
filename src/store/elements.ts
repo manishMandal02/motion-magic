@@ -1,5 +1,10 @@
 import { ITimelineState } from './timeline';
-import type { IElement, IElementPosition, IElementSize } from '@/types/editor/elements.type';
+import {
+  IElement,
+  IElementFrameDuration,
+  IElementPosition,
+  IElementSize,
+} from '@/types/editor/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
 
@@ -7,6 +12,7 @@ export interface IElementsState {
   elements: IElement[];
   selectedEl: IElement | null;
   addElement: (element: IElement) => void;
+  updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
   setSelectedEl: (id: string | null) => void;
   setElSize: (id: string, size: IElementSize) => void;
   setElPos: (id: string, pos: IElementPosition) => void;
@@ -21,6 +27,14 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
       return { selectedEl };
     }),
   addElement: (element) => set((state) => ({ ...state, elements: [...state.elements, element] })),
+  updateElFrameDuration: (id, duration) => {
+    set(
+      produce((draft: IElementsState) => {
+        let elementToUpdate = draft.elements.find((el) => el.id === id)!;
+        elementToUpdate.timeFrame = duration;
+      })
+    );
+  },
   setElSize: (id, size) =>
     set(
       produce((draft: IElementsState) => {

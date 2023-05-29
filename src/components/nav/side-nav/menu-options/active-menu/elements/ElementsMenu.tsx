@@ -11,8 +11,10 @@ const ElementsMenu = () => {
     addElement({
       position: { x: 40, y: 60 },
       type: IElementTypes.SHAPE,
-      startFrame: 0,
-      endFrame: 4,
+      timeFrame: {
+        startFrame: 0,
+        endFrame: 4,
+      },
       id: nanoid(),
       size: {
         width: 250,
