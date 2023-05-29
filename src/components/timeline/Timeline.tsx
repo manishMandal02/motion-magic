@@ -1,40 +1,47 @@
 import { useContainerSize } from '@/hooks/common/useContainerSize';
 import { useEditorSore } from '@/store';
 import { useEffect, useRef } from 'react';
+import TimelineElementWrapper from '../common/element-wrapper/timeline-element';
 
 export default function Timeline() {
   const allElements = useEditorSore((state) => state.elements);
-  const totalDuration = useEditorSore((state) => state.durationInFrames);
+  const totalFrameDuration = useEditorSore((state) => state.durationInFrames);
   const currentFrame = useEditorSore((state) => state.currentFrame);
 
   const timelineViewRef = useRef<HTMLDivElement>(null);
 
-  const currentPlaybackPosition = (currentFrame / totalDuration) * 100; // in percentage
+  const currentPlaybackPosition = (currentFrame / totalFrameDuration) * 100; // in percentage
 
   const { width: timelineWidth } = useContainerSize({ containerRef: timelineViewRef });
 
-  const frameWidth = timelineWidth / totalDuration;
-
-  const onScrubberDrag = () => {};
+  const totalFrameWidth = timelineWidth / totalFrameDuration;
 
   const renderElements = () => {
     return allElements.map((element) => {
-      const elementWidth = (element.endFrame - element.startFrame) * frameWidth;
-      const elementLeft = element.startFrame * frameWidth;
+      const elementWidth = (element.endFrame - element.startFrame) * totalFrameWidth;
+      const elementLeft = element.startFrame * totalFrameWidth;
 
       return (
-        <div
+        <TimelineElementWrapper
+          startFrame={element.startFrame}
+          endFrame={element.endFrame}
+          id={element.id}
+          totalFrameWidth={totalFrameWidth}
           key={element.id}
-          style={{
-            left: elementLeft,
-            width: elementWidth,
-          }}
-          className={`h-8 absolute rounded-sm cursor-grab flex text-xs font-medium items-center mb-2 justify-center w-72 
+        >
+          <div
+            key={element.id}
+            style={{
+              left: elementLeft,
+              width: elementWidth,
+            }}
+            className={`h-8 rounded-sm cursor-grab flex text-xs font-medium items-center mb-2 justify-center w-72 
           ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
           `}
-        >
-          {/* Render the element content */}
-        </div>
+          >
+            {element.type}
+          </div>
+        </TimelineElementWrapper>
       );
     });
   };
@@ -45,29 +52,22 @@ export default function Timeline() {
       <div className='bg-slate-500 w-full h-16 flex items-center justify-center'>
         Video Controls & Timeline options
       </div>
-      <div className='relative h-full' ref={timelineViewRef}>
+      <div className='relative h-full max-h-full p-2 bg-slate-700' ref={timelineViewRef}>
         {/* video timestamps markers */}
-        <div className='bg-slate-600 h-8 flex items-center w-full justify-between px-1.5'>
-          {[...new Array(11)].map((value, idx) => (
+        <div className='bg-slate-700 flex items-center h-1/6 w-full justify-between px-'>
+          {[...new Array(21)].map((value, idx) => (
             <p key={idx} className='text-white'>
               {idx}
             </p>
           ))}
         </div>
-        {/* {allElements.map((element, i) => (
-          <div
-            className={`h-8 rounded-sm cursor-grab flex text-xs font-medium items-center mb-2 justify-center w-72 
-            ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
-            `}
-            key={element.id}
-          >
-            {element.type}
-          </div>
-        ))} */}
-        <>{renderElements()}</>
-        {/* Timeline scrubber */}
+        {/* timeline tracks */}
+        <div className='h-5/6 bg-slate-900 w-full p-2'>
+          <>{renderElements()}</>
+        </div>
+        {/* timeline scrubber */}
         <div
-          className='w-px h-9/10 top-0 left-0 bg-white absolute rounded-lg'
+          className='w-px h-full top-0 ml-2 bg-white absolute rounded-lg'
           style={{ left: `${currentPlaybackPosition}%` }}
         ></div>
       </div>

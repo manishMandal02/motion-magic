@@ -1,4 +1,4 @@
-import ElementWrapper from '@/components/common/element-wrapper';
+import ArtBoardElementWrapper from '@/components/common/element-wrapper/art-board-element';
 import {
   IElementPosition,
   IElementSize,
@@ -18,9 +18,15 @@ type Props = {
 const Rectangle = ({ size, position, setPosition, setSize, id }: Props) => {
   return (
     <>
-      <ElementWrapper id={id} position={position} size={size} setPosition={setPosition} setSize={setSize}>
+      <ArtBoardElementWrapper
+        id={id}
+        position={position}
+        size={size}
+        setPosition={setPosition}
+        setSize={setSize}
+      >
         <div className='w-full z-20 h-full bg-sky-400 rounded-lg  flex items-center justify-center'></div>
-      </ElementWrapper>
+      </ArtBoardElementWrapper>
     </>
   );
 };

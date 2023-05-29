@@ -1,3 +1,4 @@
+import { ITimelineState } from './timeline';
 import type { IElement, IElementPosition, IElementSize } from '@/types/editor/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
@@ -11,7 +12,7 @@ export interface IElementsState {
   setElPos: (id: string, pos: IElementPosition) => void;
 }
 
-const createElementsSlice: StateCreator<IElementsState> = (set) => ({
+const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [], IElementsState> = (set) => ({
   elements: [],
   selectedEl: null,
   setSelectedEl: (id) =>

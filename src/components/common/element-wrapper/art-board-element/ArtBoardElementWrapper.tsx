@@ -14,7 +14,7 @@ type Props = {
   setPosition: (pos: IElementPosition) => void;
 };
 
-const ElementWrapper = ({ children, id, size, position, setPosition, setSize }: Props) => {
+const ArtBoardElementWrapper = ({ children, id, size, position, setPosition, setSize }: Props) => {
   const { width, height } = size;
   const { x, y } = position;
 
@@ -55,7 +55,6 @@ const ElementWrapper = ({ children, id, size, position, setPosition, setSize }: 
   return (
     <>
       <Rnd
-        key={id}
         size={{ width, height }}
         position={{ x, y }}
         onDragStop={(e, d) => {
@@ -63,8 +62,8 @@ const ElementWrapper = ({ children, id, size, position, setPosition, setSize }: 
         }}
         onResizeStop={(e, direction, ref, delta, position) => {
           setSize({
-            width: Number(ref.style.width),
-            height: Number(ref.style.height),
+            width: Number(ref.style.width.slice(0, -2)),
+            height: Number(ref.style.height.slice(0, -2)),
           });
           setPosition({
             x: position.x,
@@ -104,4 +103,4 @@ const ElementWrapper = ({ children, id, size, position, setPosition, setSize }: 
   );
 };
 
-export default ElementWrapper;
+export default ArtBoardElementWrapper;
