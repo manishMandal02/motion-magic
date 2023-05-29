@@ -6,9 +6,9 @@ import React from 'react';
 
 export default function Page() {
   return (
-    <div className='h-screen'>
+    <div className='h-screen w-screen'>
       {/* top nav */}
-      <div className='flex h-1/10 items-center justify-center bg-slate-400'>Top Nav</div>
+      <div className='flex h-1/10 items-center w-full justify-center bg-slate-400'>Top Nav</div>
       {/* editor wrapper */}
       <div className='max-h-9/10 h-9/10'>
         {/* top container */}
@@ -24,7 +24,7 @@ export default function Page() {
           </div>
         </div>
         {/* bottom container */}
-        <div className='flex w-full h-2/6 bg-slate-900 text-white flex-col'>
+        <div className='flex w-full h-2/6 bg-slate-900 text-white flex-col p-2'>
           <Timeline />
         </div>
       </div>

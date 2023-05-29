@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import ResizablePoints from '../art-board-element/ResizablePoints';
 import { IElement, IElementFrameDuration } from '@/types/editor/elements.type';
@@ -10,7 +10,7 @@ type Props = {
   endFrame: number;
   singleFrameWidth: number;
   width: number;
-  left: number;
+  translateX: number;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
 };
 
@@ -24,17 +24,23 @@ const TimelineElementWrapper = ({
   singleFrameWidth,
   updateElFrameDuration,
   width,
-  left,
+  translateX,
 }: Props) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [leftPos, setLeftPos] = useState(0);
 
   useEffect(() => {
-    setLeftPos(left);
-  }, [left]);
+    setPosition({ x: translateX, y: 0 });
+  }, [translateX]);
 
   const handleResizeLeft = (deltaWidth: number) => {
-    const newStartFrame = Math.max(0, startFrame + Math.round(deltaWidth / singleFrameWidth));
+    const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / singleFrameWidth));
+
+    console.log(
+      '🚀 ~ file: TimelineElementWrapper.tsx:38 ~ handleResizeLeft ~ newStartFrame:',
+      newStartFrame
+    );
+
+    console.log('🚀 ~ file: TimelineElementWrapper.tsx:38 ~ handleResizeLeft ~ deltaWidth:', deltaWidth);
 
     updateElFrameDuration(id, {
       startFrame: newStartFrame,
@@ -58,14 +64,21 @@ const TimelineElementWrapper = ({
     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
   };
 
+  const wrapperRef = useRef<Rnd>(null);
+
+  useEffect(() => {
+    if (!wrapperRef) return;
+  }, []);
+
+  console.log('🚀 ~ file: TimelineElementWrapper.tsx:32 ~ translateXValue:', position.x);
+
   return (
     <>
       <Rnd
+        ref={wrapperRef}
         size={{ width, height: TIMELINE_ELEMENT_HEIGHT }}
         position={{ x: position.x, y: position.y }}
         onDragStop={(e, d) => {
-          console.log('🚀 ~ file: TimelineElementWrapper.tsx:107 ~ d:', d);
-
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x);
           // TODO: update el startFrame * endFrame, also check for track changes
@@ -81,10 +94,10 @@ const TimelineElementWrapper = ({
         dragAxis='x'
         dragGrid={[singleFrameWidth, TIMELINE_ELEMENT_HEIGHT]}
         // scale={videoScale}
-        className={` hover:shadow-sm hover:shadow-slate-400`}
+        className={`hover:shadow-sm hover:shadow-slate-400 transform-gpu`}
         style={{
-          left: leftPos,
           position: 'absolute',
+          // transform: `translate(${translateXValue}px, 0px)`,
         }}
         bounds={'parent'}
         enableResizing={{
@@ -95,7 +108,7 @@ const TimelineElementWrapper = ({
           left: true,
           bottom: false,
           bottomLeft: false,
-          bottomRight: true,
+          bottomRight: false,
         }}
       >
         {children}

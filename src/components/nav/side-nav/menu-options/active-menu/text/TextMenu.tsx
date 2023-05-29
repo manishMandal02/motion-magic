@@ -13,8 +13,8 @@ const TextMenu = () => {
       position: { x: 10, y: 10 },
       type: IElementTypes.TEXT,
       timeFrame: {
-        startFrame: 5,
-        endFrame: 10,
+        startFrame: 30,
+        endFrame: 60,
       },
       id: nanoid(),
       size: {

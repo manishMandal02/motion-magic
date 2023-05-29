@@ -21,19 +21,24 @@ const TimelineTracks = ({ timelineWidth }: Props) => {
     return allElements.map((element) => {
       const width = (element.timeFrame.endFrame - element.timeFrame.startFrame) * singleFrameWidth;
 
-      console.log(
-        '🚀 ~ file: TimelineTracks.tsx:24 ~ returnallElements.map ~ startFrame:',
-        element.timeFrame.startFrame
-      );
+      // console.log(
+      //   '🚀 ~ file: TimelineTracks.tsx:24 ~ returnallElements.map ~ singleFrameWidth:',
+      //   singleFrameWidth
+      // );
 
-      console.log(
-        '🚀 ~ file: TimelineTracks.tsx:24 ~ returnallElements.map ~ endFrame:',
-        element.timeFrame.endFrame
-      );
+      // console.log(
+      //   '🚀 ~ file: TimelineTracks.tsx:24 ~ returnallElements.map ~ startFrame:',
+      //   element.timeFrame.startFrame
+      // );
 
-      const left = element.timeFrame.startFrame * singleFrameWidth;
+      // console.log(
+      //   '🚀 ~ file: TimelineTracks.tsx:24 ~ returnallElements.map ~ endFrame:',
+      //   element.timeFrame.endFrame
+      // );
 
-      console.log('🚀 ~ file: TimelineTracks.tsx:31 ~ returnallElements.map ~ left:', left);
+      const translateX = element.timeFrame.startFrame * singleFrameWidth;
+
+      console.log('🚀 ~ file: TimelineTracks.tsx:31 ~ returnallElements.map ~ translateX:', translateX);
 
       return (
         <TimelineElementWrapper
@@ -44,7 +49,7 @@ const TimelineTracks = ({ timelineWidth }: Props) => {
           key={element.id}
           updateElFrameDuration={updateElFrameDuration}
           width={width}
-          left={left}
+          translateX={translateX}
         >
           <div
             key={element.id}
@@ -60,7 +65,7 @@ const TimelineTracks = ({ timelineWidth }: Props) => {
   };
   return (
     <>
-      <div className='h-full relative'>{renderElements()}</div>
+      <div className='h-full relative flex'>{renderElements()}</div>
       {/* timeline scrubber */}
       <div
         className='w-px h-full top-0 ml-2 bg-white absolute rounded-lg'
