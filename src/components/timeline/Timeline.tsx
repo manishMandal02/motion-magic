@@ -20,7 +20,7 @@ export default function Timeline() {
           <TimestampMarkers />
         </div>
         {/* timeline tracks */}
-        <div className='h-5/6 bg-slate-900 w-full  '>
+        <div className='h-5/6 bg-slate-800 w-full  '>
           <TimelineTracks timelineWidth={timelineWidth} />
         </div>
       </div>

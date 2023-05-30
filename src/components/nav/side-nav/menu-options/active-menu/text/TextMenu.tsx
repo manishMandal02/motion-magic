@@ -1,5 +1,5 @@
 import { useEditorSore } from '@/store';
-import { IElementTypes } from '@/types/editor/elements.type';
+import { IElementType } from '@/types/editor/elements.type';
 import { RxText } from 'react-icons/rx';
 import { nanoid } from 'nanoid';
 
@@ -7,11 +7,11 @@ const TextMenu = () => {
   const addElement = useEditorSore((state) => state.addElement);
 
   const addText = () => {
-    addElement({
+    addElement(IElementType.TEXT, {
       value: 'Manish Mandal',
       fontSize: 42,
       position: { x: 10, y: 10 },
-      type: IElementTypes.TEXT,
+      type: IElementType.TEXT,
       timeFrame: {
         startFrame: 30,
         endFrame: 60,
@@ -21,6 +21,7 @@ const TextMenu = () => {
         width: 250,
         height: 200,
       },
+      layer: 1,
     });
   };
   return (

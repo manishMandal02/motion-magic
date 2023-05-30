@@ -15,29 +15,29 @@ export type IUpdateElSize = (size: IElementSize) => void;
 
 export type IUpdateElPosition = (pos: IElementPosition) => void;
 
-type ICommonElProps = {
-  id: string;
-  position: IElementPosition;
-  size: IElementSize;
-  timeFrame: IElementFrameDuration;
-};
-
-export enum IElementTypes {
+export enum IElementType {
   TEXT = 'TEXT',
   SHAPE = 'SHAPE',
 }
 
-export type IElementTypes1 = 'SHAPE' | 'TEXT';
+export interface IElement<T extends IElementType> {
+  type: T;
+  id: string;
+  position: IElementPosition;
+  size: IElementSize;
+  timeFrame: IElementFrameDuration;
+  layer: number; // higher the layer upper the el on z-index
+}
 
-export interface ITextElement extends ICommonElProps {
-  type: IElementTypes.TEXT;
+export interface ITextElement extends IElement<IElementType.TEXT> {
+  type: IElementType.TEXT;
   value: string;
   fontSize: number;
 }
 
-export interface IShapeElement extends ICommonElProps {
-  type: IElementTypes.SHAPE;
+export interface IShapeElement extends IElement<IElementType.SHAPE> {
+  type: IElementType.SHAPE;
   borderRadius?: number;
 }
 
-export type IElement = ITextElement | IShapeElement;
+export type IElements = ITextElement | IShapeElement;

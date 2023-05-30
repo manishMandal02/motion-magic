@@ -1,5 +1,5 @@
 import { useEditorSore } from '@/store';
-import { IElementTypes } from '@/types/editor/elements.type';
+import { IElementType } from '@/types/editor/elements.type';
 import Rectangle from '../art-board/elements/shapes/rectangle';
 import BasicText from '../art-board/elements/text/basic-text';
 
@@ -11,7 +11,7 @@ export const MyComposition = () => {
   return (
     <div className='bg-white w-full h-full'>
       {allElements.map((el) => {
-        if (el.type === IElementTypes.SHAPE) {
+        if (el.type === IElementType.SHAPE) {
           return (
             <Rectangle
               key={el.id}
@@ -23,7 +23,7 @@ export const MyComposition = () => {
             />
           );
         }
-        if (el.type === IElementTypes.TEXT) {
+        if (el.type === IElementType.TEXT) {
           return (
             <BasicText
               key={el.id}

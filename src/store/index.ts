@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { ITimelineState, createTimelineSlice } from './timeline';
-import { IElementsState, createElementsSlice } from './elements';
 import { IEditorSettingsState, createEditorSettingsSlice } from './settings';
+import { IElementsState, createElementsSlice } from './elements/elements';
 
 type IEditorStore = ITimelineState & IElementsState & IEditorSettingsState;
 

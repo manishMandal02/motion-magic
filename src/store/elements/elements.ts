@@ -1,17 +1,27 @@
-import { ITimelineState } from './timeline';
+import { ITimelineState } from '../timeline';
 import {
   IElement,
   IElementFrameDuration,
   IElementPosition,
   IElementSize,
+  IElementType,
+  IElements,
 } from '@/types/editor/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
 
 export interface IElementsState {
-  elements: IElement[];
-  selectedEl: IElement | null;
-  addElement: (element: IElement) => void;
+  elements: IElements[];
+  selectedEl: IElements | null;
+  addElement: <T extends IElementType, P extends Extract<IElements, { type: T }>>(
+    elType: T,
+    element: P
+  ) => void;
+  updateEl: <T extends IElementType, P extends Partial<Extract<IElements, { type: T }>>>(
+    id: string,
+    elType: T,
+    element: P
+  ) => void;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
   setSelectedEl: (id: string | null) => void;
   setElSize: (id: string, size: IElementSize) => void;
@@ -26,7 +36,20 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
       const selectedEl = state.elements.find((el) => el.id === id)!;
       return { selectedEl };
     }),
-  addElement: (element) => set((state) => ({ ...state, elements: [...state.elements, element] })),
+  addElement: (elType, element) =>
+    set((state) => {
+      let topLayerCurrent = state.elements[state.elements.length - 1].layer;
+      const newElement = { ...element, layer: topLayerCurrent + 1 };
+      return { ...state, elements: [...state.elements, newElement] };
+    }),
+  updateEl: (id, elType, element) => {
+    set(
+      produce((draft: IElementsState) => {
+        let elementToUpdate = draft.elements.find((el) => el.id === id)!;
+        elementToUpdate = { ...elementToUpdate, ...element };
+      })
+    );
+  },
   updateElFrameDuration: (id, duration) => {
     set(
       produce((draft: IElementsState) => {
