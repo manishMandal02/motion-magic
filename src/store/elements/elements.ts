@@ -38,7 +38,10 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
     }),
   addElement: (elType, element) =>
     set((state) => {
-      let topLayerCurrent = state.elements[state.elements.length - 1].layer;
+      let topLayerCurrent = 0;
+      if (state.elements.length >= 1) {
+        topLayerCurrent = state.elements[state.elements.length - 1].layer;
+      }
       const newElement = { ...element, layer: topLayerCurrent + 1 };
       return { ...state, elements: [...state.elements, newElement] };
     }),

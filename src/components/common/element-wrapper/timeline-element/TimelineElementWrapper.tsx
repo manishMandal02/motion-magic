@@ -10,11 +10,10 @@ type Props = {
   endFrame: number;
   singleFrameWidth: number;
   width: number;
+  height: number;
   translateX: number;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
 };
-
-const TIMELINE_ELEMENT_HEIGHT = 40;
 
 const TimelineElementWrapper = ({
   id,
@@ -24,6 +23,7 @@ const TimelineElementWrapper = ({
   singleFrameWidth,
   updateElFrameDuration,
   width,
+  height,
   translateX,
 }: Props) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -64,20 +64,11 @@ const TimelineElementWrapper = ({
     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
   };
 
-  const wrapperRef = useRef<Rnd>(null);
-
-  useEffect(() => {
-    if (!wrapperRef) return;
-  }, []);
-
-  console.log('🚀 ~ file: TimelineElementWrapper.tsx:32 ~ translateXValue:', position.x);
-
   return (
     <>
       <Rnd
-        ref={wrapperRef}
-        size={{ width, height: TIMELINE_ELEMENT_HEIGHT }}
-        position={{ x: position.x, y: position.y }}
+        size={{ width, height }}
+        position={{ x: position.x, y: 5 }}
         onDragStop={(e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x);
@@ -92,7 +83,7 @@ const TimelineElementWrapper = ({
           }
         }}
         dragAxis='x'
-        dragGrid={[singleFrameWidth, TIMELINE_ELEMENT_HEIGHT]}
+        dragGrid={[singleFrameWidth, 0]}
         // scale={videoScale}
         className={`hover:shadow-sm hover:shadow-slate-400 transform-gpu`}
         style={{

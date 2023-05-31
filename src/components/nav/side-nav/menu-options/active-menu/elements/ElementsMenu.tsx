@@ -8,7 +8,7 @@ const ElementsMenu = () => {
   const addElement = useEditorSore((state) => state.addElement);
 
   const addElements = (type: string) => {
-    addElement({
+    addElement(IElementType.SHAPE, {
       position: { x: 40, y: 60 },
       type: IElementType.SHAPE,
       timeFrame: {
@@ -20,6 +20,7 @@ const ElementsMenu = () => {
         width: 250,
         height: 200,
       },
+      layer: 0,
     });
   };
   return (

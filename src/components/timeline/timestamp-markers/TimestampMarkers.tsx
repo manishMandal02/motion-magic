@@ -29,15 +29,15 @@ const TimestampMarkers = ({}: Props) => {
 
   return (
     <>
-      <div className='flex justify-between items-center px-4 w-full'>
+      <div className='flex justify-between items-center px-4  w-full'>
         {Array.from({ length: NUM_OF_MARKERS }).map((_, index) => {
           const frameStamp = index % frameInterval === 0; // Check if it's a frame stamp
 
           return (
-            <div key={index} className='relative h-full' style={{ width: `${markerWidth}%` }}>
+            <div key={index} className='relative h-full text-sm' style={{ width: `${markerWidth}%` }}>
               {/* Render the marker */}
               {frameStamp ? (
-                <div className='w-px bg-white absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-2' />
+                <div className='w-px bg-white absolute transform -translate-x-1/2' />
               ) : (
                 <div className='w-full h-px bg-gray-400 absolute bottom-0' />
               )}
