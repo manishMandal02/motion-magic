@@ -4,7 +4,7 @@ import { RxText } from 'react-icons/rx';
 import MenuItems from './MenuItems';
 import { IconType } from 'react-icons/lib';
 import { useEditorSore } from '@/store';
-import { SideMenuItems } from '@/types/editor/settings.type';
+import { SideMenuItems } from '@/types/settings.type';
 
 type SideMenuItemsWithIcons = {
   label: SideMenuItems;

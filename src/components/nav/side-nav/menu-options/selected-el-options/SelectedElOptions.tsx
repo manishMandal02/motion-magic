@@ -1,4 +1,4 @@
-import { IElement, IElementType } from '@/types/editor/elements.type';
+import { IElement, IElementType } from '@/types/elements.type';
 import ShapeOptions from './shapes';
 import TextOptions from './text';
 

@@ -1,5 +1,5 @@
 import { useEditorSore } from '@/store';
-import { IElementType } from '@/types/editor/elements.type';
+import { IElementType } from '@/types/elements.type';
 import { RxText } from 'react-icons/rx';
 import { nanoid } from 'nanoid';
 
@@ -12,10 +12,8 @@ const TextMenu = () => {
       fontSize: 42,
       position: { x: 10, y: 10 },
       type: IElementType.TEXT,
-      timeFrame: {
-        startFrame: 30,
-        endFrame: 60,
-      },
+      startFrame: 30,
+      endFrame: 60,
       id: nanoid(),
       size: {
         width: 250,

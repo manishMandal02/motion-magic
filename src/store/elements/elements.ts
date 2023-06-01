@@ -1,28 +1,23 @@
 import { ITimelineState } from '../timeline';
 import {
+  IAddElement,
   IElement,
   IElementFrameDuration,
   IElementPosition,
   IElementSize,
   IElementType,
   IElements,
-} from '@/types/editor/elements.type';
+  IUpdateElement,
+} from '@/types/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
+import { ITimelineTrack } from '@/types/timeline.type';
 
 export interface IElementsState {
   elements: IElements[];
   selectedEl: IElements | null;
-  addElement: <T extends IElementType, P extends Extract<IElements, { type: T }>>(
-    elType: T,
-    element: P
-  ) => void;
-  updateEl: <T extends IElementType, P extends Partial<Extract<IElements, { type: T }>>>(
-    id: string,
-    elType: T,
-    element: P
-  ) => void;
-  updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
+  addElement: IAddElement;
+  updateEl: IUpdateElement;
   setSelectedEl: (id: string | null) => void;
   setElSize: (id: string, size: IElementSize) => void;
   setElPos: (id: string, pos: IElementPosition) => void;
@@ -38,26 +33,32 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
     }),
   addElement: (elType, element) =>
     set((state) => {
+      const { id, type, startFrame, endFrame } = element;
       let topLayerCurrent = 0;
-      if (state.elements.length >= 1) {
-        topLayerCurrent = state.elements[state.elements.length - 1].layer;
+      if (state.timelineTracks.length >= 1) {
+        topLayerCurrent = state.timelineTracks[state.timelineTracks.length - 1].layer;
       }
-      const newElement = { ...element, layer: topLayerCurrent + 1 };
-      return { ...state, elements: [...state.elements, newElement] };
+      const newTrack: ITimelineTrack = {
+        trackName: type,
+        layer: topLayerCurrent + 1,
+        element: {
+          id,
+          type,
+          startFrame,
+          endFrame,
+        },
+      };
+      return {
+        ...state,
+        elements: [...state.elements, element],
+        timelineTracks: [...state.timelineTracks, newTrack],
+      };
     }),
   updateEl: (id, elType, element) => {
     set(
       produce((draft: IElementsState) => {
         let elementToUpdate = draft.elements.find((el) => el.id === id)!;
         elementToUpdate = { ...elementToUpdate, ...element };
-      })
-    );
-  },
-  updateElFrameDuration: (id, duration) => {
-    set(
-      produce((draft: IElementsState) => {
-        let elementToUpdate = draft.elements.find((el) => el.id === id)!;
-        elementToUpdate.timeFrame = duration;
       })
     );
   },

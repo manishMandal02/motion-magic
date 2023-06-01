@@ -1,11 +1,19 @@
 import { EditorDefaults } from '@/constants/EditorDefaults';
+import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
+import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
 
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
 export interface ITimelineState {
   currentFrame: number;
   updateCurrentFrame: (time: number) => void;
   durationInFrames: number;
   setDurationInFrames: (duration: number) => void;
+  timelineTracks: ITimelineTrack[];
+  updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
+  updateTimelineLayer: (layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
 
 const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
@@ -13,6 +21,29 @@ const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
   durationInFrames: EditorDefaults.VIDEO_LENGTH,
   updateCurrentFrame: (time) => set(() => ({ currentFrame: time })),
   setDurationInFrames: (duration) => set(() => ({ durationInFrames: duration })),
+  timelineTracks: [],
+  // Update tracks name, startFrame & endFrame of el of the track
+  updateTimelineTrack: (id, track) =>
+    set(
+      produce((draft: ITimelineState) => {
+        const trackToUpdate = draft.timelineTracks.find((track) => track.element.id === id)!;
+        trackToUpdate.trackName = track.trackName || trackToUpdate.trackName;
+        trackToUpdate.element.startFrame = track.element?.startFrame
+          ? track.element.startFrame
+          : trackToUpdate.element.startFrame;
+        trackToUpdate.element.endFrame = track.element?.endFrame
+          ? track.element.endFrame
+          : trackToUpdate.element.endFrame;
+      })
+    ),
+  // update layer of the track based on button press forward, backward, top, bottom
+  updateTimelineLayer: (layer, moveTo) =>
+    set(
+      produce((draft: ITimelineState) => {
+        const layerToUpdate = draft.timelineTracks.find((track) => track.layer === layer)!;
+        
+      })
+    ),
 });
 
 export { createTimelineSlice };

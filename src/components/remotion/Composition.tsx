@@ -1,5 +1,5 @@
 import { useEditorSore } from '@/store';
-import { IElementType } from '@/types/editor/elements.type';
+import { IElementType } from '@/types/elements.type';
 import Rectangle from '../art-board/elements/shapes/rectangle';
 import BasicText from '../art-board/elements/text/basic-text';
 

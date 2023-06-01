@@ -1,5 +1,5 @@
 import ArtBoardElementWrapper from '@/components/common/element-wrapper/art-board-element';
-import type { ITextElement, IUpdateElPosition, IUpdateElSize } from '@/types/editor/elements.type';
+import type { ITextElement, IUpdateElPosition, IUpdateElSize } from '@/types/elements.type';
 
 type Props = Pick<ITextElement, 'position' | 'size' | 'fontSize' | 'value' | 'id'> & {
   setPosition: IUpdateElPosition;

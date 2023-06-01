@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import ResizablePoints from '../art-board-element/ResizablePoints';
-import { IElement, IElementFrameDuration } from '@/types/editor/elements.type';
+import { IElement, IElementFrameDuration } from '@/types/elements.type';
 
 type Props = {
   id: string;
@@ -85,7 +85,7 @@ const TimelineElementWrapper = ({
         dragAxis='x'
         dragGrid={[singleFrameWidth, 0]}
         // scale={videoScale}
-        className={`hover:shadow-sm hover:shadow-slate-400 transform-gpu`}
+        className={`hover:shadow-sm rounded-md hover:shadow-slate-400 transform-gpu`}
         style={{
           position: 'absolute',
           // transform: `translate(${translateXValue}px, 0px)`,

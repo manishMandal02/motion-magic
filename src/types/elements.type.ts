@@ -25,8 +25,6 @@ export interface IElement<T extends IElementType> {
   id: string;
   position: IElementPosition;
   size: IElementSize;
-  timeFrame: IElementFrameDuration;
-  layer: number; // higher the layer upper the el on z-index
 }
 
 export interface ITextElement extends IElement<IElementType.TEXT> {
@@ -39,5 +37,16 @@ export interface IShapeElement extends IElement<IElementType.SHAPE> {
   type: IElementType.SHAPE;
   borderRadius?: number;
 }
+
+export type IAddElement = <T extends IElementType, P extends Extract<IElements, { type: T }>>(
+  elType: T,
+  element: P & IElementFrameDuration
+) => void;
+
+export type IUpdateElement = <T extends IElementType, P extends Partial<Extract<IElements, { type: T }>>>(
+  id: string,
+  elType: T,
+  element: P
+) => void;
 
 export type IElements = ITextElement | IShapeElement;

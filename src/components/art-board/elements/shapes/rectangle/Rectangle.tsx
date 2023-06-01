@@ -1,10 +1,5 @@
 import ArtBoardElementWrapper from '@/components/common/element-wrapper/art-board-element';
-import {
-  IElementPosition,
-  IElementSize,
-  IUpdateElPosition,
-  IUpdateElSize,
-} from '@/types/editor/elements.type';
+import { IElementPosition, IElementSize, IUpdateElPosition, IUpdateElSize } from '@/types/elements.type';
 import React from 'react';
 
 type Props = {

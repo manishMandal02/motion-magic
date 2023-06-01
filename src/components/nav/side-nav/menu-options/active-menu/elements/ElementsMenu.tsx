@@ -1,4 +1,4 @@
-import { IElementType } from '@/types/editor/elements.type';
+import { IElementType } from '@/types/elements.type';
 import { nanoid } from 'nanoid';
 import { BsCircle } from 'react-icons/bs';
 import { BiRectangle } from 'react-icons/bi';
@@ -11,10 +11,8 @@ const ElementsMenu = () => {
     addElement(IElementType.SHAPE, {
       position: { x: 40, y: 60 },
       type: IElementType.SHAPE,
-      timeFrame: {
-        startFrame: 0,
-        endFrame: 4,
-      },
+      startFrame: 0,
+      endFrame: 4,
       id: nanoid(),
       size: {
         width: 250,

@@ -1,5 +1,5 @@
 import { useEditorSore } from '@/store';
-import { IElementPosition, IElementSize } from '@/types/editor/elements.type';
+import { IElementPosition, IElementSize } from '@/types/elements.type';
 import { ReactNode, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import ResizablePoints from './ResizablePoints';

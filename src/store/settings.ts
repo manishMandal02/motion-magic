@@ -1,6 +1,6 @@
 import { EditorDefaults } from '@/constants/EditorDefaults';
-import { IElement } from '@/types/editor/elements.type';
-import type { IVideoResolution, SideMenuItems } from '@/types/editor/settings.type';
+import { IElement } from '@/types/elements.type';
+import type { IVideoResolution, SideMenuItems } from '@/types/settings.type';
 import type { StateCreator } from 'zustand';
 import { IElementsState } from './elements';
 

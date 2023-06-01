@@ -1,5 +1,4 @@
 import { useContainerSize } from '@/hooks/common/useContainerSize';
-import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import { useRef } from 'react';
 import TimelineTracks from './tracks';
 import TimestampMarkers from './timestamp-markers';

@@ -1,5 +1,5 @@
-import type { IElement } from '@/types/editor/elements.type';
-import type { SideMenuItems } from '@/types/editor/settings.type';
+import type { IElement } from '@/types/elements.type';
+import type { SideMenuItems } from '@/types/settings.type';
 import type { IconType } from 'react-icons/lib';
 
 type Props = {
