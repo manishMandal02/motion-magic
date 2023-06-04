@@ -57,7 +57,7 @@ export default function Timeline() {
       <div className='h-[28vh] w-[100vw]  overflow-hidden  flex'>
         {/* timeline layers */}
         <div
-          className='flex-none flex w-[5vw] sticky left-0 z-50  bg-slate-900 max-h-[28vh] overflow-y-auto CC_hideScrollBar mb-[6px]'
+          className='flex-none flex w-[5vw] left-0 z-50 bg-slate-900 max-h-[28vh] overflow-y-auto CC_hideScrollBar mb-[8px]'
           ref={layerContainerFef}
           onScroll={handleScrollLayerContainer}
         >
