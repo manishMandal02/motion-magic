@@ -1,6 +1,9 @@
+import autoAnimate from '@formkit/auto-animate';
+import { useEffect, useRef } from 'react';
 import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
+
 import { useEditorSore } from '@/store';
-import TimelineLayer from '../layer';
+
 import { IElementFrameDuration } from '@/types/elements.type';
 
 type Props = {
@@ -16,6 +19,13 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
 
   const totalFrameDuration = useEditorSore((state) => state.durationInFrames);
 
+  // autoAnimate
+  const autoAnimateDiv = useRef(null);
+
+  useEffect(() => {
+    autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
+  }, [autoAnimateDiv]);
+
   const currentPlaybackPosition = (currentFrame / totalFrameDuration) * 100; // in percentage
 
   const singleFrameWidth = timelineWidth / totalFrameDuration;
@@ -28,6 +38,8 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
       },
     });
   };
+
+  console.log('TimelineTracks component rerendered');
 
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
@@ -42,7 +54,7 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
       return (
         <div
           key={track.layer}
-          className='w-full shadow-sm shadow-slate-700 relative'
+          className={` shadow-sm shadow-slate-700  relative `}
           style={{ height: trackHeight }}
         >
           <TimelineElementWrapper
@@ -57,7 +69,7 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
           >
             <div
               key={track.layer}
-              className={`rounded-md h-full  flex text-xs font-medium items-center mb-2 justify-center overflow-hidden
+              className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center mb-2 justify-center overflow-hidden
               ${track.element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
               `}
             >
@@ -70,8 +82,8 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
   };
   return (
     <>
-      <div className=' relative flex flex-col  '>
-        <div className=' relative w-full'>{renderElements()}</div>
+      <div className=' relative flex flex-col flex-1  w-full bg-red-30' ref={autoAnimateDiv}>
+        <div className=' relative w-full flex-1 bg-blue-40'>{renderElements()}</div>
       </div>
       {/* timeline scrubber */}
       <div

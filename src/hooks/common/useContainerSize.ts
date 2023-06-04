@@ -1,17 +1,27 @@
 import { MutableRefObject, RefObject, useEffect, useState } from 'react';
 
-type Props = {
+type UseContainerSizeProps = {
   containerRef: RefObject<HTMLDivElement>;
+  getScrollableSize?: boolean;
 };
 
-export const useContainerSize = ({ containerRef }: Props) => {
+export const useContainerSize = ({ containerRef, getScrollableSize }: UseContainerSizeProps) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const getDimensions = () => ({
-      width: containerRef.current!.offsetWidth,
-      height: containerRef.current!.offsetHeight,
-    });
+    const getDimensions = () => {
+      if (getScrollableSize) {
+        return {
+          width: containerRef.current!.scrollWidth,
+          height: containerRef.current!.scrollHeight,
+        };
+      } else {
+        return {
+          width: containerRef.current!.offsetWidth,
+          height: containerRef.current!.offsetHeight,
+        };
+      }
+    };
 
     const handleResize = () => {
       setDimensions(getDimensions());

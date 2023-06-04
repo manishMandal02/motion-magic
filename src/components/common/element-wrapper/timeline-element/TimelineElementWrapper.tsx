@@ -27,6 +27,7 @@ const TimelineElementWrapper = ({
   translateX,
 }: Props) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
   useEffect(() => {
     setPosition({ x: translateX, y: 0 });
@@ -34,13 +35,6 @@ const TimelineElementWrapper = ({
 
   const handleResizeLeft = (deltaWidth: number) => {
     const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / singleFrameWidth));
-
-    console.log(
-      '🚀 ~ file: TimelineElementWrapper.tsx:38 ~ handleResizeLeft ~ newStartFrame:',
-      newStartFrame
-    );
-
-    console.log('🚀 ~ file: TimelineElementWrapper.tsx:38 ~ handleResizeLeft ~ deltaWidth:', deltaWidth);
 
     updateElFrameDuration(id, {
       startFrame: newStartFrame,
@@ -56,6 +50,8 @@ const TimelineElementWrapper = ({
     });
   };
 
+  const rndContainer = useRef<Rnd>(null);
+
   const handleDrag = (deltaX: number) => {
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / singleFrameWidth));
 
@@ -67,12 +63,20 @@ const TimelineElementWrapper = ({
   return (
     <>
       <Rnd
+        ref={rndContainer}
         size={{ width, height }}
         position={{ x: position.x, y: 5 }}
+        onDragStart={() => {
+          setIsResizingORDragging(true);
+        }}
+        onResizeStart={() => {
+          setIsResizingORDragging(true);
+        }}
         onDragStop={(e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x);
           // TODO: update el startFrame * endFrame, also check for track changes
+          setIsResizingORDragging(false);
         }}
         onResizeStop={(e, direction, ref, delta) => {
           if (direction === 'left') {
@@ -81,11 +85,15 @@ const TimelineElementWrapper = ({
           if (direction === 'right') {
             handleResizeRight(delta.width);
           }
+          setIsResizingORDragging(false);
         }}
         dragAxis='x'
         dragGrid={[singleFrameWidth, 0]}
+        resizeGrid={[singleFrameWidth, singleFrameWidth]}
         // scale={videoScale}
-        className={`hover:shadow-sm rounded-md hover:shadow-slate-400 transform-gpu`}
+        className={`hover:shadow-sm rounded-md hover:shadow-slate-400 transform-gpu transition-all ${
+          !isResizingORDragging ? 'duration-[280ms]' : 'duration-0'
+        }`}
         style={{
           position: 'absolute',
           // transform: `translate(${translateXValue}px, 0px)`,

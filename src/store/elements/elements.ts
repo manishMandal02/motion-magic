@@ -1,17 +1,15 @@
 import { ITimelineState } from '../timeline';
 import {
   IAddElement,
-  IElement,
-  IElementFrameDuration,
   IElementPosition,
   IElementSize,
-  IElementType,
   IElements,
   IUpdateElement,
 } from '@/types/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
 import { ITimelineTrack } from '@/types/timeline.type';
+import { nanoid } from 'nanoid';
 
 export interface IElementsState {
   elements: IElements[];
@@ -39,6 +37,7 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
         topLayerCurrent = state.timelineTracks[state.timelineTracks.length - 1].layer;
       }
       const newTrack: ITimelineTrack = {
+        id: nanoid(),
         trackName: type,
         layer: topLayerCurrent + 1,
         element: {

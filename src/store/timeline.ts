@@ -1,5 +1,6 @@
 import { EditorDefaults } from '@/constants/EditorDefaults';
 import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
+import updateTimelineLayer from '@/utils/global-state/updateTimlineLayer';
 import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
 
@@ -13,7 +14,7 @@ export interface ITimelineState {
   setDurationInFrames: (duration: number) => void;
   timelineTracks: ITimelineTrack[];
   updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
-  updateTimelineLayer: (layer: number, moveTo: IMoveTimelineLayerTo) => void;
+  updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
 
 const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
@@ -37,11 +38,15 @@ const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
       })
     ),
   // update layer of the track based on button press forward, backward, top, bottom
-  updateTimelineLayer: (layer, moveTo) =>
+  updateTimelineLayer: (id, currentLayer, moveTo) =>
     set(
       produce((draft: ITimelineState) => {
-        const layerToUpdate = draft.timelineTracks.find((track) => track.layer === layer)!;
-        
+        updateTimelineLayer({
+          trackId: id,
+          currentLayer,
+          moveTo,
+          timelineTracks: draft.timelineTracks,
+        });
       })
     ),
 });
