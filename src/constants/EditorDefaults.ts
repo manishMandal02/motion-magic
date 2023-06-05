@@ -2,7 +2,8 @@ const EditorDefaults = {
   VIDEO_RESOLUTION: { WIDTH: 1920, HEIGHT: 1080 },
   SCALE: 0.35,
   FPS: 30,
-  VIDEO_LENGTH: 15 * 30, //frames
+  IS_VIDEO_LENGTH_FIXED: true,
+  VIDEO_LENGTH: 60 * 30 * 2, //frames
 } as const;
 
 export { EditorDefaults };

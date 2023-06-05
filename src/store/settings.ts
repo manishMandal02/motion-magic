@@ -2,11 +2,12 @@ import { EditorDefaults } from '@/constants/EditorDefaults';
 import { IElement } from '@/types/elements.type';
 import type { IVideoResolution, SideMenuItems } from '@/types/settings.type';
 import type { StateCreator } from 'zustand';
-import { IElementsState } from './elements';
+import { IElementsState } from './elements/elements';
 
 export interface IEditorSettingsState {
   scale: number;
   fps: number;
+  isVideoLengthFixed: boolean;
   videoResolution: IVideoResolution;
   activeMenu: SideMenuItems;
   setActiveMenu: (menu: SideMenuItems) => void;
@@ -21,6 +22,7 @@ const createEditorSettingsSlice: StateCreator<
 > = (set) => ({
   scale: EditorDefaults.SCALE,
   fps: EditorDefaults.FPS,
+  isVideoLengthFixed: true,
   activeMenu: 'Settings',
   setActiveMenu: (menu) =>
     set((state) => {

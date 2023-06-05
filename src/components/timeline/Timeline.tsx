@@ -1,43 +1,42 @@
-import { useContainerSize } from '@/hooks/common/useContainerSize';
-import { UIEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimestampMarkers from './timestamp-markers';
 import TimelineLayer from './layer';
 import { useEditorSore } from '@/store';
+import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
+import { useCurrentFrame } from 'remotion';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 
 export default function Timeline() {
-  const allTracks = useEditorSore((state) => state.timelineTracks);
-  const durationInFrames = useEditorSore((state) => state.durationInFrames);
-  const [scale, setScale] = useState<number>(2);
-  const [framePerWidth, setFramePerWidth] = useState<number>(0);
+  //local state
+  const [scale, setScale] = useState(1);
+  const [timelineWidth, setTimelineWidth] = useState(0);
+  const [frameWidth, setFrameWidth] = useState(0);
   const [isTimelineWidthFit, setIsTimelineWidthFit] = useState(false);
-  const timelineContainerRef = useRef<HTMLDivElement>(null);
 
-  const { width: timelineWidth } = useContainerSize({
-    containerRef: timelineContainerRef,
-    getScrollableSize: true,
-  });
+  // global state
+  const currentFrame = useEditorSore((state) => state.currentFrame);
+  const setCurrentFrame = useEditorSore((state) => state.setCurrentFrame);
+  const isVideoLengthFixed = useEditorSore((state) => state.isVideoLengthFixed);
+  const durationInFrames = useEditorSore((state) => state.durationInFrames);
+
+  // get timeline width
+  useEffect(() => {
+    const timelineContainer = document.getElementById('timeline-tracks-container');
+    if (!timelineContainer) return;
+    setTimelineWidth(timelineContainer.scrollWidth);
+    console.log(
+      '🚀 ~ file: Timeline.tsx:35 ~ useEffect ~ timelineContainer.scrollWidth:',
+      timelineContainer.scrollWidth
+    );
+  }, []);
 
   useEffect(() => {
     if (timelineWidth) {
-      setFramePerWidth((timelineWidth / durationInFrames) * scale);
+      setFrameWidth((timelineWidth / durationInFrames) * scale);
     }
   }, [scale, timelineWidth]);
-
-  // scroll layer & timeline container simultaneously
-  const layerContainerFef = useRef<HTMLDivElement>(null);
-
-  const handleScrollLayerContainer = (scroll: UIEvent<HTMLDivElement>) => {
-    if (!timelineContainerRef.current) return;
-    timelineContainerRef.current.scrollTop = scroll.currentTarget.scrollTop;
-  };
-
-  const handleScrollTimelineContainer = (scroll: UIEvent<HTMLDivElement>) => {
-    if (!layerContainerFef.current) return;
-    layerContainerFef.current.scrollTop = scroll.currentTarget.scrollTop;
-  };
 
   return (
     <>
@@ -53,43 +52,58 @@ export default function Timeline() {
           Fit
         </button>
       </div>
-      {/* parent container */}
-      <div className='h-[28vh] w-[100vw]  overflow-hidden  flex'>
-        {/* timeline layers */}
-        <div
-          className='flex-none flex w-[5vw] left-0 z-50 bg-slate-900 max-h-[28vh] overflow-y-auto CC_hideScrollBar mb-[8px]'
-          ref={layerContainerFef}
-          onScroll={handleScrollLayerContainer}
-        >
-          <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
-        </div>
-        {/* timeline tracks areas */}
-        <div
-          className={`flex-auto w-[95vw]  border-2 border-red-500   overflow-y-scroll  overflow-x-scroll  bg-emerald-700 rounded-sm`}
-          ref={timelineContainerRef}
-          onScroll={handleScrollTimelineContainer}
-        >
-          {/* video timestamps markers */}
-          <div
-            className='bg-slate-700 flex  top-0 sticky  items-center z-50 h-6 w-full justify-between '
-            style={{
-              width: framePerWidth * durationInFrames + 'px',
-            }}
-          >
-            <TimestampMarkers />
-          </div>
-          {/* timeline tracks */}
+      <ScrollSync>
+        {/* parent container */}
+        <div className='h-[28vh] w-[100vw]  overflow-hidden relative  flex'>
+          {/* timeline layers */}
+          <ScrollSyncPane>
+            <div
+              className='flex-none flex w-[5vw] left-0 z-50 bg-slate-900 max-h-[28vh] overflow-auto CC_hideScrollBar mb-[8px]'
+              // ref={layerContainerFef}
+              // onScroll={handleScrollLayerContainer}
+            >
+              <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
+            </div>
+          </ScrollSyncPane>
+          {/* timeline tracks areas */}
+          <ScrollSyncPane>
+            <div
+              className={`flex-auto w-[95vw] relative h-full border-2 border-red-500   overflow-scroll  bg-emerald-700 rounded-sm`}
+              // ref={timelineContainerRef}
+              id='timeline-tracks-container'
+              // onScroll={handleScrollTimelineContainer}
+            >
+              {/* video timestamps markers */}
+              <div
+                className='bg-slate-700 flex  top-0 left-0 absolute overflow-hidden items-center z-50 h-6  justify-between '
+                style={{
+                  width: frameWidth * durationInFrames + 'px',
+                }}
+              >
+                {timelineWidth && frameWidth ? (
+                  <TimestampMarkers
+                    frameWidth={frameWidth}
+                    durationInFrames={durationInFrames}
+                    timelineWidth={timelineWidth}
+                    scale={scale}
+                    onTimestampClick={setCurrentFrame}
+                  />
+                ) : null}
+              </div>
+              {/* timeline tracks */}
 
-          <div
-            className=''
-            style={{
-              width: framePerWidth * durationInFrames + 'px',
-            }}
-          >
-            <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} timelineWidth={timelineWidth} />
-          </div>
+              <div
+                className=''
+                style={{
+                  width: frameWidth * durationInFrames + 'px',
+                }}
+              >
+                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} timelineWidth={timelineWidth} />
+              </div>
+            </div>
+          </ScrollSyncPane>
         </div>
-      </div>
+      </ScrollSync>
     </>
   );
 }

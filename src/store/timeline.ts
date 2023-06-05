@@ -9,7 +9,7 @@ type RecursivePartial<T> = {
 };
 export interface ITimelineState {
   currentFrame: number;
-  updateCurrentFrame: (time: number) => void;
+  setCurrentFrame: (time: number) => void;
   durationInFrames: number;
   setDurationInFrames: (duration: number) => void;
   timelineTracks: ITimelineTrack[];
@@ -20,7 +20,7 @@ export interface ITimelineState {
 const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
   currentFrame: 0,
   durationInFrames: EditorDefaults.VIDEO_LENGTH,
-  updateCurrentFrame: (time) => set(() => ({ currentFrame: time })),
+  setCurrentFrame: (time) => set(() => ({ currentFrame: time })),
   setDurationInFrames: (duration) => set(() => ({ durationInFrames: duration })),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
