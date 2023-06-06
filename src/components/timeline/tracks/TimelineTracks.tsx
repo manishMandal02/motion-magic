@@ -17,6 +17,8 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
   const updateTimelineTrack = useEditorSore((state) => state.updateTimelineTrack);
   const currentFrame = useEditorSore((state) => state.currentFrame);
 
+  console.log('🚀 ~ file: TimelineTracks.tsx:20 ~ TimelineTracks ~ currentFrame:', currentFrame);
+
   const totalFrameDuration = useEditorSore((state) => state.durationInFrames);
 
   // autoAnimate
@@ -26,7 +28,12 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
     autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
   }, [autoAnimateDiv]);
 
-  const currentPlaybackPosition = (currentFrame / totalFrameDuration) * 100; // in percentage
+  const currentPlaybackPosition = (currentFrame / (totalFrameDuration) / timelineWidth) * 100; // in percentage
+
+  console.log(
+    '🚀 ~ file: TimelineTracks.tsx:33 ~ TimelineTracks ~ currentPlaybackPosition:',
+    currentPlaybackPosition
+  );
 
   const singleFrameWidth = timelineWidth / totalFrameDuration;
 
@@ -87,7 +94,7 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
       </div>
       {/* timeline scrubber */}
       <div
-        className='w-px h-full top-0 ml-2 bg-white absolute rounded-lg '
+        className='w-px h-full top-0 ml-px bg-white absolute rounded-lg '
         style={{ left: `${currentPlaybackPosition}%` }}
       ></div>
     </>

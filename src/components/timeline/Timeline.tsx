@@ -16,6 +16,7 @@ export default function Timeline() {
   const [isTimelineWidthFit, setIsTimelineWidthFit] = useState(false);
 
   // global state
+  const fps = useEditorSore((state) => state.fps);
   const currentFrame = useEditorSore((state) => state.currentFrame);
   const setCurrentFrame = useEditorSore((state) => state.setCurrentFrame);
   const isVideoLengthFixed = useEditorSore((state) => state.isVideoLengthFixed);
@@ -68,20 +69,21 @@ export default function Timeline() {
           {/* timeline tracks areas */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[95vw] relative h-full border-2 border-red-500   overflow-scroll  bg-emerald-700 rounded-sm`}
+              className={`flex-auto w-[95vw] relative h-full   overflow-scroll bg-emerald-700 rounded-sm`}
               // ref={timelineContainerRef}
               id='timeline-tracks-container'
               // onScroll={handleScrollTimelineContainer}
             >
               {/* video timestamps markers */}
               <div
-                className='bg-slate-700 flex  top-0 left-0 absolute overflow-hidden items-center z-50 h-6  justify-between '
+                className='bg-slate-700 flex  top-0 left-0 sticky overflow-hidden items-center z-50 h-6  justify-between '
                 style={{
                   width: frameWidth * durationInFrames + 'px',
                 }}
               >
                 {timelineWidth && frameWidth ? (
                   <TimestampMarkers
+                    fps={fps}
                     frameWidth={frameWidth}
                     durationInFrames={durationInFrames}
                     timelineWidth={timelineWidth}

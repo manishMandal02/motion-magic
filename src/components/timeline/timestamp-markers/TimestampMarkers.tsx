@@ -1,4 +1,3 @@
-import { TimeUnits } from '@/types/settings.type';
 import framesToSeconds from '@/utils/common/framesToSeconds';
 import { MouseEventHandler, useEffect, useRef } from 'react';
 
@@ -20,6 +19,7 @@ const fixDPI = (canvas: HTMLCanvasElement, dpi: number) => {
 };
 
 type Props = {
+  fps: number;
   frameWidth: number;
   durationInFrames: number;
   timelineWidth: number;
@@ -28,6 +28,7 @@ type Props = {
 };
 
 const TimestampMarkers = ({
+  fps,
   frameWidth,
   timelineWidth,
   durationInFrames,
@@ -42,75 +43,90 @@ const TimestampMarkers = ({
 
     if (!canvas) return;
 
-    const context = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
 
-    if (!context) return;
-    context.imageSmoothingEnabled = false;
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
 
-    // Clear the canvas
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    // clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate time units based on duration
+    // calculate time units based on duration
     const duration = framesToSeconds(durationInFrames);
-    const timeUnits = getTimeUnits(duration);
 
-    // Calculate spacing between timestamp markers
-    const spacing = calculateMarkerSpacing(duration, timelineWidth, scale, timeUnits);
+    // calculating spacing between timestamp markers
+    const spacing = calculateMarkerSpacing(duration, timelineWidth, scale);
 
-    // Draw timestamp markers
-    //@ts-ignore
-    drawTimestampMarkers(context, timelineWidth, spacing, canvas);
+    // draw timestamp markers
+    drawTimestampMarkers(ctx, timelineWidth, spacing, canvas);
   }, [durationInFrames, timelineWidth, scale]);
 
-  // Helper function to calculate time units based on duration
-  const getTimeUnits = (duration: number) => {
-    let timeUnits: TimeUnits[] = ['Seconds', 'Minutes', 'Hours'];
-
-    if (duration < 60) {
-      timeUnits = ['Seconds'];
-    } else if (duration < 3600) {
-      timeUnits = ['Minutes', 'Seconds'];
-    }
-
-    return timeUnits;
-  };
-
   // Helper function to calculate spacing between timestamp markers
-  const calculateMarkerSpacing = (duration: number, width: number, scale: number, timeUnits: TimeUnits[]) => {
-    const largestTimeUnit = timeUnits[timeUnits.length - 1];
+  const calculateMarkerSpacing = (duration: number, width: number, scale: number) => {
+    let totalUnits = duration;
 
-    let totalSeconds = duration;
-    if (largestTimeUnit === 'Minutes') {
-      totalSeconds /= 60;
-    } else if (largestTimeUnit === 'Hours') {
-      totalSeconds /= 3600;
-    }
-
-    const markerCount = Math.floor(totalSeconds / scale);
+    const markerCount = Math.ceil(totalUnits / scale);
 
     return width / markerCount;
   };
 
   // Helper function to draw timestamp markers
   const drawTimestampMarkers = (
-    context: CanvasRenderingContext2D,
-    width: number,
+    ctx: CanvasRenderingContext2D,
+    timelineWidth: number,
     spacing: number,
     canvas: HTMLCanvasElement
   ) => {
     fixDPI(canvas, dpi);
-    context.beginPath();
-    context.lineWidth = 1;
-    context.lineCap = 'butt'; // or "butt" for sharp line endings
-    context.strokeStyle = '#7a7a7a';
+    ctx.beginPath();
+    ctx.lineWidth = 0.65;
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = '#7a7a7a';
+    ctx.fillStyle = '#7a7a7a';
+    ctx.font = '12px Arial';
 
     let markerPosition = 0;
-    while (markerPosition <= width) {
-      context.moveTo(markerPosition * dpi, 20);
-      context.lineTo(markerPosition * dpi, canvasRef.current?.height! - 5);
-      context.stroke();
+    let timestamp = 0;
+    const tolerance = 0.01; // Adjust the tolerance value as needed
+
+    while (markerPosition <= timelineWidth + tolerance) {
+      console.log('🚀 ~ file: TimestampMarkers.tsx:113 ~ markerPosition:', markerPosition);
+      const timeValue = formatTimestamp(timestamp);
+
+      console.log('🚀 ~ file: TimestampMarkers.tsx:115 ~ timeValue:', timeValue);
+      console.log('🪄', Math.abs(markerPosition - timelineWidth) < Number.EPSILON);
+
+      if (markerPosition === 0) {
+        // for the first stamp
+        ctx.moveTo(markerPosition + 1 * dpi, 30);
+        ctx.lineTo(markerPosition + 1 * dpi, canvasRef.current?.height! - 1);
+        ctx.stroke();
+
+        ctx.fillText(timeValue, markerPosition * dpi, 26);
+      } else if (Math.floor(markerPosition) >= timelineWidth || Math.ceil(markerPosition) >= timelineWidth) {
+        console.log('🔥 reached last stamp');
+        // for the last stamp
+        ctx.moveTo((markerPosition - spacing * 0.05) * dpi, 30);
+        ctx.lineTo((markerPosition - spacing * 0.05) * dpi, canvasRef.current?.height! - 1);
+        ctx.stroke();
+
+        ctx.fillText(timeValue, (markerPosition - 7.5) * dpi, 26);
+      } else {
+        // rest of the stamps
+        ctx.moveTo(markerPosition * dpi, 30);
+        ctx.lineTo(markerPosition * dpi, canvasRef.current?.height! - 1);
+        ctx.stroke();
+
+        ctx.fillText(timeValue, (markerPosition - 1.5) * dpi, 26);
+      }
+
       markerPosition += spacing;
+      timestamp += scale;
     }
+  };
+
+  const formatTimestamp = (timestamp: number) => {
+    return Math.floor(timestamp).toString();
   };
 
   const handleTimestampClick: MouseEventHandler<HTMLCanvasElement> = (ev) => {
@@ -119,9 +135,11 @@ const TimestampMarkers = ({
     const rect = canvas.getBoundingClientRect();
     const clickX = ev.clientX - rect.left;
 
-    const targetFrame = clickX * frameWidth;
+    const targetFrame = Number(Math.floor(clickX * frameWidth)).toFixed(0);
 
-    onTimestampClick(targetFrame);
+    console.log('🚀 ~ file: TimestampMarkers.tsx:124 ~ targetFrame:', targetFrame);
+
+    onTimestampClick(Number(targetFrame));
   };
 
   return <canvas ref={canvasRef} onClick={handleTimestampClick} className='w-full h-full' />;
