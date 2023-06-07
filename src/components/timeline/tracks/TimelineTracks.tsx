@@ -17,8 +17,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
   const updateTimelineTrack = useEditorSore((state) => state.updateTimelineTrack);
   const currentFrame = useEditorSore((state) => state.currentFrame);
 
-  console.log('🚀 ~ file: TimelineTracks.tsx:20 ~ TimelineTracks ~ currentFrame:', currentFrame);
-
   const totalFrameDuration = useEditorSore((state) => state.durationInFrames);
 
   // autoAnimate
@@ -27,13 +25,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
   useEffect(() => {
     autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
   }, [autoAnimateDiv]);
-
-  const currentPlaybackPosition = (currentFrame / (totalFrameDuration) / timelineWidth) * 100; // in percentage
-
-  console.log(
-    '🚀 ~ file: TimelineTracks.tsx:33 ~ TimelineTracks ~ currentPlaybackPosition:',
-    currentPlaybackPosition
-  );
 
   const singleFrameWidth = timelineWidth / totalFrameDuration;
 
@@ -46,8 +37,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
     });
   };
 
-  console.log('TimelineTracks component rerendered');
-
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
     return allTracks.map((track) => {
@@ -56,8 +45,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
       const width = (endFrame - startFrame) * singleFrameWidth;
       // position of el from left to position them based on their start time
       const translateX = startFrame * singleFrameWidth;
-      // to set them on their respective tracks, so all el don't end up on same track
-      // const positionY = TIMELINE_TRACK_HEIGHT * element.layer;
       return (
         <div
           key={track.layer}
@@ -92,11 +79,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
       <div className=' relative flex flex-col flex-1  w-full bg-red-30' ref={autoAnimateDiv}>
         <div className=' relative w-full flex-1 bg-blue-40'>{renderElements()}</div>
       </div>
-      {/* timeline scrubber */}
-      <div
-        className='w-px h-full top-0 ml-px bg-white absolute rounded-lg '
-        style={{ left: `${currentPlaybackPosition}%` }}
-      ></div>
     </>
   );
 };

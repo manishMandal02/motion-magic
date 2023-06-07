@@ -50,8 +50,6 @@ const TimelineElementWrapper = ({
     });
   };
 
-  const rndContainer = useRef<Rnd>(null);
-
   const handleDrag = (deltaX: number) => {
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / singleFrameWidth));
 
@@ -63,7 +61,6 @@ const TimelineElementWrapper = ({
   return (
     <>
       <Rnd
-        ref={rndContainer}
         size={{ width, height }}
         position={{ x: position.x, y: 5 }}
         onDragStart={() => {
