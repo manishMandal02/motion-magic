@@ -70,6 +70,9 @@ dependencies:
   react-scroll-sync:
     specifier: ^0.11.0
     version: 0.11.0(react-dom@18.2.0)(react@18.2.0)
+  react-window:
+    specifier: ^1.8.9
+    version: 1.8.9(react-dom@18.2.0)(react@18.2.0)
   remotion:
     specifier: ^3.3.95
     version: 3.3.95(react-dom@18.2.0)(react@18.2.0)
@@ -87,6 +90,9 @@ devDependencies:
   '@types/react-scroll-sync':
     specifier: ^0.8.4
     version: 0.8.4
+  '@types/react-window':
+    specifier: ^1.8.5
+    version: 1.8.5
 
 packages:
 
@@ -2008,6 +2014,12 @@ packages:
 
   /@types/react-scroll-sync@0.8.4:
     resolution: {integrity: sha512-88N2vgZdVqlwr5ayH/5GNAAjfdlzhted/qPTyXgT/DzQwsuIWkwFpZtoOhyGCRmxUC3w5wA+ZhkpbzagIXWNaQ==}
+    dependencies:
+      '@types/react': 18.2.6
+    dev: true
+
+  /@types/react-window@1.8.5:
+    resolution: {integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==}
     dependencies:
       '@types/react': 18.2.6
     dev: true
@@ -4107,6 +4119,10 @@ packages:
       fs-monkey: 1.0.3
     dev: false
 
+  /memoize-one@5.2.1:
+    resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
+    dev: false
+
   /merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
     dev: false
@@ -4793,6 +4809,19 @@ packages:
       invariant: 2.2.4
       react: 18.2.0
       tslib: 2.5.2
+    dev: false
+
+  /react-window@1.8.9(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-+Eqx/fj1Aa5WnhRfj9dJg4VYATGwIUP2ItwItiJ6zboKWA6EX3lYDAXfGF2hyNqplEprhbtjbipiADEcwQ823Q==}
+    engines: {node: '>8.0.0'}
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      '@babel/runtime': 7.21.5
+      memoize-one: 5.2.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /react@18.2.0:

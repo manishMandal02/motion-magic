@@ -1,6 +1,6 @@
 import { EditorDefaults } from '@/constants/EditorDefaults';
 import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
-import updateTimelineLayer from '@/utils/global-state/updateTimlineLayer';
+import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
 

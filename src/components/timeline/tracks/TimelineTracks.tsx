@@ -7,15 +7,14 @@ import { useEditorSore } from '@/store';
 import { IElementFrameDuration } from '@/types/elements.type';
 
 type Props = {
-  timelineWidth: number;
   trackHeight: number;
+  frameWidth: number;
 };
 
-const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
+const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   const allTracks = useEditorSore((state) => state.timelineTracks);
 
   const updateTimelineTrack = useEditorSore((state) => state.updateTimelineTrack);
-  const currentFrame = useEditorSore((state) => state.currentFrame);
 
   const totalFrameDuration = useEditorSore((state) => state.durationInFrames);
 
@@ -25,8 +24,6 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
   useEffect(() => {
     autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
   }, [autoAnimateDiv]);
-
-  const singleFrameWidth = timelineWidth / totalFrameDuration;
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTimelineTrack(id, {
@@ -42,9 +39,9 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
     return allTracks.map((track) => {
       const { startFrame, endFrame } = track.element;
       // width of el based on their start & end time
-      const width = (endFrame - startFrame) * singleFrameWidth;
+      const width = (endFrame - startFrame) * frameWidth;
       // position of el from left to position them based on their start time
-      const translateX = startFrame * singleFrameWidth;
+      const translateX = startFrame * frameWidth;
       return (
         <div
           key={track.layer}
@@ -55,7 +52,7 @@ const TimelineTracks = ({ timelineWidth, trackHeight }: Props) => {
             startFrame={startFrame}
             endFrame={endFrame}
             id={track.element.id}
-            singleFrameWidth={singleFrameWidth}
+            singleFrameWidth={frameWidth}
             updateElFrameDuration={updateElFrameDuration}
             width={width}
             translateX={translateX}
