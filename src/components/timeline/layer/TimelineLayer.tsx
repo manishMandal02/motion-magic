@@ -11,7 +11,7 @@ const TimelineLayer = ({ trackHeight }: Props) => {
 
   return (
     <div className='w-full h-full flex flex-col relative'>
-      <div className='flex sticky top-0 items-center justify-center   font-light text-slate-300 text-xs z-[60] bg-pink-700 py-[0.25rem] pr-2'>
+      <div className='flex sticky top-0 items-center justify-center bg-brand-darkSecondary z-50 font-light text-slate-300 text-xs py-[0.25rem] pr-2'>
         Layer
       </div>
       <div className='relative'>
