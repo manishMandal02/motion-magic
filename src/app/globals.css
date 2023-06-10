@@ -5,7 +5,12 @@
 /* custom scroll bar - global */
 /* width */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0.35rem;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 0.35rem;
 }
 
 ::-webkit-scrollbar:horizontal {
@@ -19,7 +24,7 @@
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: #848484e9;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {

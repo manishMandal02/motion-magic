@@ -11,7 +11,7 @@ type Props = {
 const SCRUBBER_Y_AXIS_POS = 6;
 
 export default function TimelineScrubber({ currentFrame, frameWidth, setCurrentFrame, lastFrame }: Props) {
-  const [position, setPosition] = useState({ x: 0, y: SCRUBBER_Y_AXIS_POS });
+  const [position, setPosition] = useState({ x: -1, y: SCRUBBER_Y_AXIS_POS });
 
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
@@ -28,11 +28,11 @@ export default function TimelineScrubber({ currentFrame, frameWidth, setCurrentF
     (_ev, data) => {
       const frame = Math.round(data.x / frameWidth);
 
-      if (frame < 0 || frame > lastFrame) return;
+      // if (frame < 0 || frame > lastFrame) return;
       setPosition({ x: data.x, y: SCRUBBER_Y_AXIS_POS });
       setCurrentFrame(frame);
     },
-    [frameWidth, setCurrentFrame, lastFrame]
+    [frameWidth, setCurrentFrame]
   );
 
   return (
@@ -46,8 +46,10 @@ export default function TimelineScrubber({ currentFrame, frameWidth, setCurrentF
         style={{
           position: 'fixed',
           zIndex: 100,
-        }}>
-        <div className='h-[28vh] fixed   bg-transparent CC_dashedBorder w-[1.6px]'>
+          pointerEvents: 'auto',
+        }}
+        bounds={'parent'}>
+        <div className='h-[27vh]   bg-transparent CC_dashedBorder w-[1.6px]'>
           <span className='w-2.5 h-2.5 rounded-full bg-white absolute -top-1.5 -left-1'></span>
         </div>
       </Rnd>

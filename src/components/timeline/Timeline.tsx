@@ -8,15 +8,17 @@ import { useEditorSore } from '@/store';
 import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import TimelineScrubber from './scrubber';
 import VideoControls from './video-controls';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 const TIMELINE_TRACK_HEIGHT = 40;
-export const TIMELINE_MARGIN_X = 4;
+export const TIMELINE_PADDING_X = 12;
 
 export default function Timeline() {
   //local state
   const [scale, setScale] = useState(1);
   const [timelineWidth, setTimelineWidth] = useState(0);
   const [frameWidth, setFrameWidth] = useState(0);
+  const [timelineWrapperEl, setTimelineWrapperEl] = useState<HTMLElement | null>(null);
 
   console.log('🚀 ~ file: Timeline.tsx:18 ~ Timeline ~ frameWidth:', frameWidth);
 
@@ -31,16 +33,19 @@ export default function Timeline() {
 
   // get timeline width
   useEffect(() => {
-    const timelineContainer = document.getElementById('timeline-tracks-container');
-    if (!timelineContainer) return;
-    setTimelineWidth(timelineContainer.scrollWidth);
+    const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
+    if (!timelineWrapper) return;
+    setTimelineWrapperEl(timelineWrapper);
+    setTimelineWidth(timelineWrapper.scrollWidth - 5);
   }, []);
 
   useEffect(() => {
     if (timelineWidth) {
-      setFrameWidth((timelineWidth / durationInFrames) * scale);
+      setFrameWidth((timelineWidth / (durationInFrames + 1)) * scale);
     }
   }, [scale, timelineWidth, durationInFrames]);
+
+  const totalFrameWidth = frameWidth * (durationInFrames + 1) * scale;
 
   return (
     <>
@@ -57,59 +62,65 @@ export default function Timeline() {
       </div>
       <ScrollSync>
         {/* parent container */}
-        <div className='h-[28vh] w-[100vw] bg-sky-500  overflow-hidden relative  flex'>
+        <div className='h-[28vh] w-[100vw] bg-sky-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
             <div className='flex-none flex w-[3vw] left-0 z-40 bg-brand-darkPrimary  max-h-[28vh] overflow-auto CC_hideScrollBar mb-[6px]'>
               <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
             </div>
           </ScrollSyncPane>
-          {/* timeline tracks areas */}
-          <ScrollSyncPane>
-            <div
-              className={`flex-auto w-[97vw] z-50 relative h-full pr-[${frameWidth}px]   overflow-scroll bg-emerald-700 `}
-              // ref={timelineContainerRef}
-              id='timeline-tracks-container'
-              // onScroll={handleScrollTimelineContainer}
-            >
-              {/* video timestamps markers */}
+          {/* timeline wrapper - for padding and scroll */}
+          <div
+            className={`flex-auto w-[97vw] relative h-full pl-1.5  items-center justify-center flex CC_hideScrollBar  overflow-hidden bg-emerald-700 `}>
+            {/* timeline tracks & timestamp wrapper */}
+            <ScrollSyncPane>
               <div
-                className='bg-brand-darkSecondary flex  top-0 left-0 sticky overflow-hidden overflow-x-visible items-center z-50 h-6  justify-between '
-                // frame counting starts from 0 so an extra frame
-                style={{
-                  width: frameWidth * durationInFrames * scale + frameWidth + 'px',
-                }}>
-                {timelineWidth && frameWidth ? (
-                  <TimestampMarkers
-                    fps={fps}
-                    frameWidth={frameWidth}
-                    durationInFrames={durationInFrames}
-                    timelineWidth={timelineWidth}
-                    scale={scale}
-                    onTimestampClick={setCurrentFrame}
-                  />
-                ) : null}
-              </div>
-              {/* timeline tracks */}
+                className={`bg-indigo-500 h-[28vh] overflow-scroll   min-w-full`}
+                id='timeline-tracks-wrapper'>
+                {/* video timestamps markers */}
+                <div
+                  className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-6 `}
+                  style={{
+                    width: totalFrameWidth + 'px',
+                  }}>
+                  {timelineWidth && frameWidth ? (
+                    <TimestampMarkers
+                      fps={fps}
+                      frameWidth={frameWidth}
+                      durationInFrames={durationInFrames}
+                      timelineWidth={totalFrameWidth}
+                      scale={scale}
+                      onTimestampClick={setCurrentFrame}
+                    />
+                  ) : null}
+                </div>
 
-              <div
-                className=''
-                style={{
-                  width: frameWidth * durationInFrames + 'px',
-                }}>
-                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidth} />
+                {/* timeline tracks */}
+                <div
+                  className='h-full'
+                  style={{
+                    width: totalFrameWidth + 'px',
+                  }}>
+                  <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidth} />
+                </div>
+                {/* timeline scrubber */}
+                <div
+                  className='h-[27vh] fixed  bottom-[.46rem] z-[200] bg-transparent pointer-events-none'
+                  style={{
+                    width: totalFrameWidth + 'px',
+                  }}>
+                  {timelineWrapperEl ? (
+                    <TimelineScrubber
+                      frameWidth={frameWidth}
+                      currentFrame={currentFrame}
+                      setCurrentFrame={setCurrentFrame}
+                      lastFrame={durationInFrames}
+                    />
+                  ) : null}
+                </div>
               </div>
-              {/* timeline scrubber */}
-              <>
-                <TimelineScrubber
-                  frameWidth={frameWidth}
-                  currentFrame={currentFrame}
-                  setCurrentFrame={setCurrentFrame}
-                  lastFrame={durationInFrames}
-                />
-              </>
-            </div>
-          </ScrollSyncPane>
+            </ScrollSyncPane>
+          </div>
         </div>
       </ScrollSync>
     </>

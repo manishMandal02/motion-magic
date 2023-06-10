@@ -46,8 +46,6 @@ const TimestampMarkers = ({
 
     let targetFrame = Math.round(clickX / frameWidth);
 
-    console.log('🚀 ~ file: TimestampMarkers.tsx:47 ~ targetFrame:', targetFrame);
-
     if (targetFrame < 1) {
       targetFrame = 0;
     }
@@ -59,38 +57,41 @@ const TimestampMarkers = ({
     onTimestampClick(Number(targetFrame));
   };
 
-  const markerSpacing = frameWidth * fps;
+  const markerWidth = frameWidth * fps;
 
-  const totalMarkers = timelineWidth / markerSpacing;
+  const totalMarkers = Math.round(timelineWidth / markerWidth);
+
+  console.log('🚀 ~ file: TimestampMarkers.tsx:64 ~ totalMarkers:', totalMarkers);
 
   const timestampInterval = calculateTimestampInterval(durationInSeconds);
 
   const RenderTimestampProps = {
     timestampInterval,
-    markerSpacing,
+    markerWidth,
     frameWidth,
+    totalMarkers,
   };
 
   return (
     <div className='relative w-full h-full m-0 p-0  '>
-      {markerSpacing && timestampInterval ? (
+      {markerWidth && timestampInterval ? (
         <div
           className='w-full h-full cursor-pointer m-0 p-0 '
           onMouseDown={handleTimestampClick}
           ref={timestampWrapperRef}>
           <List
-            overscanCount={40}
+            overscanCount={0}
             height={25}
             itemCount={totalMarkers}
             itemSize={index => {
               if (index === 0) {
-                return markerSpacing + frameWidth;
+                return markerWidth + frameWidth;
               } else {
-                return markerSpacing;
+                return markerWidth;
               }
             }}
             layout='horizontal'
-            width={frameWidth * durationInFrames + frameWidth}
+            width={frameWidth * (durationInFrames + 1)}
             itemData={RenderTimestampProps}>
             {RenderTimestamp}
           </List>
