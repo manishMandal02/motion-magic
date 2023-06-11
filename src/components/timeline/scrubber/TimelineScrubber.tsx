@@ -16,11 +16,6 @@ export default function TimelineScrubber({ currentFrame, frameWidth, setCurrentF
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
 
-    console.log(
-      '🚀 ~ file: TimelineScrubber.tsx:21 ~ useEffect ~ currentPlaybackPosition:',
-      currentPlaybackPosition
-    );
-
     setPosition({ x: currentPlaybackPosition, y: SCRUBBER_Y_AXIS_POS });
   }, [frameWidth, currentFrame]);
 

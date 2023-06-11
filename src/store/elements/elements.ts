@@ -21,16 +21,16 @@ export interface IElementsState {
   setElPos: (id: string, pos: IElementPosition) => void;
 }
 
-const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [], IElementsState> = (set) => ({
+const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [], IElementsState> = set => ({
   elements: [],
   selectedEl: null,
-  setSelectedEl: (id) =>
-    set((state) => {
-      const selectedEl = state.elements.find((el) => el.id === id)!;
+  setSelectedEl: id =>
+    set(state => {
+      const selectedEl = state.elements.find(el => el.id === id)!;
       return { selectedEl };
     }),
   addElement: (elType, element) =>
-    set((state) => {
+    set(state => {
       const { id, type, startFrame, endFrame } = element;
       let topLayerCurrent = 0;
       if (state.timelineTracks.length >= 1) {
@@ -47,16 +47,17 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
           endFrame,
         },
       };
+
       return {
         ...state,
-        elements: [...state.elements, element],
+        elements: [...state.elements, { ...element }],
         timelineTracks: [...state.timelineTracks, newTrack],
       };
     }),
   updateEl: (id, elType, element) => {
     set(
       produce((draft: IElementsState) => {
-        let elementToUpdate = draft.elements.find((el) => el.id === id)!;
+        let elementToUpdate = draft.elements.find(el => el.id === id)!;
         elementToUpdate = { ...elementToUpdate, ...element };
       })
     );
@@ -64,7 +65,7 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
   setElSize: (id, size) =>
     set(
       produce((draft: IElementsState) => {
-        const elementToUpdate = draft.elements.find((el) => el.id === id)!;
+        const elementToUpdate = draft.elements.find(el => el.id === id)!;
         elementToUpdate.size.width = size.width;
         elementToUpdate.size.height = size.height;
       })
@@ -72,7 +73,7 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
   setElPos: (id, pos) =>
     set(
       produce((draft: IElementsState) => {
-        const elementToUpdate = draft.elements.find((el) => el.id === id)!;
+        const elementToUpdate = draft.elements.find(el => el.id === id)!;
         elementToUpdate.position.x = pos.x;
         elementToUpdate.position.y = pos.y;
       })

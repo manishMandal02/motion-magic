@@ -26,6 +26,8 @@ const TimelineElementWrapper = ({
   height,
   translateX,
 }: Props) => {
+  console.log('🚀 ~ file: TimelineElementWrapper.tsx:30 ~ translateX:', translateX);
+
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
@@ -53,7 +55,11 @@ const TimelineElementWrapper = ({
   const handleDrag = (deltaX: number) => {
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / singleFrameWidth));
 
+    console.log('🚀 ~ file: TimelineElementWrapper.tsx:56 ~ handleDrag ~ newStartFrame:', newStartFrame);
+
     const newEndFrame = newStartFrame + (endFrame - startFrame);
+
+    console.log('🚀 ~ file: TimelineElementWrapper.tsx:58 ~ handleDrag ~ newEndFrame:', newEndFrame);
 
     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
   };
@@ -63,6 +69,10 @@ const TimelineElementWrapper = ({
       <Rnd
         size={{ width, height }}
         position={{ x: position.x, y: 5 }}
+        onDrag={(e, d) => {
+          setPosition({ x: d.x, y: d.y });
+          handleDrag(d.x - position.x);
+        }}
         onDragStart={() => {
           setIsResizingORDragging(true);
         }}
@@ -70,12 +80,10 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(true);
         }}
         onDragStop={(e, d) => {
-          setPosition({ x: d.x, y: d.y });
-          handleDrag(d.x - position.x);
           // TODO: update el startFrame * endFrame, also check for track changes
           setIsResizingORDragging(false);
         }}
-        onResizeStop={(e, direction, ref, delta) => {
+        onResize={(e, direction, ref, delta) => {
           if (direction === 'left') {
             handleResizeLeft(delta.width);
           }
@@ -105,8 +113,7 @@ const TimelineElementWrapper = ({
           bottom: false,
           bottomLeft: false,
           bottomRight: false,
-        }}
-      >
+        }}>
         {children}
       </Rnd>
     </>

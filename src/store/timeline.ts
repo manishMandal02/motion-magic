@@ -17,24 +17,24 @@ export interface ITimelineState {
   updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
 
-const createTimelineSlice: StateCreator<ITimelineState> = (set) => ({
+const createTimelineSlice: StateCreator<ITimelineState> = set => ({
   currentFrame: 0,
   durationInFrames: EditorDefaults.VIDEO_LENGTH,
-  setCurrentFrame: (time) => set(() => ({ currentFrame: time })),
-  setDurationInFrames: (duration) => set(() => ({ durationInFrames: duration })),
+  setCurrentFrame: time => set(() => ({ currentFrame: time })),
+  setDurationInFrames: duration => set(() => ({ durationInFrames: duration })),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
   updateTimelineTrack: (id, track) =>
     set(
       produce((draft: ITimelineState) => {
-        const trackToUpdate = draft.timelineTracks.find((track) => track.element.id === id)!;
+        const trackToUpdate = draft.timelineTracks.find(track => track.element.id === id)!;
         trackToUpdate.trackName = track.trackName || trackToUpdate.trackName;
-        trackToUpdate.element.startFrame = track.element?.startFrame
-          ? track.element.startFrame
-          : trackToUpdate.element.startFrame;
-        trackToUpdate.element.endFrame = track.element?.endFrame
-          ? track.element.endFrame
-          : trackToUpdate.element.endFrame;
+        trackToUpdate.element.startFrame =
+          track.element?.startFrame !== undefined
+            ? track.element.startFrame
+            : trackToUpdate.element.startFrame;
+        trackToUpdate.element.endFrame =
+          track.element?.endFrame !== undefined ? track.element.endFrame : trackToUpdate.element.endFrame;
       })
     ),
   // update layer of the track based on button press forward, backward, top, bottom

@@ -62,7 +62,7 @@ export default function Timeline() {
       </div>
       <ScrollSync>
         {/* parent container */}
-        <div className='h-[28vh] w-[100vw] bg-sky-600  overflow-hidden relative  flex'>
+        <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
             <div className='flex-none flex w-[3vw] left-0 z-40 bg-brand-darkPrimary  max-h-[28vh] overflow-auto CC_hideScrollBar mb-[6px]'>
@@ -101,7 +101,11 @@ export default function Timeline() {
                   style={{
                     width: totalFrameWidth + 'px',
                   }}>
-                  <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidth} />
+                  <TimelineTracks
+                    trackHeight={TIMELINE_TRACK_HEIGHT}
+                    frameWidth={(timelineWidth / durationInFrames) * scale}
+                    durationInFrames={durationInFrames}
+                  />
                 </div>
                 {/* timeline scrubber */}
                 <div

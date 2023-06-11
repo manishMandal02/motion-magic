@@ -10,8 +10,6 @@ type Props = {
 };
 
 const RenderTimestamp: FC<ListChildComponentProps<Props>> = ({ index, style, data }) => {
-  console.log('🚀 ~ file: RenderTimestamp.tsx:12 ~ index:', index);
-
   const { timestampInterval, markerWidth, frameWidth, totalMarkers } = data;
 
   // show timestamp value based on intervals

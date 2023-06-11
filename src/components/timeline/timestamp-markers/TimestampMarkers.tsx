@@ -40,8 +40,6 @@ const TimestampMarkers = ({
   const timestampWrapperRef = useRef<HTMLDivElement>(null);
 
   const handleTimestampClick: MouseEventHandler<HTMLDivElement> = ev => {
-    console.log('🚀 ~ file: TimestampMarkers.tsx:99 ~ ev:', ev);
-
     const clickX = ev.clientX - timestampWrapperRef.current!.getBoundingClientRect().left || 0;
 
     let targetFrame = Math.round(clickX / frameWidth);
@@ -60,8 +58,6 @@ const TimestampMarkers = ({
   const markerWidth = frameWidth * fps;
 
   const totalMarkers = Math.round(timelineWidth / markerWidth);
-
-  console.log('🚀 ~ file: TimestampMarkers.tsx:64 ~ totalMarkers:', totalMarkers);
 
   const timestampInterval = calculateTimestampInterval(durationInSeconds);
 
