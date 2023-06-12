@@ -20,9 +20,7 @@ const TimestampMarkers = ({
   scale,
   onTimestampClick,
 }: Props) => {
-  const durationInSeconds = useMemo(() => {
-    return framesToSeconds(durationInFrames);
-  }, [durationInFrames]);
+  const durationInSeconds = useMemo(() => framesToSeconds(durationInFrames), [durationInFrames]);
 
   const calculateTimestampInterval = (duration: number) => {
     let numMarker = 10;
@@ -74,7 +72,8 @@ const TimestampMarkers = ({
         <div
           className='w-full h-full cursor-pointer m-0 p-0 '
           onMouseDown={handleTimestampClick}
-          ref={timestampWrapperRef}>
+          ref={timestampWrapperRef}
+        >
           <List
             overscanCount={0}
             height={25}
@@ -88,7 +87,8 @@ const TimestampMarkers = ({
             }}
             layout='horizontal'
             width={frameWidth * (durationInFrames + 1)}
-            itemData={RenderTimestampProps}>
+            itemData={RenderTimestampProps}
+          >
             {RenderTimestamp}
           </List>
           <div className={`absolute bottom-0  left-0 w-[.1rem] h-3 bg-slate-500`}>

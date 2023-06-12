@@ -45,7 +45,9 @@ export default function Timeline() {
     }
   }, [scale, timelineWidth, durationInFrames]);
 
-  const totalFrameWidth = frameWidth * (durationInFrames + 1) * scale;
+  // timeline width based on total frame, 1 frame width & scale
+  const totalFrameWidthPlus1 = frameWidth * (durationInFrames + 1) * scale;
+  const totalFrameWidth = (timelineWidth / durationInFrames) * durationInFrames * scale;
 
   return (
     <>
@@ -54,6 +56,8 @@ export default function Timeline() {
         <>
           <VideoControls
             fps={fps}
+            scale={scale}
+            setScale={setScale}
             currentFrame={currentFrame}
             durationInFrames={durationInFrames}
             setCurrentFrame={setCurrentFrame}
@@ -71,24 +75,27 @@ export default function Timeline() {
           </ScrollSyncPane>
           {/* timeline wrapper - for padding and scroll */}
           <div
-            className={`flex-auto w-[97vw] relative h-full pl-1.5  items-center justify-center flex CC_hideScrollBar  overflow-hidden bg-emerald-700 `}>
+            className={`flex-auto w-[97vw] relative h-full pl-1.5  items-center justify-center flex CC_hideScrollBar  overflow-hidden bg-emerald-700 `}
+          >
             {/* timeline tracks & timestamp wrapper */}
             <ScrollSyncPane>
               <div
                 className={`bg-indigo-500 h-[28vh] overflow-scroll   min-w-full`}
-                id='timeline-tracks-wrapper'>
+                id='timeline-tracks-wrapper'
+              >
                 {/* video timestamps markers */}
                 <div
                   className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-6 `}
                   style={{
-                    width: totalFrameWidth + 'px',
-                  }}>
-                  {timelineWidth && frameWidth ? (
+                    width: totalFrameWidthPlus1 + 'px',
+                  }}
+                >
+                  {totalFrameWidthPlus1 && frameWidth ? (
                     <TimestampMarkers
                       fps={fps}
                       frameWidth={frameWidth}
                       durationInFrames={durationInFrames}
-                      timelineWidth={totalFrameWidth}
+                      timelineWidth={totalFrameWidthPlus1}
                       scale={scale}
                       onTimestampClick={setCurrentFrame}
                     />
@@ -99,8 +106,9 @@ export default function Timeline() {
                 <div
                   className='h-full'
                   style={{
-                    width: (timelineWidth / durationInFrames) * durationInFrames * scale + 'px',
-                  }}>
+                    width: totalFrameWidth + 'px',
+                  }}
+                >
                   <TimelineTracks
                     trackHeight={TIMELINE_TRACK_HEIGHT}
                     frameWidth={(timelineWidth / durationInFrames) * scale}
@@ -112,7 +120,8 @@ export default function Timeline() {
                   className='h-[27vh] fixed  bottom-[.46rem] z-[200] bg-transparent pointer-events-none'
                   style={{
                     width: totalFrameWidth + 'px',
-                  }}>
+                  }}
+                >
                   {timelineWrapperEl ? (
                     <TimelineScrubber
                       frameWidth={frameWidth}

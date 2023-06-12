@@ -1,37 +1,37 @@
+import Slider from '@/components/common/slider';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 import framesToSeconds from '@/utils/common/framesToSeconds';
+import { Dispatch, SetStateAction } from 'react';
 import { IoPlayForward, IoPlaySkipForwardSharp } from 'react-icons/io5';
 
 type Props = {
+  scale: number;
+  setScale: Dispatch<SetStateAction<number>>;
   fps: number;
   currentFrame: number;
   durationInFrames: number;
   setCurrentFrame: (frame: number) => void;
 };
 
-const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames }: Props) => {
-  const durationInSeconds = framesToSeconds(durationInFrames);
-
+const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, scale, setScale }: Props) => {
   // [frames, seconds, minutes]
   type CurrentTIme = [number, number, number];
 
   const getCurrentTime = (): CurrentTIme => {
     const FF = currentFrame % fps;
-    const seconds = (currentFrame - FF) / fps;
-    const SS = seconds % 60;
-    const minutes = (seconds - SS) / 60;
-    const MM = minutes % 60;
+    const sec = (currentFrame - FF) / fps;
+    const SS = sec % 60;
+    const min = (sec - SS) / 60;
+    const MM = min % 60;
     return [FF, SS, MM];
   };
 
   const [frames, seconds, minutes] = getCurrentTime();
 
-  const handleFitTimelineClick = () => {
-    return 0;
-  };
-
+  const handleFitTimelineClick = () => setScale(1);
   return (
-    <div className='flex items-center'>
+    <div className='flex items-center  justify-between px-8 h-full w-full'>
+      <div className='flex'></div>
       {/* controls */}
       <div className='flex text-white justify-center items-center'>
         {/* prev frame */}
@@ -81,12 +81,24 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames }:
         </button>
       </div>
       {/* zoom */}
-      <button
-        className={`border border-slate-600 ml-4 px-1.5 text-slate-400 rounded-sm `}
-        onClick={handleFitTimelineClick}
-      >
-        Fit
-      </button>
+      <div className='flex'>
+        <div className='w-24'>
+          <Slider value={scale} defaultValue={scale} max={2} min={0} step={0.1} onValueChange={setScale} />
+        </div>
+        <input
+          type='text'
+          value={scale}
+          readOnly
+          className='w-4 h-4.5 px-1 flex items-center justify-center rounded-sm ml-2.5'
+        />
+        {/* fit timeline  */}
+        <button
+          className={`border border-slate-600 ml-4 px-1.5 text-slate-400 rounded-sm `}
+          onClick={handleFitTimelineClick}
+        >
+          Fit
+        </button>
+      </div>
     </div>
   );
 };
