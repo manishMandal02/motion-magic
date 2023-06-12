@@ -20,8 +20,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
   // autoAnimate
   const autoAnimateDiv = useRef(null);
 
-  console.log('🔥🔥🔥 TimelineTracks.tsx rendered');
-
   useEffect(() => {
     autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
   }, [autoAnimateDiv]);
@@ -44,10 +42,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
       // position of el from left to position them based on their start time
       const translateX = startFrame * frameWidth;
 
-      console.log('🚀 ~ file: TimelineTracks.tsx:44 ~ renderElements ~ startFrame:', startFrame);
-
-      console.log('🚀 ~ file: TimelineTracks.tsx:45 ~ returnallTracks.map ~ translateX:', translateX);
-
       return (
         <div
           key={track.layer}
@@ -57,7 +51,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
             startFrame={startFrame}
             endFrame={endFrame}
             id={track.element.id}
-            singleFrameWidth={frameWidth}
+            frameWidth={frameWidth}
             updateElFrameDuration={updateElFrameDuration}
             width={width}
             translateX={translateX}
@@ -76,8 +70,10 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
   };
   return (
     <>
-      <div className=' relative flex flex-col flex-1  w-full ' ref={autoAnimateDiv}>
-        <div className=' relative w-full flex-1 bg-blue-400'>{renderElements()}</div>
+      <div className=' relative flex flex-col flex-1  w-full '>
+        <div className=' relative w-full flex-1 bg-blue-400' ref={autoAnimateDiv}>
+          {renderElements()}
+        </div>
       </div>
     </>
   );

@@ -1,14 +1,15 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, Ref, useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
-import ResizablePoints from '../art-board-element/ResizablePoints';
-import { IElement, IElementFrameDuration } from '@/types/elements.type';
+import { IElementFrameDuration } from '@/types/elements.type';
+import debounce from '@/utils/common/debounce';
+import throttle from '@/utils/common/throttle';
 
 type Props = {
   id: string;
   children: ReactNode;
   startFrame: number;
   endFrame: number;
-  singleFrameWidth: number;
+  frameWidth: number;
   width: number;
   height: number;
   translateX: number;
@@ -20,14 +21,12 @@ const TimelineElementWrapper = ({
   children,
   startFrame,
   endFrame,
-  singleFrameWidth,
+  frameWidth,
   updateElFrameDuration,
   width,
   height,
   translateX,
 }: Props) => {
-  console.log('🚀 ~ file: TimelineElementWrapper.tsx:30 ~ translateX:', translateX);
-
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
@@ -35,17 +34,20 @@ const TimelineElementWrapper = ({
     setPosition({ x: translateX, y: 0 });
   }, [translateX]);
 
-  const handleResizeLeft = (deltaWidth: number) => {
-    const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / singleFrameWidth));
+  //
+  const handleResizeLeft = debounce((deltaWidth: number) => {
+    const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
 
     updateElFrameDuration(id, {
       startFrame: newStartFrame,
       endFrame,
     });
-  };
+  }, 200);
 
+  //
   const handleResizeRight = (deltaWidth: number) => {
-    const newEndFrame = Math.max(startFrame, endFrame + Math.round(deltaWidth / singleFrameWidth));
+    const newEndFrame = Math.max(startFrame, endFrame + Math.round(deltaWidth / frameWidth));
+
     updateElFrameDuration(id, {
       endFrame: newEndFrame,
       startFrame,
@@ -53,13 +55,9 @@ const TimelineElementWrapper = ({
   };
 
   const handleDrag = (deltaX: number) => {
-    const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / singleFrameWidth));
-
-    console.log('🚀 ~ file: TimelineElementWrapper.tsx:56 ~ handleDrag ~ newStartFrame:', newStartFrame);
+    const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
 
     const newEndFrame = newStartFrame + (endFrame - startFrame);
-
-    console.log('🚀 ~ file: TimelineElementWrapper.tsx:58 ~ handleDrag ~ newEndFrame:', newEndFrame);
 
     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
   };
@@ -69,7 +67,7 @@ const TimelineElementWrapper = ({
       <Rnd
         size={{ width, height }}
         position={{ x: position.x, y: 5 }}
-        onDrag={(e, d) => {
+        onDrag={(_e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x);
         }}
@@ -79,25 +77,28 @@ const TimelineElementWrapper = ({
         onResizeStart={() => {
           setIsResizingORDragging(true);
         }}
-        onDragStop={(e, d) => {
-          // TODO: update el startFrame * endFrame, also check for track changes
+        onDragStop={() => {
           setIsResizingORDragging(false);
         }}
-        onResize={(e, direction, ref, delta) => {
+        onResize={throttle((_e, direction, ref: HTMLDivElement, delta) => {
+          const newWidth = ref.clientWidth;
+
           if (direction === 'left') {
-            handleResizeLeft(delta.width);
+            handleResizeLeft(newWidth - width);
           }
           if (direction === 'right') {
-            handleResizeRight(delta.width);
+            handleResizeRight(newWidth - width);
           }
+        }, 500)}
+        onResizeStop={() => {
           setIsResizingORDragging(false);
         }}
         dragAxis='x'
-        dragGrid={[singleFrameWidth, 0]}
-        resizeGrid={[singleFrameWidth, singleFrameWidth]}
+        dragGrid={[frameWidth, 0]}
+        resizeGrid={[frameWidth, frameWidth]}
         // scale={videoScale}
         className={`hover:shadow-sm rounded-md hover:shadow-slate-400 transform-gpu transition-all ${
-          !isResizingORDragging ? 'duration-[280ms]' : 'duration-0'
+          !isResizingORDragging ? 'duration-300' : 'duration-0'
         }`}
         style={{
           position: 'absolute',

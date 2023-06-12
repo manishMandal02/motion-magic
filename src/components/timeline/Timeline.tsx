@@ -99,7 +99,7 @@ export default function Timeline() {
                 <div
                   className='h-full'
                   style={{
-                    width: totalFrameWidth + 'px',
+                    width: (timelineWidth / durationInFrames) * durationInFrames * scale + 'px',
                   }}>
                   <TimelineTracks
                     trackHeight={TIMELINE_TRACK_HEIGHT}
