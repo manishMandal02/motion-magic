@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimestampMarkers from './timestamp-markers';
 import TimelineLayer from './layer';
@@ -20,9 +20,7 @@ export default function Timeline() {
   const [frameWidth, setFrameWidth] = useState(0);
   const [timelineWrapperEl, setTimelineWrapperEl] = useState<HTMLElement | null>(null);
 
-  console.log('🚀 ~ file: Timeline.tsx:18 ~ Timeline ~ frameWidth:', frameWidth);
-
-  const [isTimelineWidthFit, setIsTimelineWidthFit] = useState(false);
+  // console.log('🚀 ~ file: Timeline.tsx:18 ~ Timeline ~ frameWidth:', frameWidth);
 
   // global state
   const fps = useEditorSore(state => state.fps);
@@ -45,9 +43,26 @@ export default function Timeline() {
     }
   }, [scale, timelineWidth, durationInFrames]);
 
+  // TODO:
+  const maxFrameWidth = useMemo(() => (timelineWidth / 100) * 3, [timelineWidth]);
+  const minFrameWidth = 0.15;
+
   // timeline width based on total frame, 1 frame width & scale
-  const totalFrameWidthPlus1 = frameWidth * (durationInFrames + 1) * scale;
-  const totalFrameWidth = (timelineWidth / durationInFrames) * durationInFrames * scale;
+  const totalFrameWidthPlus1 = useMemo(
+    () => frameWidth * (durationInFrames + 1),
+    [frameWidth, durationInFrames]
+  );
+
+  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ durationInFrames:', durationInFrames);
+
+  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ frameWidth:', frameWidth);
+
+  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ totalFrameWidthPlus1:', totalFrameWidthPlus1);
+
+  const totalFrameWidth = useMemo(
+    () => (timelineWidth / durationInFrames) * durationInFrames * scale,
+    [scale, durationInFrames, timelineWidth]
+  );
 
   return (
     <>
@@ -93,10 +108,10 @@ export default function Timeline() {
                   {totalFrameWidthPlus1 && frameWidth ? (
                     <TimestampMarkers
                       fps={fps}
+                      scale={scale}
                       frameWidth={frameWidth}
                       durationInFrames={durationInFrames}
                       timelineWidth={totalFrameWidthPlus1}
-                      scale={scale}
                       onTimestampClick={setCurrentFrame}
                     />
                   ) : null}

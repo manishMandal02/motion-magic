@@ -17,23 +17,10 @@ const TimestampMarkers = ({
   frameWidth,
   timelineWidth,
   durationInFrames,
-  scale,
   onTimestampClick,
+  scale,
 }: Props) => {
-  const durationInSeconds = useMemo(() => framesToSeconds(durationInFrames), [durationInFrames]);
-
-  const calculateTimestampInterval = (duration: number) => {
-    let numMarker = 10;
-    if (duration % 12 === 0) {
-      numMarker = 12;
-    }
-
-    if (duration <= 10) {
-      numMarker = duration;
-    }
-
-    return Math.floor(duration / numMarker);
-  };
+  console.log('🚀 ~ file: TimestampMarkers.tsx:24 ~ frameWidth:', frameWidth);
 
   const timestampWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -53,9 +40,26 @@ const TimestampMarkers = ({
     onTimestampClick(Number(targetFrame));
   };
 
-  const markerWidth = frameWidth * fps;
+  //
+  const calculateTimestampInterval = (duration: number) => {
+    let numMarker = 10;
+    if (duration % 12 === 0) {
+      numMarker = 12;
+    }
 
-  const totalMarkers = Math.round(timelineWidth / markerWidth);
+    if (duration <= 10) {
+      numMarker = duration;
+    }
+
+    return Math.round(duration / numMarker);
+  };
+
+
+  const durationInSeconds = useMemo(() => framesToSeconds(durationInFrames), [durationInFrames]);
+
+  const markerWidth = useMemo(() => frameWidth * fps, [fps, frameWidth]);
+
+  const totalMarkers = useMemo(() => Math.round(timelineWidth / markerWidth), [markerWidth, timelineWidth]);
 
   const timestampInterval = calculateTimestampInterval(durationInSeconds);
 
@@ -65,6 +69,9 @@ const TimestampMarkers = ({
     frameWidth,
     totalMarkers,
   };
+
+  // to force re-render the list
+  const listKey = useMemo(() => markerWidth.toString(), [markerWidth]);
 
   return (
     <div className='relative w-full h-full m-0 p-0  '>
@@ -77,6 +84,7 @@ const TimestampMarkers = ({
           <List
             overscanCount={0}
             height={25}
+            key={listKey}
             itemCount={totalMarkers}
             itemSize={index => {
               if (index === 0) {

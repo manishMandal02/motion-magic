@@ -3,7 +3,7 @@ const EditorDefaults = {
   SCALE: 0.35,
   FPS: 25,
   IS_VIDEO_LENGTH_FIXED: true,
-  VIDEO_LENGTH: 25 * 40 * 1, //frames
+  VIDEO_LENGTH: 25 * 45 * 1, //frames
 } as const;
 
 export { EditorDefaults };

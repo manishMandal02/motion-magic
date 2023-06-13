@@ -29,7 +29,7 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
       const selectedEl = state.elements.find(el => el.id === id)!;
       return { selectedEl };
     }),
-  addElement: (elType, element) =>
+  addElement: (_elType, element) =>
     set(state => {
       const { id, type, startFrame, endFrame } = element;
       let topLayerCurrent = 0;

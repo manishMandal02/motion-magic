@@ -14,6 +14,9 @@ type Props = {
 };
 
 const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, scale, setScale }: Props) => {
+  //TODO: scale * 12.5 to get the max zoom in scale
+  console.log('🚀 ~ file: VideoControls.tsx:18 ~ VideoControls ~ scale:', scale * 12.5);
+
   // [frames, seconds, minutes]
   type CurrentTIme = [number, number, number];
 
@@ -89,7 +92,7 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, s
           type='text'
           value={scale}
           readOnly
-          className='w-4 h-4.5 px-1 flex items-center justify-center rounded-sm ml-2.5'
+          className='w-8 h-4.5 px-1 flex items-center justify-center rounded-sm ml-2.5'
         />
         {/* fit timeline  */}
         <button
