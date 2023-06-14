@@ -12,7 +12,7 @@ type Props = {
   onTimestampClick: (frame: number) => void;
 };
 
-const TimestampMarkers = ({
+const TimelineRuler = ({
   fps,
   frameWidth,
   timelineWidth,
@@ -20,7 +20,7 @@ const TimestampMarkers = ({
   onTimestampClick,
   scale,
 }: Props) => {
-  console.log('🚀 ~ file: TimestampMarkers.tsx:24 ~ frameWidth:', frameWidth);
+  console.log('🚀 ~ file: TimelineRuler.tsx:24 ~ frameWidth:', frameWidth);
 
   const timestampWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,6 @@ const TimestampMarkers = ({
     onTimestampClick(Number(targetFrame));
   };
 
-  //
   const calculateTimestampInterval = (duration: number) => {
     let numMarker = 10;
     if (duration % 12 === 0) {
@@ -53,7 +52,6 @@ const TimestampMarkers = ({
 
     return Math.round(duration / numMarker);
   };
-
 
   const durationInSeconds = useMemo(() => framesToSeconds(durationInFrames), [durationInFrames]);
 
@@ -108,4 +106,4 @@ const TimestampMarkers = ({
   );
 };
 
-export default TimestampMarkers;
+export default TimelineRuler;

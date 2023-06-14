@@ -2,13 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import TimelineTracks from './tracks';
-import TimestampMarkers from './timestamp-markers';
+import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
 import { useEditorSore } from '@/store';
 import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import TimelineScrubber from './scrubber';
 import VideoControls from './video-controls';
-import { Scrollbars } from 'react-custom-scrollbars-2';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 export const TIMELINE_PADDING_X = 12;
@@ -98,7 +97,7 @@ export default function Timeline() {
                 className={`bg-indigo-500 h-[28vh] overflow-scroll   min-w-full`}
                 id='timeline-tracks-wrapper'
               >
-                {/* video timestamps markers */}
+                {/* timeline ruler */}
                 <div
                   className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-6 `}
                   style={{
@@ -106,7 +105,7 @@ export default function Timeline() {
                   }}
                 >
                   {totalFrameWidthPlus1 && frameWidth ? (
-                    <TimestampMarkers
+                    <TimelineRuler
                       fps={fps}
                       scale={scale}
                       frameWidth={frameWidth}

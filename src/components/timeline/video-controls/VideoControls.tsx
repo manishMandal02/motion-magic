@@ -13,9 +13,11 @@ type Props = {
   setCurrentFrame: (frame: number) => void;
 };
 
+const ZOOM_IN_RATIO = 6;
+
 const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, scale, setScale }: Props) => {
   //TODO: scale * 12.5 to get the max zoom in scale
-  console.log('🚀 ~ file: VideoControls.tsx:18 ~ VideoControls ~ scale:', scale * 12.5);
+  console.log('🚀 ~ file: VideoControls.tsx:18 ~ VideoControls ~ scale:', scale);
 
   // [frames, seconds, minutes]
   type CurrentTIme = [number, number, number];
@@ -27,6 +29,14 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, s
     const min = (sec - SS) / 60;
     const MM = min % 60;
     return [FF, SS, MM];
+  };
+
+  const handleScaleChange = (scale: number) => {
+    // if (scale > 1) {
+    //   setScale(scale * ZOOM_IN_RATIO);
+    //   return;
+    // }
+    setScale(scale);
   };
 
   const [frames, seconds, minutes] = getCurrentTime();
@@ -86,7 +96,14 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, s
       {/* zoom */}
       <div className='flex'>
         <div className='w-24'>
-          <Slider value={scale} defaultValue={scale} max={2} min={0} step={0.1} onValueChange={setScale} />
+          <Slider
+            value={scale}
+            defaultValue={scale}
+            max={6}
+            min={-5}
+            step={0.2}
+            onValueChange={handleScaleChange}
+          />
         </div>
         <input
           type='text'
