@@ -2,20 +2,21 @@ import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 import { FC, memo } from 'react';
 import { ListChildComponentProps, areEqual } from 'react-window';
 
-type Props = {
-  timestampInterval: number;
-  markerWidth: number;
-  frameWidth: number;
+export type RenderTimestampProps = {
+  timeInterval: number;
   totalMarkers: number;
+  markersBetweenInterval: number;
 };
 
-const RenderTimestamp: FC<ListChildComponentProps<Props>> = ({ index, style, data }) => {
-  const { timestampInterval, markerWidth, totalMarkers } = data;
+const RenderTimestamp: FC<ListChildComponentProps<RenderTimestampProps>> = ({ index, style, data }) => {
+  const { timeInterval, markersBetweenInterval, totalMarkers } = data;
 
   // show timestamp value based on intervals
-  const timestampValue = (index + 1) % timestampInterval === 0 ? index + 1 : null;
+  const isTimestampMarker = (index + 1) % (markersBetweenInterval + 1) === 0 ? index + 1 : null;
 
   const isLastMarker = index + 1 === totalMarkers;
+
+  const timestampValue = timeInterval * ((index + 1) / (markersBetweenInterval + 1));
 
   return (
     <>
@@ -27,10 +28,10 @@ const RenderTimestamp: FC<ListChildComponentProps<Props>> = ({ index, style, dat
       >
         <div
           className={`absolute bottom-0 right-0
-        ${!timestampValue ? 'w-px h-2 bg-slate-500' : 'w-[.1rem] h-3 bg-slate-500'}
+        ${!isTimestampMarker ? 'w-[.08px] h-1.5 bg-slate-500' : 'w-[.15px] h-2.5 bg-slate-500'}
         `}
         ></div>
-        {timestampValue ? (
+        {isTimestampMarker ? (
           <div className={`absolute text-slate-400 top-[.1rem] ${!isLastMarker ? '-right-1' : 'right-0'}`}>
             {toTwoDigitsNum(timestampValue)}
           </div>
@@ -40,4 +41,4 @@ const RenderTimestamp: FC<ListChildComponentProps<Props>> = ({ index, style, dat
   );
 };
 
-export default RenderTimestamp;
+export default memo(RenderTimestamp, areEqual);

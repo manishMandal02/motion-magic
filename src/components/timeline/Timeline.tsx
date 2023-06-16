@@ -8,6 +8,8 @@ import { useEditorSore } from '@/store';
 import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import TimelineScrubber from './scrubber';
 import VideoControls from './video-controls';
+import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
+import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 export const TIMELINE_PADDING_X = 12;
@@ -17,16 +19,18 @@ export default function Timeline() {
   const [scale, setScale] = useState(1);
   const [timelineWidth, setTimelineWidth] = useState(0);
   const [frameWidth, setFrameWidth] = useState(0);
+  const [isScaleFitToTimeline, setIsScaleFitToTimeline] = useState(false);
   const [timelineWrapperEl, setTimelineWrapperEl] = useState<HTMLElement | null>(null);
-
-  // console.log('🚀 ~ file: Timeline.tsx:18 ~ Timeline ~ frameWidth:', frameWidth);
 
   // global state
   const fps = useEditorSore(state => state.fps);
   const currentFrame = useEditorSore(state => state.currentFrame);
   const setCurrentFrame = useEditorSore(state => state.setCurrentFrame);
-  const isVideoLengthFixed = useEditorSore(state => state.isVideoLengthFixed);
+  // const isVideoLengthFixed = useEditorSore(state => state.isVideoLengthFixed);
   const durationInFrames = useEditorSore(state => state.durationInFrames);
+
+  //TODO: render extra time duration (empty space) on the timeline to allow elements to be able to dragged and increase total duration --
+  //TODO: -- we can set default extra duration value (like 2.5 min) and also calculate 2x or 1.5x based on the total duration
 
   // get timeline width
   useEffect(() => {
@@ -37,41 +41,62 @@ export default function Timeline() {
   }, []);
 
   useEffect(() => {
+    const initialTimelineScale = getInitialTimelineScale(durationInFrames);
+
+    setIsScaleFitToTimeline(true);
+    setScale(initialTimelineScale);
+  }, [durationInFrames]);
+
+  // get frameWidth
+  useEffect(() => {
     if (timelineWidth) {
-      setFrameWidth((timelineWidth / (durationInFrames + 1)) * scale);
+      const frameWidthSize = getFrameWidthSize({
+        scale,
+        durationInFrames,
+        timelineWidth,
+        isScaleFitToTimeline,
+        isStartingFromZero: true,
+      });
+      setFrameWidth(frameWidthSize);
     }
-  }, [scale, timelineWidth, durationInFrames]);
+  }, [scale, timelineWidth, durationInFrames, isScaleFitToTimeline]);
 
-  // TODO:
-  const maxFrameWidth = useMemo(() => (timelineWidth / 100) * 3, [timelineWidth]);
-  const minFrameWidth = 0.15;
-
-  // timeline width based on total frame, 1 frame width & scale
+  // timeline width based on total frame (starting from zero for ruler)
   const totalFrameWidthPlus1 = useMemo(
     () => frameWidth * (durationInFrames + 1),
     [frameWidth, durationInFrames]
   );
 
-  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ durationInFrames:', durationInFrames);
-
-  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ frameWidth:', frameWidth);
-
-  // console.log('🚀 ~ file: Timeline.tsx:51 ~ Timeline ~ totalFrameWidthPlus1:', totalFrameWidthPlus1);
-
   const totalFrameWidth = useMemo(
-    () => (timelineWidth / durationInFrames) * durationInFrames * scale,
-    [scale, durationInFrames, timelineWidth]
+    () => (timelineWidth / durationInFrames) * durationInFrames,
+    [durationInFrames, timelineWidth]
   );
+
+  const frameWidthStartingFromOne = useMemo(
+    () => getFrameWidthSize({ durationInFrames, isScaleFitToTimeline, scale, timelineWidth }),
+    [durationInFrames, isScaleFitToTimeline, scale, timelineWidth]
+  );
+
+  console.log(
+    '🚀 ~ file: Timeline.tsx:80 ~ Timeline ~ frameWidthStartingFromOne:',
+    frameWidthStartingFromOne
+  );
+
+  const handleScaleChange = (newScale: number) => {
+    setScale(newScale);
+    setIsScaleFitToTimeline(false);
+  };
 
   return (
     <>
       {/* video controls & timeline options */}
-      <div className='bg-slate-500 w-full h-[4vh] flex items-center text-sm justify-center'>
+      <div className='bg-slate-500 w-full h-[4vh] flex items-center text-sm justify-center'> 
         <>
           <VideoControls
             fps={fps}
             scale={scale}
-            setScale={setScale}
+            setIsScaleFitToTimeline={setIsScaleFitToTimeline}
+            updateScale={handleScaleChange}
             currentFrame={currentFrame}
             durationInFrames={durationInFrames}
             setCurrentFrame={setCurrentFrame}
@@ -106,12 +131,11 @@ export default function Timeline() {
                 >
                   {totalFrameWidthPlus1 && frameWidth ? (
                     <TimelineRuler
-                      fps={fps}
                       scale={scale}
                       frameWidth={frameWidth}
                       durationInFrames={durationInFrames}
-                      timelineWidth={totalFrameWidthPlus1}
                       onTimestampClick={setCurrentFrame}
+                      isScaleFitToTimeline={isScaleFitToTimeline}
                     />
                   ) : null}
                 </div>
@@ -125,8 +149,7 @@ export default function Timeline() {
                 >
                   <TimelineTracks
                     trackHeight={TIMELINE_TRACK_HEIGHT}
-                    frameWidth={(timelineWidth / durationInFrames) * scale}
-                    durationInFrames={durationInFrames}
+                    frameWidth={frameWidthStartingFromOne}
                   />
                 </div>
                 {/* timeline scrubber */}

@@ -1,4 +1,4 @@
-import { EditorDefaults } from '@/constants/EditorDefaults';
+import { projectConstants } from '@/constants/projectConstants';
 import { IElement } from '@/types/elements.type';
 import type { IVideoResolution, SideMenuItems } from '@/types/settings.type';
 import type { StateCreator } from 'zustand';
@@ -19,13 +19,13 @@ const createEditorSettingsSlice: StateCreator<
   [],
   [],
   IEditorSettingsState
-> = (set) => ({
-  scale: EditorDefaults.SCALE,
-  fps: EditorDefaults.FPS,
+> = set => ({
+  scale: projectConstants.SCALE,
+  fps: projectConstants.FPS,
   isVideoLengthFixed: true,
   activeMenu: 'Settings',
-  setActiveMenu: (menu) =>
-    set((state) => {
+  setActiveMenu: menu =>
+    set(state => {
       if (state.selectedEl) {
         state.setSelectedEl(null);
       }
@@ -33,10 +33,10 @@ const createEditorSettingsSlice: StateCreator<
       return { activeMenu: menu };
     }),
   videoResolution: {
-    width: EditorDefaults.VIDEO_RESOLUTION.WIDTH,
-    height: EditorDefaults.VIDEO_RESOLUTION.HEIGHT,
+    width: projectConstants.VIDEO_RESOLUTION.WIDTH,
+    height: projectConstants.VIDEO_RESOLUTION.HEIGHT,
   },
-  setVideoResolution: (newRes) => set(() => ({ videoResolution: newRes })),
+  setVideoResolution: newRes => set(() => ({ videoResolution: newRes })),
 });
 
 export { createEditorSettingsSlice };

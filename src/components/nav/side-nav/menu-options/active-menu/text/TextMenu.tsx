@@ -4,7 +4,7 @@ import { RxText } from 'react-icons/rx';
 import { nanoid } from 'nanoid';
 
 const TextMenu = () => {
-  const addElement = useEditorSore((state) => state.addElement);
+  const addElement = useEditorSore(state => state.addElement);
 
   const addText = () => {
     addElement(IElementType.TEXT, {
@@ -12,8 +12,8 @@ const TextMenu = () => {
       fontSize: 42,
       position: { x: 10, y: 10 },
       type: IElementType.TEXT,
-      startFrame: 30,
-      endFrame: 150,
+      startFrame: 25,
+      endFrame: 125,
       id: nanoid(),
       size: {
         width: 250,

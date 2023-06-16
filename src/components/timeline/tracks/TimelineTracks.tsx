@@ -9,10 +9,9 @@ import { IElementFrameDuration } from '@/types/elements.type';
 type Props = {
   trackHeight: number;
   frameWidth: number;
-  durationInFrames: number;
 };
 
-const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) => {
+const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   const allTracks = useEditorSore(state => state.timelineTracks);
 
   const updateTimelineTrack = useEditorSore(state => state.updateTimelineTrack);
@@ -46,7 +45,8 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
         <div
           key={track.layer}
           className={` shadow-sm shadow-slate-700  relative `}
-          style={{ height: trackHeight }}>
+          style={{ height: trackHeight }}
+        >
           <TimelineElementWrapper
             startFrame={startFrame}
             endFrame={endFrame}
@@ -55,12 +55,14 @@ const TimelineTracks = ({ frameWidth, trackHeight, durationInFrames }: Props) =>
             updateElFrameDuration={updateElFrameDuration}
             width={width}
             translateX={translateX}
-            height={trackHeight - 10}>
+            height={trackHeight - 10}
+          >
             <div
               key={track.layer}
               className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center mb-2 justify-center overflow-hidden
               ${track.element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
-              `}>
+              `}
+            >
               {track.element.type}
             </div>
           </TimelineElementWrapper>

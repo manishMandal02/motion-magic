@@ -80,7 +80,7 @@ const TimelineElementWrapper = ({
         onDragStop={() => {
           setIsResizingORDragging(false);
         }}
-        onResize={throttle((_e, direction, ref: HTMLDivElement, delta) => {
+        onResize={throttle((_e, direction, ref: HTMLDivElement) => {
           const newWidth = ref.clientWidth;
 
           if (direction === 'left') {

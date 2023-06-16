@@ -1,12 +1,12 @@
 import Slider from '@/components/common/slider';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
-import framesToSeconds from '@/utils/common/framesToSeconds';
 import { Dispatch, SetStateAction } from 'react';
 import { IoPlayForward, IoPlaySkipForwardSharp } from 'react-icons/io5';
 
 type Props = {
   scale: number;
-  setScale: Dispatch<SetStateAction<number>>;
+  updateScale: (scale: number) => void;
+  setIsScaleFitToTimeline: Dispatch<SetStateAction<boolean>>;
   fps: number;
   currentFrame: number;
   durationInFrames: number;
@@ -15,9 +15,16 @@ type Props = {
 
 const ZOOM_IN_RATIO = 6;
 
-const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, scale, setScale }: Props) => {
+const VideoControls = ({
+  fps,
+  currentFrame,
+  setCurrentFrame,
+  durationInFrames,
+  scale,
+  updateScale,
+  setIsScaleFitToTimeline,
+}: Props) => {
   //TODO: scale * 12.5 to get the max zoom in scale
-  console.log('🚀 ~ file: VideoControls.tsx:18 ~ VideoControls ~ scale:', scale);
 
   // [frames, seconds, minutes]
   type CurrentTIme = [number, number, number];
@@ -31,17 +38,13 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, s
     return [FF, SS, MM];
   };
 
-  const handleScaleChange = (scale: number) => {
-    // if (scale > 1) {
-    //   setScale(scale * ZOOM_IN_RATIO);
-    //   return;
-    // }
-    setScale(scale);
+  const handleScaleChange = (newScale: number) => {
+    updateScale(newScale);
   };
 
   const [frames, seconds, minutes] = getCurrentTime();
 
-  const handleFitTimelineClick = () => setScale(1);
+  const handleFitTimelineClick = () => setIsScaleFitToTimeline(true);
   return (
     <div className='flex items-center  justify-between px-8 h-full w-full'>
       <div className='flex'></div>
@@ -99,9 +102,9 @@ const VideoControls = ({ fps, currentFrame, setCurrentFrame, durationInFrames, s
           <Slider
             value={scale}
             defaultValue={scale}
-            max={6}
-            min={-5}
-            step={0.2}
+            max={12}
+            min={1}
+            step={1}
             onValueChange={handleScaleChange}
           />
         </div>

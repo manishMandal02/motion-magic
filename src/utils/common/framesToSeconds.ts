@@ -1,7 +1,7 @@
-import { EditorDefaults } from '@/constants/EditorDefaults';
+import { projectConstants } from '@/constants/projectConstants';
 
 const framesToSeconds = (frames: number) => {
-  return Number(Number(frames / EditorDefaults.FPS).toFixed(2));
+  return Number(Number(frames / projectConstants.FPS).toFixed(2));
 };
 
 export default framesToSeconds;

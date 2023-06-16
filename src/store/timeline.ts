@@ -1,4 +1,4 @@
-import { EditorDefaults } from '@/constants/EditorDefaults';
+import { projectConstants } from '@/constants/projectConstants';
 import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
 import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
@@ -19,7 +19,7 @@ export interface ITimelineState {
 
 const createTimelineSlice: StateCreator<ITimelineState> = set => ({
   currentFrame: 0,
-  durationInFrames: EditorDefaults.VIDEO_LENGTH,
+  durationInFrames: projectConstants.VIDEO_LENGTH,
   setCurrentFrame: time => set(() => ({ currentFrame: time })),
   setDurationInFrames: duration => set(() => ({ durationInFrames: duration })),
   timelineTracks: [],
