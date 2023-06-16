@@ -1,3 +1,3 @@
-import TimelineScrubber from './TimelineScrubber';
+import TimelineSeeker from './TimelineSeeker';
 
-export default TimelineScrubber;
+export default TimelineSeeker;
