@@ -14,7 +14,8 @@ import { Rnd } from 'react-rnd';
 import throttle from '@/utils/common/throttle';
 
 const TIMELINE_TRACK_HEIGHT = 40;
-export const TIMELINE_PADDING_X = 12;
+// have to manually change scroll bar width from globals.css i if changed here
+export const TIMELINE_SCROLLBAR_WIDTH = 7;
 
 export default function Timeline() {
   //local state
@@ -41,7 +42,7 @@ export default function Timeline() {
     const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
     if (!timelineWrapper) return;
     setTimelineWrapperEl(timelineWrapper);
-    setTimelineWidth(timelineWrapper.scrollWidth - 5);
+    setTimelineWidth(timelineWrapper.scrollWidth);
   }, [scale]);
 
   useEffect(() => {
@@ -112,72 +113,59 @@ export default function Timeline() {
         {/* parent container */}
         <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
-          <ScrollSyncPane>
-            <div className='flex-none flex w-[3vw] left-0 z-40 bg-brand-darkPrimary  max-h-[28vh] overflow-auto CC_hideScrollBar mb-[6px]'>
-              <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
+          <div className='flex-none flex w-[3vw] flex-col relative  z-30 bg-brand-darkPrimary  max-h-[28vh]   '>
+            <div className='flex sticky top-0 h-[3vh] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-xs py-[0.25rem] pr-2'>
+              Layer
             </div>
-          </ScrollSyncPane>
-          {/* timeline wrapper - for padding and scroll */}
-          <div
-            className={`flex-auto w-[97vw] relative h-full pl-1.5  items-center justify-center flex CC_hideScrollBar  overflow-hidden bg-emerald-700 `}
-          >
-            {/* timeline tracks & timestamp wrapper */}
             <ScrollSyncPane>
-              <div
-                className={`bg-indigo-500 h-[28vh] overflow-scroll  relative  min-w-full`}
-                id='timeline-tracks-wrapper'
-                onScroll={throttle(ev => {
-                  setScrollPos(ev.target.scrollTop);
-                }, 150)}
-              >
-                {/* timeline ruler */}
-                <div
-                  className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-6 `}
-                  style={{
-                    width: totalFrameWidthPlus1 + 'px',
-                  }}
-                >
-                  <TimelineRuler
-                    scale={scale}
-                    frameWidth={frameWidth}
-                    durationInFrames={durationInFrames}
-                    onTimestampClick={setCurrentFrame}
-                    isScaleFitToTimeline={isScaleFitToTimeline}
-                  />
-                </div>
-
-                {/* timeline tracks */}
-                <div
-                  className='h-full'
-                  style={{
-                    width: totalFrameWidth + 'px',
-                  }}
-                >
-                  <TimelineTracks
-                    trackHeight={TIMELINE_TRACK_HEIGHT}
-                    frameWidth={frameWidthStartingFromOne}
-                  />
-                </div>
-                {/* timeline scrubber */}
-                {/* <div
-                  className='h-[27vh] fixed  bottom-[.46rem] z-[200] bg-transparent pointer-events-none'
-                  style={{
-                    width: totalFrameWidth + 'px',
-                  }}
-                > */}
-                {timelineWrapperEl ? (
-                  <TimelineSeeker
-                    timelineWidth={totalFrameWidth - frameWidth}
-                    timelineScrollTop={scrollPos}
-                    frameWidth={frameWidth}
-                    currentFrame={currentFrame}
-                    setCurrentFrame={setCurrentFrame}
-                    lastFrame={durationInFrames}
-                  />
-                ) : null}
-                {/* </div> */}
+              <div className='overflow-auto max-h-[25vh]  CC_hideScrollBar'>
+                <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
               </div>
             </ScrollSyncPane>
+          </div>
+          {/* timeline tracks & timestamp wrapper */}
+          <div
+            className={`flex-auto w-[97vw] relative h-full items-center z-auto justify-center flex flex-col  overflow-hidden bg-emerald-700 `}
+            id='timeline-tracks-wrapper'
+          >
+            {/* timeline ruler */}
+            <ScrollSyncPane>
+              <div
+                className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-[3vh] `}
+                style={{
+                  width: totalFrameWidthPlus1 + 'px',
+                }}
+              >
+                <TimelineRuler
+                  scale={scale}
+                  frameWidth={frameWidth}
+                  durationInFrames={durationInFrames}
+                  onTimestampClick={setCurrentFrame}
+                  isScaleFitToTimeline={isScaleFitToTimeline}
+                />
+              </div>
+            </ScrollSyncPane>
+            <ScrollSyncPane>
+              {/* timeline tracks */}
+              <div
+                className='h-[25vh] overflow-auto min-w-full CC_customScrollBar'
+                style={{
+                  width: totalFrameWidth + 'px',
+                }}
+              >
+                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidthStartingFromOne} />
+              </div>
+            </ScrollSyncPane>
+            <TimelineSeeker
+              timelineWidth={
+                !isScaleFitToTimeline ? totalFrameWidth - frameWidth : totalFrameWidth - frameWidth
+              }
+              timelineScrollTop={scrollPos}
+              frameWidth={frameWidth}
+              currentFrame={currentFrame}
+              setCurrentFrame={setCurrentFrame}
+              lastFrame={durationInFrames}
+            />
           </div>
         </div>
       </ScrollSync>

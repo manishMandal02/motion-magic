@@ -21,7 +21,7 @@ const RenderTimestamp: FC<ListChildComponentProps<RenderTimestampProps>> = ({ in
   return (
     <>
       <div
-        className={`relative  text-[8px] text-slate-800 m-0 p-0
+        className={`relative  text-[8px] text-slate-800 m-0 p-0 
         ${index % 2 === 0 ? 'bg-cyan-0' : 'bg-emerald-40'}
         `}
         style={{ ...style }}

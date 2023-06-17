@@ -1,3 +1,4 @@
+import throttle from '@/utils/common/throttle';
 import { Ref, forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Rnd, RndDragCallback } from 'react-rnd';
 
@@ -10,7 +11,7 @@ type Props = {
   timelineScrollTop: number;
 };
 
-const SCRUBBER_Y_AXIS_POS = 6;
+const SEEKER_Y_AXIS_POS = 6;
 
 const TimelineSeeker = ({
   currentFrame,
@@ -19,24 +20,25 @@ const TimelineSeeker = ({
   timelineWidth,
   timelineScrollTop,
 }: Props) => {
-  const [position, setPosition] = useState({ x: 0, y: SCRUBBER_Y_AXIS_POS });
+  const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
 
-    setPosition({ x: currentPlaybackPosition, y: SCRUBBER_Y_AXIS_POS });
+    setPosition({ x: currentPlaybackPosition, y: SEEKER_Y_AXIS_POS });
   }, [frameWidth, currentFrame]);
 
-  const handleDrag: RndDragCallback = useCallback(
-    (_ev, data) => {
-      const frame = Math.round(data.x / frameWidth);
+  const handleDrag: RndDragCallback = (_ev, data) => {
+    const frame = Math.round(data.x / frameWidth);
 
-      setPosition({ x: data.x, y: SCRUBBER_Y_AXIS_POS });
-      setCurrentFrame(frame);
-    },
-    [frameWidth, setCurrentFrame]
-  );
+    console.log('🚀 ~ file: TimelineSeeker.tsx:35 ~ data.x:', data.x);
+
+    console.log('🚀 ~ file: TimelineSeeker.tsx:35 ~ frame:', frame);
+
+    setPosition({ x: data.x, y: SEEKER_Y_AXIS_POS });
+    setCurrentFrame(frame);
+  };
 
   const seekerBounds = {
     top: 0,
@@ -74,7 +76,7 @@ const TimelineSeeker = ({
         style={{
           position: 'absolute',
           top: 0,
-          zIndex: 100,
+          zIndex: 150,
           pointerEvents: 'auto',
           float: 'left',
         }}
