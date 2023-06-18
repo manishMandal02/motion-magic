@@ -8,7 +8,7 @@ type Props = {
   setCurrentFrame: (frame: number) => void;
   lastFrame: number;
   timelineWidth: number;
-  timelineScrollTop: number;
+  timelineScrollLeft: number;
 };
 
 const SEEKER_Y_AXIS_POS = 6;
@@ -18,23 +18,31 @@ const TimelineSeeker = ({
   frameWidth,
   setCurrentFrame,
   timelineWidth,
-  timelineScrollTop,
+  timelineScrollLeft,
 }: Props) => {
   const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
+
+  console.log('🚀 ~ file: TimelineSeeker.tsx:25 ~ position.x:', position.x);
+
+  const [prevScrollX, setPrevScrollX] = useState(0);
+
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
 
-    setPosition({ x: currentPlaybackPosition, y: SEEKER_Y_AXIS_POS });
-  }, [frameWidth, currentFrame]);
+    setPosition({ x: currentPlaybackPosition - prevScrollX, y: SEEKER_Y_AXIS_POS });
+  }, [frameWidth, currentFrame, prevScrollX]);
 
+  console.log('🚀 ~ file: TimelineSeeker.tsx:37 ~ prevScrollX:', prevScrollX);
+
+  // handle drag seeker
   const handleDrag: RndDragCallback = (_ev, data) => {
-    const frame = Math.round(data.x / frameWidth);
+    const currentXPos = data.x + prevScrollX;
 
-    console.log('🚀 ~ file: TimelineSeeker.tsx:35 ~ data.x:', data.x);
+    const frame = Math.round(currentXPos / frameWidth);
 
-    console.log('🚀 ~ file: TimelineSeeker.tsx:35 ~ frame:', frame);
+    console.log('🚀 ~ file: TimelineSeeker.tsx:95 ~ data:', data);
 
     setPosition({ x: data.x, y: SEEKER_Y_AXIS_POS });
     setCurrentFrame(frame);
@@ -59,8 +67,11 @@ const TimelineSeeker = ({
   // update position based on timeline-container scroll
 
   useEffect(() => {
-    setPosition({ y: timelineScrollTop + 6, x: position.x });
-  }, [timelineScrollTop, position.x]);
+    setIsDragging(true);
+    setPosition(prev => ({ y: SEEKER_Y_AXIS_POS, x: prev.x - (timelineScrollLeft - prevScrollX) }));
+    setIsDragging(false);
+    setPrevScrollX(timelineScrollLeft);
+  }, [timelineScrollLeft, prevScrollX]);
 
   return (
     <>
@@ -75,7 +86,6 @@ const TimelineSeeker = ({
         enableResizing={false}
         style={{
           position: 'absolute',
-          top: 0,
           zIndex: 150,
           pointerEvents: 'auto',
           float: 'left',
@@ -83,7 +93,7 @@ const TimelineSeeker = ({
         bounds={'parent'}
         className={`${!isDragging ? 'transition-all duration-100' : ''}`}
       >
-        <div className='h-[27vh] sticky top-0  bg-transparent CC_dashedBorder w-[1.6px]'>
+        <div className='h-[28vh] sticky top-0  bg-transparent CC_dashedBorder w-[1.6px]'>
           <span className='w-2.5 h-2.5 rounded-full bg-white absolute -top-1.5 -left-1'></span>
         </div>
       </Rnd>

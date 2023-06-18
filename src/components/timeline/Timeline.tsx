@@ -93,6 +93,21 @@ export default function Timeline() {
     setIsScaleFitToTimeline(false);
   };
 
+  // set seeker left position as tracks container is scrolled
+  const scrollableAreaRef = useRef<HTMLDivElement>(null);
+
+  // useEffect(() => {
+  //   if (scrollableAreaRef) {
+  //     const scrollY = scrollableAreaRef.current?.scrollLeft;
+
+  //     console.log('🚀 ~ file: Timeline.tsx:103 ~ useEffect ~ scrollY:', scrollY);
+  //   }
+  // }, []);
+
+  const handleTracksContainerScroll: UIEventHandler<HTMLDivElement> = ev => {
+    const scrollY = ev.currentTarget.scrollLeft;
+  };
+
   return (
     <>
       {/* video controls & timeline options */}
@@ -118,49 +133,62 @@ export default function Timeline() {
               Layer
             </div>
             <ScrollSyncPane>
-              <div className='overflow-auto max-h-[25vh]  CC_hideScrollBar'>
+              <div className='overflow-y-auto overflow-x-hidden max-h-[25vh]  CC_hideScrollBar'>
                 <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
               </div>
             </ScrollSyncPane>
           </div>
           {/* timeline tracks & timestamp wrapper */}
           <div
-            className={`flex-auto w-[97vw] relative h-full items-center z-auto justify-center flex flex-col  overflow-hidden bg-emerald-700 `}
+            className={`flex-auto w-[97vw] relative h-full  flex flex-col  overflow-hidden bg-emerald-700 `}
             id='timeline-tracks-wrapper'
           >
             {/* timeline ruler */}
             <ScrollSyncPane>
-              <div
-                className={`bg-brand-darkSecondary top-0 left-0 sticky  z-50 h-[3vh] `}
-                style={{
-                  width: totalFrameWidthPlus1 + 'px',
-                }}
-              >
-                <TimelineRuler
-                  scale={scale}
-                  frameWidth={frameWidth}
-                  durationInFrames={durationInFrames}
-                  onTimestampClick={setCurrentFrame}
-                  isScaleFitToTimeline={isScaleFitToTimeline}
-                />
+              <div className='overflow-y-hidden overflow-x-auto h-[3vh] CC_hideScrollBar'>
+                <div
+                  className={`bg-brand-darkSecondary top-0 left-0 sticky  z-1 h-full `}
+                  style={{
+                    width: totalFrameWidthPlus1 + 'px',
+                  }}
+                >
+                  <TimelineRuler
+                    scale={scale}
+                    frameWidth={frameWidth}
+                    durationInFrames={durationInFrames}
+                    onTimestampClick={setCurrentFrame}
+                    isScaleFitToTimeline={isScaleFitToTimeline}
+                  />
+                </div>
               </div>
             </ScrollSyncPane>
             <ScrollSyncPane>
               {/* timeline tracks */}
               <div
-                className='h-[25vh] overflow-auto min-w-full CC_customScrollBar'
-                style={{
-                  width: totalFrameWidth + 'px',
-                }}
+                className='h-[25vh] z-auto overflow-auto min-w-full CC_customScrollBar'
+                onScroll={throttle(ev => {
+                  setScrollPos(ev.target.scrollLeft);
+                }, 150)}
               >
-                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidthStartingFromOne} />
+                <div
+                  className='h-full'
+                  style={{
+                    width: totalFrameWidth + 'px',
+                  }}
+                  ref={scrollableAreaRef}
+                >
+                  <TimelineTracks
+                    trackHeight={TIMELINE_TRACK_HEIGHT}
+                    frameWidth={frameWidthStartingFromOne}
+                  />
+                </div>
               </div>
             </ScrollSyncPane>
             <TimelineSeeker
               timelineWidth={
                 !isScaleFitToTimeline ? totalFrameWidth - frameWidth : totalFrameWidth - frameWidth
               }
-              timelineScrollTop={scrollPos}
+              timelineScrollLeft={scrollPos}
               frameWidth={frameWidth}
               currentFrame={currentFrame}
               setCurrentFrame={setCurrentFrame}
