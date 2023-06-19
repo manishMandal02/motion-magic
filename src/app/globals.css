@@ -55,11 +55,13 @@
 
 .CC_customScrollBar::-webkit-scrollbar {
   width: 7px;
+  display: block;
 }
 
 .CC_customScrollBar::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
+  display: block;
 }
 
 /* Track */
@@ -68,8 +70,7 @@
   border-radius: 0px;
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
-
-  background-color: #333333;
+  background-color: #050319;
 }
 
 /* Handle */
@@ -81,4 +82,14 @@
 /* Handle on hover */
 .CC_customScrollBar::-webkit-scrollbar-thumb:hover {
   background: #4c4c4c;
+}
+
+.CC_customScrollBar::-webkit-scrollbar-track-piece:end {
+  background: transparent;
+  margin-bottom: 0px;
+}
+
+.CC_customScrollBar::-webkit-scrollbar-track-piece:start {
+  background: transparent;
+  margin-top: 30px;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { UIEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
@@ -10,8 +10,9 @@ import TimelineSeeker from './scrubber';
 import VideoControls from './video-controls';
 import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
-import { Rnd } from 'react-rnd';
-import throttle from '@/utils/common/throttle';
+
+import throttle from 'raf-throttle';
+import { RndDragCallback } from 'react-rnd';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 // have to manually change scroll bar width from globals.css i if changed here
@@ -20,12 +21,9 @@ export const TIMELINE_SCROLLBAR_WIDTH = 7;
 export default function Timeline() {
   //local state
   const [scale, setScale] = useState(1);
-  const [timelineWidth, setTimelineWidth] = useState(0);
+  const [timelineTrackWidth, setTimelineWidth] = useState(0);
   const [frameWidth, setFrameWidth] = useState(0);
   const [isScaleFitToTimeline, setIsScaleFitToTimeline] = useState(false);
-  const [timelineWrapperEl, setTimelineWrapperEl] = useState<HTMLElement | null>(null);
-  // scroll position of timeline scroll for seeker
-  const [scrollPos, setScrollPos] = useState(0);
 
   // global state
   const fps = useEditorSore(state => state.fps);
@@ -41,7 +39,6 @@ export default function Timeline() {
   useEffect(() => {
     const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
     if (!timelineWrapper) return;
-    setTimelineWrapperEl(timelineWrapper);
     setTimelineWidth(timelineWrapper.scrollWidth);
   }, [scale]);
 
@@ -54,38 +51,55 @@ export default function Timeline() {
 
   // get frameWidth
   useEffect(() => {
-    if (timelineWidth) {
+    if (timelineTrackWidth) {
       const frameWidthSize = getFrameWidthSize({
         scale,
         durationInFrames,
-        timelineWidth,
+        timelineTrackWidth,
         isScaleFitToTimeline,
         isStartingFromZero: true,
       });
       setFrameWidth(frameWidthSize);
     }
-  }, [scale, timelineWidth, durationInFrames, isScaleFitToTimeline]);
+  }, [scale, timelineTrackWidth, durationInFrames, isScaleFitToTimeline]);
+
+  // calculate total track length in frames (more than total duration)
+
+  const EXTRA_TIME_IN_PER = 55; // percentage
+
+  const totalTrackDuration = useMemo(
+    () => durationInFrames + ((timelineTrackWidth / frameWidth) * EXTRA_TIME_IN_PER) / 100,
+    [durationInFrames, frameWidth, timelineTrackWidth]
+  );
+
+  console.log('🚀 ~ file: Timeline.tsx:78 ~ Timeline ~ totalTrackDuration:', totalTrackDuration);
 
   // timeline width based on total frame (starting from zero for ruler)
   const totalFrameWidthPlus1 = useMemo(() => {
     if (isScaleFitToTimeline) {
       return frameWidth * (durationInFrames + 1);
     } else {
-      return frameWidth * durationInFrames;
+      return frameWidth * totalTrackDuration;
     }
-  }, [frameWidth, durationInFrames, isScaleFitToTimeline]);
+  }, [frameWidth, durationInFrames, isScaleFitToTimeline, totalTrackDuration]);
 
   const totalFrameWidth = useMemo(() => {
     if (isScaleFitToTimeline) {
-      return (timelineWidth / durationInFrames) * durationInFrames;
+      return (timelineTrackWidth / durationInFrames) * durationInFrames;
     } else {
-      return frameWidth * durationInFrames;
+      return frameWidth * totalTrackDuration;
     }
-  }, [durationInFrames, frameWidth, timelineWidth, isScaleFitToTimeline]);
+  }, [durationInFrames, frameWidth, timelineTrackWidth, isScaleFitToTimeline, totalTrackDuration]);
 
   const frameWidthStartingFromOne = useMemo(
-    () => getFrameWidthSize({ durationInFrames, isScaleFitToTimeline, scale, timelineWidth }),
-    [durationInFrames, isScaleFitToTimeline, scale, timelineWidth]
+    () =>
+      getFrameWidthSize({
+        durationInFrames: totalTrackDuration,
+        isScaleFitToTimeline,
+        scale,
+        timelineTrackWidth,
+      }),
+    [isScaleFitToTimeline, scale, timelineTrackWidth, totalTrackDuration]
   );
 
   const handleScaleChange = (newScale: number) => {
@@ -93,25 +107,33 @@ export default function Timeline() {
     setIsScaleFitToTimeline(false);
   };
 
-  // set seeker left position as tracks container is scrolled
-  const scrollableAreaRef = useRef<HTMLDivElement>(null);
+  // seeker states & logics ****************
 
-  // useEffect(() => {
-  //   if (scrollableAreaRef) {
-  //     const scrollY = scrollableAreaRef.current?.scrollLeft;
+  // seeker positionX
+  const [positionX, setPositionX] = useState(0);
+  useEffect(() => {
+    const currentPlaybackPosition = frameWidth * currentFrame || 0;
 
-  //     console.log('🚀 ~ file: Timeline.tsx:103 ~ useEffect ~ scrollY:', scrollY);
-  //   }
-  // }, []);
+    setPositionX(currentPlaybackPosition);
+  }, [frameWidth, currentFrame]);
 
-  const handleTracksContainerScroll: UIEventHandler<HTMLDivElement> = ev => {
-    const scrollY = ev.currentTarget.scrollLeft;
+  // handle seeker drag
+  const handleDragSeeker: RndDragCallback = (_ev, data) => {
+    const currentXPos = data.x;
+
+    console.log('🚀 ~ file: TimelineSeeker.tsx:103 ~ data:', data);
+
+    const frame = Math.round(currentXPos / frameWidth);
+
+    setPositionX(data.x);
+    setCurrentFrame(frame);
   };
+  //*********** */
 
   return (
     <>
       {/* video controls & timeline options */}
-      <div className='bg-slate-500 w-full h-[4vh] flex items-center text-sm justify-center'>
+      <div className='bg-slate-500 w-full h-[4vh] flex items-center text-sm justify-center '>
         <>
           <VideoControls
             fps={fps}
@@ -139,15 +161,16 @@ export default function Timeline() {
             </ScrollSyncPane>
           </div>
           {/* timeline tracks & timestamp wrapper */}
-          <div
-            className={`flex-auto w-[97vw] relative h-full  flex flex-col  overflow-hidden bg-emerald-700 `}
-            id='timeline-tracks-wrapper'
-          >
-            {/* timeline ruler */}
-            <ScrollSyncPane>
-              <div className='overflow-y-hidden overflow-x-auto h-[3vh] CC_hideScrollBar'>
+          <ScrollSyncPane>
+            <div
+              className={` w-[97vw] relative h-[28vh]   flex flex-col  bg-emerald-700 `}
+              id='timeline-tracks-wrapper'
+            >
+              {/* wrapper */}
+              <div className='min-w-full h-full CC_customScrollBar overflow-scroll '>
+                {/* timeline ruler */}
                 <div
-                  className={`bg-brand-darkSecondary top-0 left-0 sticky  z-1 h-full `}
+                  className={`bg-brand-darkSecondary   top-0 left-0 sticky  h-[3vh] `}
                   style={{
                     width: totalFrameWidthPlus1 + 'px',
                   }}
@@ -155,46 +178,34 @@ export default function Timeline() {
                   <TimelineRuler
                     scale={scale}
                     frameWidth={frameWidth}
-                    durationInFrames={durationInFrames}
+                    durationInFrames={totalTrackDuration}
                     onTimestampClick={setCurrentFrame}
                     isScaleFitToTimeline={isScaleFitToTimeline}
                   />
                 </div>
-              </div>
-            </ScrollSyncPane>
-            <ScrollSyncPane>
-              {/* timeline tracks */}
-              <div
-                className='h-[25vh] z-auto overflow-auto min-w-full CC_customScrollBar'
-                onScroll={throttle(ev => {
-                  setScrollPos(ev.target.scrollLeft);
-                }, 150)}
-              >
+                {/* timeline tracks */}
+
                 <div
-                  className='h-full'
+                  className='h-[25vh] relative'
                   style={{
                     width: totalFrameWidth + 'px',
                   }}
-                  ref={scrollableAreaRef}
                 >
                   <TimelineTracks
                     trackHeight={TIMELINE_TRACK_HEIGHT}
                     frameWidth={frameWidthStartingFromOne}
                   />
                 </div>
+                <TimelineSeeker
+                  durationInFrames={durationInFrames}
+                  frameWidth={frameWidth}
+                  handleDrag={handleDragSeeker}
+                  positionX={positionX}
+                  positionY={-6}
+                />
               </div>
-            </ScrollSyncPane>
-            <TimelineSeeker
-              timelineWidth={
-                !isScaleFitToTimeline ? totalFrameWidth - frameWidth : totalFrameWidth - frameWidth
-              }
-              timelineScrollLeft={scrollPos}
-              frameWidth={frameWidth}
-              currentFrame={currentFrame}
-              setCurrentFrame={setCurrentFrame}
-              lastFrame={durationInFrames}
-            />
-          </div>
+            </div>
+          </ScrollSyncPane>
         </div>
       </ScrollSync>
     </>

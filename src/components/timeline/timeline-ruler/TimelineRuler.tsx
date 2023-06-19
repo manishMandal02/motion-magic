@@ -74,7 +74,7 @@ const TimelineRuler = ({
           >
             {RenderTimestamp}
           </VirtualizedList>
-          <div className={`absolute bottom-0  left-0 w-[.1rem] h-3 bg-slate-500`}>
+          <div className={`absolute bottom-0  left-0 w-[.15px] h-3 bg-slate-500`}>
             <div className='bottom-2.5 absolute text-slate-400 text-[8px]'>{0}</div>
           </div>
         </div>

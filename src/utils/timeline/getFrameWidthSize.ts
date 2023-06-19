@@ -3,7 +3,7 @@ import scaleLevels from '@/constants/defaultScaleLevels';
 type CalculateFrameWidthParams = {
   scale: number;
   durationInFrames: number;
-  timelineWidth: number;
+  timelineTrackWidth: number;
   isScaleFitToTimeline: boolean;
   isStartingFromZero?: boolean;
 };
@@ -18,13 +18,13 @@ const getFrameWidthSize = ({
   durationInFrames,
   isScaleFitToTimeline,
   scale,
-  timelineWidth,
+  timelineTrackWidth,
   isStartingFromZero,
 }: CalculateFrameWidthParams): number => {
   const adjustedDurationInFrames = isStartingFromZero ? durationInFrames + 1 : durationInFrames;
   // if scale is fit-to-timeline
   if (isScaleFitToTimeline) {
-    return timelineWidth / adjustedDurationInFrames;
+    return timelineTrackWidth / adjustedDurationInFrames;
   }
 
   // get scale-level info from current scale

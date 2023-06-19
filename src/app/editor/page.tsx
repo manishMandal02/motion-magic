@@ -24,7 +24,7 @@ export default function Page() {
           </div>
         </div>
         {/* bottom container */}
-        <div className='flex w-full  h-[32vh] bg-slate-900 flex-col '>
+        <div className='flex w-full  h-[32vh] bg-slate-900 flex-col  '>
           <Timeline />
         </div>
       </div>

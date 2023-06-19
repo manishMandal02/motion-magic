@@ -2,7 +2,7 @@ import { ReactNode, Ref, useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { IElementFrameDuration } from '@/types/elements.type';
 import debounce from '@/utils/common/debounce';
-import throttle from '@/utils/common/throttle';
+import throttle from 'raf-throttle';
 
 type Props = {
   id: string;
@@ -80,6 +80,7 @@ const TimelineElementWrapper = ({
         onDragStop={() => {
           setIsResizingORDragging(false);
         }}
+        // @ts-ignore
         onResize={throttle((_e, direction, ref: HTMLDivElement) => {
           const newWidth = ref.clientWidth;
 
@@ -89,7 +90,7 @@ const TimelineElementWrapper = ({
           if (direction === 'right') {
             handleResizeRight(newWidth - width);
           }
-        }, 500)}
+        })}
         onResizeStop={() => {
           setIsResizingORDragging(false);
         }}
@@ -114,7 +115,8 @@ const TimelineElementWrapper = ({
           bottom: false,
           bottomLeft: false,
           bottomRight: false,
-        }}>
+        }}
+      >
         {children}
       </Rnd>
     </>
