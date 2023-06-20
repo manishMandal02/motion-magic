@@ -1,64 +1,65 @@
-import { IElementPosition } from '@/types/elements.type';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Rnd, RndDragCallback } from 'react-rnd';
+import { useEffect, useState } from 'react';
+import Draggable, { DraggableEventHandler } from 'react-draggable';
 
 type Props = {
   frameWidth: number;
-  durationInFrames: number;
-  handleDrag: RndDragCallback;
-  positionX: number;
-  positionY: number;
+  currentFrame: number;
+  setCurrentFrame: (frame: number) => void;
+  lastFrame: number;
+  timelineTrackWidth: number;
+  timelineScrollLeft: number;
+  timelineTrackWidthVisibleArea: number;
+  mouseDragScroll: { left: number; right: number };
 };
 
-const SEEKER_Y_AXIS_POS = -6;
+const SEEKER_Y_AXIS_POS = 6;
 
-const TimelineSeeker = ({ frameWidth, durationInFrames, positionX, handleDrag, positionY }: Props) => {
+const TimelineSeeker = ({
+  currentFrame,
+  frameWidth,
+  setCurrentFrame,
+  timelineTrackWidth,
+  timelineScrollLeft,
+  mouseDragScroll,
+}: Props) => {
+  console.log('🚀 ~ file: TimelineSeeker.tsx:27 ~ mouseDragScroll:', mouseDragScroll);
 
-console.log("🚀 ~ file: TimelineSeeker.tsx:17 ~ TimelineSeeker ~ durationInFrames:", durationInFrames);
+  const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
 
-
-  console.log("🚀 ~ file: TimelineSeeker.tsx:17 ~ TimelineSeeker ~ frameWidth:", frameWidth);
-
-  // seeker bounds (max-right)
-  const seekerBounds = useMemo(
-    () => ({
-      top: 0,
-      right: durationInFrames * frameWidth,
-      bottom: 0,
-      left: 0,
-    }),
-    [durationInFrames, frameWidth]
-  );
-
-  const seekerRef = useRef<Rnd>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    if (!seekerRef) return;
-    seekerRef.current?.setState({
-      bounds: { ...seekerBounds },
-    });
-  }, [seekerBounds]);
+    const currentPlaybackPosition = frameWidth * currentFrame || 0;
+
+    setPosition({ x: currentPlaybackPosition - timelineScrollLeft, y: SEEKER_Y_AXIS_POS });
+  }, [frameWidth, currentFrame, timelineScrollLeft]);
+
+  // handle drag seeker
+  const handleDrag: DraggableEventHandler = (_ev, data) => {
+    const currentXPos = data.x + timelineScrollLeft;
+
+    const frame = Math.round(currentXPos / frameWidth);
+
+    setPosition({ x: data.x, y: SEEKER_Y_AXIS_POS });
+    setCurrentFrame(frame);
+  };
 
   return (
     <>
-      <Rnd
-        position={{ x: positionX, y: positionY }}
+      <Draggable
+        position={{ x: position.x, y: SEEKER_Y_AXIS_POS }}
         onDrag={handleDrag}
-        ref={seekerRef}
-        dragAxis='x'
-        dragGrid={[frameWidth, 0]}
-        enableResizing={false}
-        style={{
-          position: 'absolute',
-          zIndex: 150,
-          pointerEvents: 'auto',
-        }}
-        bounds={'parent'}
+        onStart={() => setIsDragging(true)}
+        onStop={() => setIsDragging(false)}
+        axis='x'
+        scale={1}
+        grid={[frameWidth, 0]}
+        bounds={{ top: 0, right: timelineTrackWidth - timelineScrollLeft, bottom: 0, left: 0 }}
       >
-        <div className='h-[28vh]  top-0  bg-transparent CC_dashedBorder w-[1.6px]'>
+        <div className='h-[28vh] absolute top-0 cursor-move bg-transparent CC_dashedBorder w-[1.6px]'>
           <span className='w-2.5 h-2.5 rounded-full bg-white absolute -top-1.5 -left-1'></span>
         </div>
-      </Rnd>
+      </Draggable>
     </>
   );
 };

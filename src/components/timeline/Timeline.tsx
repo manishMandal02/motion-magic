@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
@@ -10,9 +10,7 @@ import TimelineSeeker from './scrubber';
 import VideoControls from './video-controls';
 import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
-
 import throttle from 'raf-throttle';
-import { RndDragCallback } from 'react-rnd';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 // have to manually change scroll bar width from globals.css i if changed here
@@ -24,6 +22,7 @@ export default function Timeline() {
   const [timelineTrackWidth, setTimelineWidth] = useState(0);
   const [frameWidth, setFrameWidth] = useState(0);
   const [isScaleFitToTimeline, setIsScaleFitToTimeline] = useState(false);
+  // scroll position of timeline scroll for seeker
 
   // global state
   const fps = useEditorSore(state => state.fps);
@@ -65,14 +64,12 @@ export default function Timeline() {
 
   // calculate total track length in frames (more than total duration)
 
-  const EXTRA_TIME_IN_PER = 55; // percentage
+  const EXTRA_TIME_IN_PER = 50; // percentage
 
   const totalTrackDuration = useMemo(
     () => durationInFrames + ((timelineTrackWidth / frameWidth) * EXTRA_TIME_IN_PER) / 100,
     [durationInFrames, frameWidth, timelineTrackWidth]
   );
-
-  console.log('🚀 ~ file: Timeline.tsx:78 ~ Timeline ~ totalTrackDuration:', totalTrackDuration);
 
   // timeline width based on total frame (starting from zero for ruler)
   const totalFrameWidthPlus1 = useMemo(() => {
@@ -107,28 +104,62 @@ export default function Timeline() {
     setIsScaleFitToTimeline(false);
   };
 
-  // seeker states & logics ****************
+  // scroll position of timeline scroll for seeker
+  const [scrollPos, setScrollPos] = useState(0);
+  const [mouseDragScroll, setMouseDragScroll] = useState({
+    left: 0,
+    right: 0,
+  });
 
-  // seeker positionX
-  const [positionX, setPositionX] = useState(0);
-  useEffect(() => {
-    const currentPlaybackPosition = frameWidth * currentFrame || 0;
+  const scrollingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    setPositionX(currentPlaybackPosition);
-  }, [frameWidth, currentFrame]);
+  const handleMouseDown: MouseEventHandler<HTMLDivElement> = ev => {
+    const trackContainer = document.getElementById('timeline-tracks-wrapper');
+    if (!trackContainer) return;
 
-  // handle seeker drag
-  const handleDragSeeker: RndDragCallback = (_ev, data) => {
-    const currentXPos = data.x;
+    const containerWidth = trackContainer.clientWidth;
+    // left area where users can press mouse to scroll
+    const leftPressScrollArea = ev.clientX < (timelineTrackWidth * 2) / 100;
+    // right scroll area
+    const rightPressScrollArea = ev.clientX > containerWidth;
 
-    console.log('🚀 ~ file: TimelineSeeker.tsx:103 ~ data:', data);
+    // clear interval
+    clearInterval(scrollingTimerRef.current!);
+    scrollingTimerRef.current = null;
 
-    const frame = Math.round(currentXPos / frameWidth);
+    if (leftPressScrollArea) {
+      scrollingTimerRef.current = setInterval(() => {
+        setMouseDragScroll(prev => ({ ...prev, left: ev.clientX }));
+        trackContainer.scrollLeft = trackContainer.scrollLeft - 20;
+      }, 50);
+    }
 
-    setPositionX(data.x);
-    setCurrentFrame(frame);
+    if (rightPressScrollArea) {
+      scrollingTimerRef.current = setInterval(() => {
+        setMouseDragScroll(prev => ({ ...prev, right: ev.clientX }));
+        trackContainer.scrollLeft = trackContainer.scrollLeft + 20;
+      }, 50);
+    }
+
+    if (!leftPressScrollArea && !rightPressScrollArea) {
+      // clear interval
+      clearInterval(scrollingTimerRef.current!);
+      scrollingTimerRef.current = null;
+      setMouseDragScroll({
+        left: 0,
+        right: 0,
+      });
+    }
   };
-  //*********** */
+  const handleMouseUp: MouseEventHandler<HTMLDivElement> = ev => {
+    // clear interval
+    clearInterval(scrollingTimerRef.current!);
+    scrollingTimerRef.current = null;
+    setMouseDragScroll({
+      left: 0,
+      right: 0,
+    });
+  };
 
   return (
     <>
@@ -161,16 +192,14 @@ export default function Timeline() {
             </ScrollSyncPane>
           </div>
           {/* timeline tracks & timestamp wrapper */}
-          <ScrollSyncPane>
-            <div
-              className={` w-[97vw] relative h-[28vh]   flex flex-col  bg-emerald-700 `}
-              id='timeline-tracks-wrapper'
-            >
-              {/* wrapper */}
-              <div className='min-w-full h-full CC_customScrollBar overflow-scroll '>
-                {/* timeline ruler */}
+          <div
+            className={`flex-auto w-[97vw] relative h-[28vh]   flex flex-col   overflow-hidden bg-emerald-700 `}
+          >
+            {/* timeline ruler */}
+            <ScrollSyncPane>
+              <div className='overflow-y-hidden overflow-x-auto  h-[3vh] CC_hideScrollBar'>
                 <div
-                  className={`bg-brand-darkSecondary   top-0 left-0 sticky  h-[3vh] `}
+                  className={`bg-brand-darkSecondary min-w-full h-full `}
                   style={{
                     width: totalFrameWidthPlus1 + 'px',
                   }}
@@ -183,10 +212,22 @@ export default function Timeline() {
                     isScaleFitToTimeline={isScaleFitToTimeline}
                   />
                 </div>
-                {/* timeline tracks */}
+              </div>
+            </ScrollSyncPane>
+            <ScrollSyncPane>
+              {/* timeline tracks */}
 
+              <div
+                className='h-[25vh] overflow-auto min-w-full '
+                id='timeline-tracks-wrapper'
+                onScroll={throttle(ev => {
+                  setScrollPos(ev.target.scrollLeft);
+                })}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+              >
                 <div
-                  className='h-[25vh] relative'
+                  className='h-full'
                   style={{
                     width: totalFrameWidth + 'px',
                   }}
@@ -196,16 +237,19 @@ export default function Timeline() {
                     frameWidth={frameWidthStartingFromOne}
                   />
                 </div>
-                <TimelineSeeker
-                  durationInFrames={durationInFrames}
-                  frameWidth={frameWidth}
-                  handleDrag={handleDragSeeker}
-                  positionX={positionX}
-                  positionY={-6}
-                />
               </div>
-            </div>
-          </ScrollSyncPane>
+            </ScrollSyncPane>
+            <TimelineSeeker
+              timelineTrackWidth={durationInFrames * frameWidth}
+              timelineTrackWidthVisibleArea={timelineTrackWidth}
+              frameWidth={frameWidth}
+              currentFrame={currentFrame}
+              setCurrentFrame={setCurrentFrame}
+              lastFrame={durationInFrames}
+              timelineScrollLeft={scrollPos}
+              mouseDragScroll={mouseDragScroll}
+            />
+          </div>
         </div>
       </ScrollSync>
     </>

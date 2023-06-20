@@ -57,10 +57,10 @@ const TimelineRuler = ({
     : frameWidth * durationInFrames;
 
   return (
-    <div className='relative w-full h-full m-0 p-0  '>
+    <div className='relative w-full h-full '>
       {markerWidth && totalMarkers ? (
         <div
-          className='w-full h-full cursor-pointer m-0 p-0 select-none'
+          className='w-full h-full cursor-pointer select-none'
           onMouseDown={handleTimestampClick}
           ref={timelineRulerWrapperRef}
         >
