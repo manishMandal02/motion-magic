@@ -104,63 +104,6 @@ export default function Timeline() {
     setIsScaleFitToTimeline(false);
   };
 
-  // scroll position of timeline scroll for seeker
-  const [scrollPos, setScrollPos] = useState(0);
-  const [mouseDragScroll, setMouseDragScroll] = useState({
-    left: 0,
-    right: 0,
-  });
-
-  const scrollingTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseDown: MouseEventHandler<HTMLDivElement> = ev => {
-    const trackContainer = document.getElementById('timeline-tracks-wrapper');
-    if (!trackContainer) return;
-
-    const containerWidth = trackContainer.clientWidth;
-    // left area where users can press mouse to scroll
-    const leftPressScrollArea = ev.clientX < (timelineTrackWidth * 2) / 100;
-    // right scroll area
-    const rightPressScrollArea = ev.clientX > containerWidth;
-
-    // clear interval
-    clearInterval(scrollingTimerRef.current!);
-    scrollingTimerRef.current = null;
-
-    if (leftPressScrollArea) {
-      scrollingTimerRef.current = setInterval(() => {
-        setMouseDragScroll(prev => ({ ...prev, left: ev.clientX }));
-        trackContainer.scrollLeft = trackContainer.scrollLeft - 20;
-      }, 50);
-    }
-
-    if (rightPressScrollArea) {
-      scrollingTimerRef.current = setInterval(() => {
-        setMouseDragScroll(prev => ({ ...prev, right: ev.clientX }));
-        trackContainer.scrollLeft = trackContainer.scrollLeft + 20;
-      }, 50);
-    }
-
-    if (!leftPressScrollArea && !rightPressScrollArea) {
-      // clear interval
-      clearInterval(scrollingTimerRef.current!);
-      scrollingTimerRef.current = null;
-      setMouseDragScroll({
-        left: 0,
-        right: 0,
-      });
-    }
-  };
-  const handleMouseUp: MouseEventHandler<HTMLDivElement> = ev => {
-    // clear interval
-    clearInterval(scrollingTimerRef.current!);
-    scrollingTimerRef.current = null;
-    setMouseDragScroll({
-      left: 0,
-      right: 0,
-    });
-  };
-
   return (
     <>
       {/* video controls & timeline options */}
@@ -192,64 +135,44 @@ export default function Timeline() {
             </ScrollSyncPane>
           </div>
           {/* timeline tracks & timestamp wrapper */}
-          <div
-            className={`flex-auto w-[97vw] relative h-[28vh]   flex flex-col   overflow-hidden bg-emerald-700 `}
-          >
-            {/* timeline ruler */}
-            <ScrollSyncPane>
-              <div className='overflow-y-hidden overflow-x-auto  h-[3vh] CC_hideScrollBar'>
-                <div
-                  className={`bg-brand-darkSecondary min-w-full h-full `}
-                  style={{
-                    width: totalFrameWidthPlus1 + 'px',
-                  }}
-                >
-                  <TimelineRuler
-                    scale={scale}
-                    frameWidth={frameWidth}
-                    durationInFrames={totalTrackDuration}
-                    onTimestampClick={setCurrentFrame}
-                    isScaleFitToTimeline={isScaleFitToTimeline}
-                  />
-                </div>
+          <ScrollSyncPane>
+            <div
+              className={`flex-auto w-[97vw] relative h-[28vh]   flex flex-col   overflow-scroll bg-emerald-700 `}
+              id='timeline-tracks-wrapper'
+            >
+              {/* timeline ruler */}
+              <div
+                className='overflow-hidden min-w-full h-[3vh] bg-brand-darkSecondary   '
+                style={{
+                  width: totalFrameWidthPlus1 + 'px',
+                }}
+              >
+                <TimelineRuler
+                  scale={scale}
+                  frameWidth={frameWidth}
+                  durationInFrames={totalTrackDuration}
+                  onTimestampClick={setCurrentFrame}
+                  isScaleFitToTimeline={isScaleFitToTimeline}
+                />
               </div>
-            </ScrollSyncPane>
-            <ScrollSyncPane>
               {/* timeline tracks */}
 
               <div
-                className='h-[25vh] overflow-auto min-w-full '
-                id='timeline-tracks-wrapper'
-                onScroll={throttle(ev => {
-                  setScrollPos(ev.target.scrollLeft);
-                })}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
+                className='h-[25vh] min-w-full overflow-hidden w-full'
+                style={{
+                  width: totalFrameWidth + 'px',
+                }}
               >
-                <div
-                  className='h-full'
-                  style={{
-                    width: totalFrameWidth + 'px',
-                  }}
-                >
-                  <TimelineTracks
-                    trackHeight={TIMELINE_TRACK_HEIGHT}
-                    frameWidth={frameWidthStartingFromOne}
-                  />
-                </div>
+                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidthStartingFromOne} />
               </div>
-            </ScrollSyncPane>
-            <TimelineSeeker
-              timelineTrackWidth={durationInFrames * frameWidth}
-              timelineTrackWidthVisibleArea={timelineTrackWidth}
-              frameWidth={frameWidth}
-              currentFrame={currentFrame}
-              setCurrentFrame={setCurrentFrame}
-              lastFrame={durationInFrames}
-              timelineScrollLeft={scrollPos}
-              mouseDragScroll={mouseDragScroll}
-            />
-          </div>
+              <TimelineSeeker
+                timelineTrackWidth={durationInFrames * frameWidth}
+                frameWidth={frameWidth}
+                currentFrame={currentFrame}
+                setCurrentFrame={setCurrentFrame}
+              />
+            </div>
+          </ScrollSyncPane>
         </div>
       </ScrollSync>
     </>

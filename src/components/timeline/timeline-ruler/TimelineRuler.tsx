@@ -52,9 +52,7 @@ const TimelineRuler = ({
   };
 
   // total ruler width based on weather the scale if fit-to-timeline or not
-  const rulerWidth = isScaleFitToTimeline
-    ? frameWidth * (durationInFrames + 1)
-    : frameWidth * durationInFrames;
+  const rulerWidth = frameWidth * durationInFrames;
 
   return (
     <div className='relative w-full h-full '>
