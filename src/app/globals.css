@@ -55,12 +55,14 @@
 
 .CC_customScrollBar::-webkit-scrollbar {
   width: 7px;
+  height: 5px;
   display: block;
 }
 
 .CC_customScrollBar::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
+  height: 5px;
   display: block;
 }
 

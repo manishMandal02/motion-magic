@@ -5,12 +5,17 @@ type Props = {
   frameWidth: number;
   currentFrame: number;
   setCurrentFrame: (frame: number) => void;
-  timelineTrackWidth: number;
+  timelineTrackScrollableWidth: number;
 };
 
 const SEEKER_Y_AXIS_POS = 6;
 
-const TimelineSeeker = ({ currentFrame, frameWidth, setCurrentFrame, timelineTrackWidth }: Props) => {
+const TimelineSeeker = ({
+  currentFrame,
+  frameWidth,
+  setCurrentFrame,
+  timelineTrackScrollableWidth,
+}: Props) => {
   const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
 
   const [isDragging, setIsDragging] = useState(false);
@@ -59,7 +64,7 @@ const TimelineSeeker = ({ currentFrame, frameWidth, setCurrentFrame, timelineTra
         axis='x'
         scale={1}
         grid={[frameWidth, 0]}
-        bounds={{ top: 0, right: timelineTrackWidth, bottom: 0, left: 0 }}
+        bounds={{ top: 0, right: timelineTrackScrollableWidth, bottom: 0, left: 0 }}
       >
         <div className='h-[28vh] absolute top-0 '>
           <div className=' h-full cursor-move bg-transparent CC_dashedBorder w-[1.6px]'>

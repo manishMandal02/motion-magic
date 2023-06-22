@@ -10,8 +10,6 @@ type CalculateFrameWidthParams = {
 
 // marker size (for most)
 const Default_MARKER_SIZE = 35;
-//increase frame-width size if two scales have same time interval
-const INCREASE_FRAME_WIDTH_BY_PERCENT = 8;
 
 // get frameWidth based on scale
 const getFrameWidthSize = ({
@@ -24,7 +22,7 @@ const getFrameWidthSize = ({
   const adjustedDurationInFrames = isStartingFromZero ? durationInFrames + 1 : durationInFrames;
   // if scale is fit-to-timeline
   if (isScaleFitToTimeline) {
-    return timelineTrackWidth / adjustedDurationInFrames;
+    return (timelineTrackWidth - 10) / adjustedDurationInFrames;
   }
 
   // get scale-level info from current scale

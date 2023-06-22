@@ -7,6 +7,7 @@ import VirtualizedList from './virtualized-list';
 type Props = {
   frameWidth: number;
   durationInFrames: number;
+  totalTrackDuration: number;
   scale: number;
   isScaleFitToTimeline: boolean;
   onTimestampClick: (frame: number) => void;
@@ -18,13 +19,15 @@ const TimelineRuler = ({
   durationInFrames,
   onTimestampClick,
   scale,
+  totalTrackDuration,
 }: Props) => {
-  const { markerWidth, markersBetweenInterval, timeInterval, totalMarkers } = useTimelineRuler({
-    durationInFrames,
-    frameWidth,
-    isScaleFitToTimeline,
-    scale,
-  });
+  const { markerWidth, markersBetweenInterval, timeInterval, totalMarkers, framePerMarker } =
+    useTimelineRuler({
+      totalTrackDuration,
+      frameWidth,
+      isScaleFitToTimeline,
+      scale,
+    });
 
   // used in calculating the where the user clicked on the ruler
   const timelineRulerWrapperRef = useRef<HTMLDivElement>(null);
@@ -38,27 +41,32 @@ const TimelineRuler = ({
       targetFrame = 0;
     }
 
-    if (targetFrame > durationInFrames) {
+    if (targetFrame > (durationInFrames || totalTrackDuration)) {
       targetFrame = durationInFrames;
     }
 
     onTimestampClick(Number(targetFrame));
   };
 
+  // last marker (as per video length)
+  const lastActiveMarker = durationInFrames / framePerMarker;
+
   const RenderTimestampProps = {
     timeInterval,
     markersBetweenInterval,
     totalMarkers,
+    framePerMarker,
+    lastActiveMarker,
   };
 
   // total ruler width based on weather the scale if fit-to-timeline or not
-  const rulerWidth = frameWidth * durationInFrames;
+  const rulerWidth = frameWidth * totalTrackDuration;
 
   return (
     <div className='relative w-full h-full '>
       {markerWidth && totalMarkers ? (
         <div
-          className='w-full h-full cursor-pointer select-none'
+          className='w-full h-full cursor-pointer select-none '
           onMouseDown={handleTimestampClick}
           ref={timelineRulerWrapperRef}
         >
