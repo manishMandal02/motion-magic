@@ -1,4 +1,4 @@
-import { MouseEventHandler, useRef } from 'react';
+import { MouseEventHandler, memo, useRef } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import RenderTimestamp from './marker';
 import useTimelineRuler from './useTimelineRuler';
@@ -59,11 +59,13 @@ const TimelineRuler = ({
     lastActiveMarker,
   };
 
+  console.log('🚀 ~ file: TimelineRuler.tsx:62 ~ totalMarkers:', totalMarkers);
+
   // total ruler width based on weather the scale if fit-to-timeline or not
   const rulerWidth = frameWidth * totalTrackDuration;
 
   return (
-    <div className='relative w-full h-full '>
+    <div className='relative'>
       {markerWidth && totalMarkers ? (
         <div
           className='w-full h-full cursor-pointer select-none '
@@ -89,4 +91,4 @@ const TimelineRuler = ({
   );
 };
 
-export default TimelineRuler;
+export default memo(TimelineRuler);

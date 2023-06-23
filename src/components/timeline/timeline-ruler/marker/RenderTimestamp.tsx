@@ -24,10 +24,19 @@ const RenderTimestamp: FC<ListChildComponentProps<RenderTimestampProps>> = ({ in
   return (
     <>
       <div
-        className={`relative  text-[8px] text-slate-800 m-0 p-0
+        className={`relative  text-[8px] text-slate-800 m-0 p-0 flex items-center justify-center
         ${index % 2 === 0 ? 'bg-cyan-40' : 'bg-emerald-40'}
         `}
-        style={{ ...style }}
+        style={{
+          ...style,
+          ...(isNonActiveMarker
+            ? {
+                backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
+                backgroundSize: '100%',
+                backgroundPosition: 'center',
+              }
+            : {}),
+        }}
       >
         <div
           className={`absolute bottom-0 right-0
@@ -35,23 +44,11 @@ const RenderTimestamp: FC<ListChildComponentProps<RenderTimestampProps>> = ({ in
         `}
         ></div>
         {isTimestampMarker ? (
-          <div className={`absolute text-slate-400 top-[.1rem] ${!isLastMarker ? '-right-1' : 'right-0'}`}>
+          <div
+            className={`absolute text-slate-400 top-[.1rem] z-10 ${!isLastMarker ? '-right-1' : 'right-0'}`}
+          >
             {toTwoDigitsNum(timestampValue)}
           </div>
-        ) : null}
-        {isNonActiveMarker ? (
-          <>
-            <div
-              className={`text-slate-500 opacity-80 font-extralight scale-[2.8] rounded-md overflow-hidden absolute rotate-[125deg]  top-[.36rem] left-3 `}
-            >
-              |
-            </div>
-            <div
-              className={`text-slate-500 opacity-80 font-extralight scale-[2.9] rounded-md overflow-hidden absolute rotate-[60deg]  top-[.36rem] left-3 `}
-            >
-              |
-            </div>
-          </>
         ) : null}
       </div>
     </>

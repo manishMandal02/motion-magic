@@ -17,7 +17,7 @@ const useTimelineRuler = ({ frameWidth, scale, totalTrackDuration }: UseTimeline
 
   const markerWidth = framePerMarker * frameWidth;
 
-  const totalMarkers = totalTrackDuration / framePerMarker;
+  const totalMarkers = Math.floor(totalTrackDuration / framePerMarker);
 
   return {
     markerWidth,

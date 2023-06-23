@@ -33,6 +33,9 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
           track.element?.startFrame !== undefined
             ? track.element.startFrame
             : trackToUpdate.element.startFrame;
+        if (trackToUpdate.element.endFrame > draft.durationInFrames) {
+          draft.durationInFrames = trackToUpdate.element.endFrame;
+        }
         trackToUpdate.element.endFrame =
           track.element?.endFrame !== undefined ? track.element.endFrame : trackToUpdate.element.endFrame;
       })

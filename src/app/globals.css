@@ -46,21 +46,21 @@
   scrollbar-width: none; /* Firefox */
 }
 
-.CC_dashedBorder {
+.CC_dashedBorder_Seeker {
   background-image: linear-gradient(#e6e6e6 33%, #e1e1e100 0%);
   background-position: right;
   background-size: 20px 10px;
   background-repeat: repeat-y;
 }
 
-.CC_customScrollBar::-webkit-scrollbar {
-  width: 7px;
-  height: 5px;
-  display: block;
+.CC_dashedBorder_Ref_Lines {
+  background-image: linear-gradient(#9d5c4b 33%, #e1e1e100 0%);
+  background-position: right;
+  background-size: 6px 10px;
+  background-repeat: repeat-y;
 }
 
 .CC_customScrollBar::-webkit-scrollbar {
-  -webkit-appearance: none;
   width: 7px;
   height: 5px;
   display: block;

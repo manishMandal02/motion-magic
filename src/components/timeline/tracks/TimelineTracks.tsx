@@ -1,10 +1,25 @@
-import autoAnimate from '@formkit/auto-animate';
-import { useEffect, useRef } from 'react';
+import { memo, useState } from 'react';
 import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
 
 import { useEditorSore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
+import { nanoid } from 'nanoid';
+
+type HandleResizeProps = {
+  id: string;
+  deltaWidth: number;
+  startFrame: number;
+  endFrame: number;
+  direction: 'left' | 'right';
+  layer: number;
+};
+
+type ReferenceLine = {
+  frame: number;
+  startTrack: number;
+  endTrack: number;
+};
 
 type Props = {
   trackHeight: number;
@@ -12,16 +27,14 @@ type Props = {
 };
 
 const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
+  // global state
   const allTracks = useEditorSore(state => state.timelineTracks);
 
   const updateTimelineTrack = useEditorSore(state => state.updateTimelineTrack);
 
-  // autoAnimate
-  const autoAnimateDiv = useRef(null);
-
-  useEffect(() => {
-    autoAnimateDiv.current && autoAnimate(autoAnimateDiv.current);
-  }, [autoAnimateDiv]);
+  // local state
+  // array of frames to show reference lines
+  const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTimelineTrack(id, {
@@ -32,10 +45,147 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
     });
   };
 
+  // handle resize track elements
+  const handleResize = ({ id, deltaWidth, endFrame, startFrame, direction, layer }: HandleResizeProps) => {
+    // frames to show reference lines
+    const overlappingFrames: ReferenceLine[] = [];
+    if (direction === 'left') {
+      const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
+
+      updateElFrameDuration(id, {
+        startFrame: newStartFrame,
+        endFrame,
+      });
+
+      // checking if other elements have same start frame
+      allTracks.forEach(track => {
+        if (
+          (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) &&
+          id !== track.element.id
+        ) {
+          overlappingFrames.push({
+            frame: newStartFrame,
+            startTrack: layer < track.layer ? layer : track.layer,
+            endTrack: layer > track.layer ? layer : track.layer,
+          });
+        }
+      });
+
+      const isOverlapping = overlappingFrames.length > 0;
+      if (isOverlapping) {
+        setShowRefLines([
+          overlappingFrames.reduce((acc, curr) => {
+            if (acc.frame === curr.frame) {
+              return {
+                ...acc,
+                startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
+                endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
+              };
+            }
+            return acc;
+          }),
+        ]);
+      } else {
+        setShowRefLines([]);
+      }
+    }
+    if (direction === 'right') {
+      const newEndFrame = Math.max(startFrame, endFrame + Math.round(deltaWidth / frameWidth));
+
+      updateElFrameDuration(id, {
+        endFrame: newEndFrame,
+        startFrame,
+      });
+      //
+      // checking if other elements have same end frame
+      allTracks.forEach(track => {
+        if (
+          (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) &&
+          id !== track.element.id
+        ) {
+          overlappingFrames.push({
+            frame: newEndFrame,
+            startTrack: layer < track.layer ? layer : track.layer,
+            endTrack: layer > track.layer ? layer : track.layer,
+          });
+        }
+      });
+
+      const isOverlapping = overlappingFrames.length > 0;
+      if (isOverlapping) {
+        setShowRefLines([
+          overlappingFrames.reduce((acc, curr) => {
+            if (acc.frame === curr.frame) {
+              return {
+                ...acc,
+                startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
+                endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
+              };
+            }
+            return curr;
+          }),
+        ]);
+      } else {
+        setShowRefLines([]);
+      }
+    }
+  };
+
+  // handle drag elements
+  const handleDrag = (id: string, deltaX: number, startFrame: number, endFrame: number, layer: number) => {
+    // frames to show reference lines
+    const overlappingFrames: ReferenceLine[] = [];
+
+    const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
+
+    const newEndFrame = newStartFrame + (endFrame - startFrame);
+
+    updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
+    //
+    // checking if other elements have same end frame
+    allTracks.forEach(track => {
+      if (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) {
+        overlappingFrames.push({
+          frame: newStartFrame,
+          startTrack: layer < track.layer ? layer : track.layer,
+          endTrack: layer > track.layer ? layer : track.layer,
+        });
+      }
+      if (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) {
+        overlappingFrames.push({
+          frame: newEndFrame,
+          startTrack: layer < track.layer ? layer : track.layer,
+          endTrack: layer > track.layer ? layer : track.layer,
+        });
+      }
+    });
+
+    const isOverlapping = overlappingFrames.length > 0;
+
+    if (isOverlapping) {
+      setShowRefLines([
+        ...overlappingFrames.reduce((acc: ReferenceLine[], curr) => {
+          const existingFrame = acc.find(obj => obj.frame === curr.frame);
+
+          if (existingFrame) {
+            existingFrame.startTrack = Math.min(existingFrame.startTrack, curr.startTrack);
+            existingFrame.endTrack = Math.max(existingFrame.endTrack, curr.endTrack);
+          } else {
+            acc.push(curr);
+          }
+
+          return acc;
+        }, []),
+      ]);
+    } else {
+      setShowRefLines([]);
+    }
+  };
+
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
     return allTracks.map(track => {
-      const { startFrame, endFrame } = track.element;
+      const { startFrame, endFrame, id } = track.element;
       // width of el based on their start & end time
       const width = (endFrame - startFrame) * frameWidth;
       // position of el from left to position them based on their start time
@@ -44,18 +194,22 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
       return (
         <div
           key={track.layer}
-          className={` shadow-sm shadow-slate-700  relative `}
+          className={` shadow-sm shadow-slate-900  relative `}
           style={{ height: trackHeight }}
         >
           <TimelineElementWrapper
-            startFrame={startFrame}
-            endFrame={endFrame}
-            id={track.element.id}
             frameWidth={frameWidth}
             updateElFrameDuration={updateElFrameDuration}
             width={width}
             translateX={translateX}
             height={trackHeight - 10}
+            handleDrag={deltaX => handleDrag(id, deltaX, startFrame, endFrame, track.layer)}
+            handleResize={(deltaWidth, direction) =>
+              handleResize({ id, deltaWidth, direction, startFrame, endFrame, layer: track.layer })
+            }
+            resetRefLines={() => {
+              setShowRefLines([]);
+            }}
           >
             <div
               key={track.layer}
@@ -73,12 +227,34 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   return (
     <>
       <div className=' relative flex flex-col flex-1  w-full '>
-        <div className=' relative w-full flex-1 bg-blue-400' ref={autoAnimateDiv}>
-          {renderElements()}
-        </div>
+        <div className=' relative w-full flex-1 bg-slate-800'>{renderElements()}</div>
+
+        {showRefLines.length > 0
+          ? showRefLines.map(line => {
+              console.log('🚀 ~ file: TimelineTracks.tsx:235 ~ TimelineTracks ~ line:', line);
+
+              const linePosY = line.startTrack * trackHeight;
+
+              console.log('🚀 ~ file: TimelineTracks.tsx:238 ~ TimelineTracks ~ linePosY:', linePosY);
+
+              const lineHeight = (line.endTrack - line.startTrack) * trackHeight;
+
+              console.log('🚀 ~ file: TimelineTracks.tsx:237 ~ TimelineTracks ~ lineHeight:', lineHeight);
+
+              return (
+                <hr
+                  className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                  key={nanoid()}
+                  style={{
+                    transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
+                  }}
+                />
+              );
+            })
+          : null}
       </div>
     </>
   );
 };
 
-export default TimelineTracks;
+export default memo(TimelineTracks);

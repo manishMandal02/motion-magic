@@ -1,6 +1,6 @@
 'use client';
 
-import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import { MouseEventHandler, UIEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
@@ -35,7 +35,7 @@ export default function Timeline() {
   useEffect(() => {
     const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
     if (!timelineWrapper) return;
-    setTimelineTrackScrollableWidth(timelineWrapper.scrollWidth - 10);
+    setTimelineTrackScrollableWidth(timelineWrapper.scrollWidth);
     setTimelineTrackVisibleWidth(timelineWrapper.clientWidth);
   }, [scale]);
 
@@ -82,6 +82,13 @@ export default function Timeline() {
     setIsScaleFitToTimeline(false);
   };
 
+  // seeker should stick to top when the timeline container is scrolled
+  const [scrollYPos, setScrollYPos] = useState(0);
+
+  const handleTimelineScroll: UIEventHandler<HTMLDivElement> = ev => {
+    setScrollYPos(ev.currentTarget.scrollTop);
+  };
+
   return (
     <>
       {/* video controls & timeline options */}
@@ -117,6 +124,7 @@ export default function Timeline() {
             <div
               className={`flex-auto w-[97vw] relative h-[28vh]   flex flex-col   overflow-scroll bg-emerald-700 `}
               id='timeline-tracks-wrapper'
+              onScroll={handleTimelineScroll}
             >
               {/* timeline ruler */}
               <div
@@ -149,6 +157,7 @@ export default function Timeline() {
                 frameWidth={frameWidth}
                 currentFrame={currentFrame}
                 setCurrentFrame={setCurrentFrame}
+                scrollYPos={scrollYPos}
               />
             </div>
           </ScrollSyncPane>

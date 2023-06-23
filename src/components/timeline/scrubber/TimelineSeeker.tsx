@@ -6,6 +6,7 @@ type Props = {
   currentFrame: number;
   setCurrentFrame: (frame: number) => void;
   timelineTrackScrollableWidth: number;
+  scrollYPos: number;
 };
 
 const SEEKER_Y_AXIS_POS = 6;
@@ -15,59 +16,44 @@ const TimelineSeeker = ({
   frameWidth,
   setCurrentFrame,
   timelineTrackScrollableWidth,
+  scrollYPos,
 }: Props) => {
-  const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
+  console.log('🚀 ~ file: TimelineSeeker.tsx:22 ~ scrollYPos:', scrollYPos);
 
-  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
 
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
 
-    setPosition({ x: currentPlaybackPosition, y: SEEKER_Y_AXIS_POS });
-  }, [frameWidth, currentFrame]);
-
-  const scrollingTimerRef = useRef<NodeJS.Timeout | null>(null);
+    setPosition({ x: currentPlaybackPosition, y: scrollYPos + SEEKER_Y_AXIS_POS });
+  }, [frameWidth, currentFrame, scrollYPos]);
 
   // handle drag seeker
-  const handleDrag: DraggableEventHandler = (ev, data) => {
+  const handleDrag: DraggableEventHandler = (_ev, data) => {
     const currentXPos = data.x;
 
     const frame = Math.round(currentXPos / frameWidth);
 
-    setPosition({ x: data.x, y: SEEKER_Y_AXIS_POS });
+    setPosition({ x: data.x, y: scrollYPos + SEEKER_Y_AXIS_POS });
     setCurrentFrame(frame);
-
-    const seeker = ev.target!;
-
-    const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
-    if (!timelineWrapper) return;
   };
+
+  useEffect(() => {
+    setPosition(prev => ({ ...prev, y: scrollYPos + SEEKER_Y_AXIS_POS }));
+  }, [scrollYPos]);
 
   return (
     <>
       <Draggable
-        position={{ x: position.x, y: SEEKER_Y_AXIS_POS }}
+        position={{ x: position.x, y: position.y }}
         onDrag={handleDrag}
-        onStart={(ev, data) => {
-          setIsDragging(true);
-
-          // clear interval
-          clearInterval(scrollingTimerRef.current!);
-          scrollingTimerRef.current = null;
-        }}
-        onStop={() => {
-          setIsDragging(false);
-          // clear interval
-          clearInterval(scrollingTimerRef.current!);
-          scrollingTimerRef.current = null;
-        }}
         axis='x'
         scale={1}
         grid={[frameWidth, 0]}
         bounds={{ top: 0, right: timelineTrackScrollableWidth, bottom: 0, left: 0 }}
       >
-        <div className='h-[28vh] absolute top-0 '>
-          <div className=' h-full cursor-move bg-transparent CC_dashedBorder w-[1.6px]'>
+        <div className='h-[28vh] absolute top-0 z-50 '>
+          <div className=' h-full cursor-move bg-transparent CC_dashedBorder_Seeker w-[1.6px]'>
             <span className='w-2.5 h-2.5 rounded-full bg-white absolute -top-1.5 -left-1'></span>
           </div>
         </div>
