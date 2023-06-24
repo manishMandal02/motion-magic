@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
 
 import { useEditorSore } from '@/store';
@@ -36,6 +36,8 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
 
+  console.log('🚀 ~ file: TimelineTracks.tsx:40 ~ TimelineTracks ~ showRefLines:', showRefLines);
+
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTimelineTrack(id, {
       element: {
@@ -44,6 +46,17 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
       },
     });
   };
+
+  // get current frame without causing a full component re-rendering
+  const currentFrameRef = useRef<number>(0);
+
+  const handleUpdateCurrentFrame = useCallback(
+    (frame: number) => {
+      currentFrameRef.current = frame;
+      // Perform any additional logic if needed
+    },
+    [currentFrameRef]
+  );
 
   // handle resize track elements
   const handleResize = ({ id, deltaWidth, endFrame, startFrame, direction, layer }: HandleResizeProps) => {
@@ -70,21 +83,33 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
           });
         }
       });
+      // get current frame
+      const seekerEl = document.getElementById('timeline-seeker');
+      if (!seekerEl) return;
+      const currentFrame = Number(seekerEl.getAttribute('data-current-frame')) || 0;
+
+      // check if it's current frame (seeker)
+      const isOverlappingWithSeeker = newStartFrame === currentFrame;
 
       const isOverlapping = overlappingFrames.length > 0;
-      if (isOverlapping) {
-        setShowRefLines([
-          overlappingFrames.reduce((acc, curr) => {
-            if (acc.frame === curr.frame) {
-              return {
-                ...acc,
-                startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
-                endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
-              };
-            }
-            return acc;
-          }),
-        ]);
+      if (isOverlapping || isOverlappingWithSeeker) {
+        if (isOverlapping) {
+          setShowRefLines([
+            overlappingFrames.reduce((acc, curr) => {
+              if (acc.frame === curr.frame) {
+                return {
+                  ...acc,
+                  startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
+                  endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
+                };
+              }
+              return acc;
+            }),
+          ]);
+        }
+        if (isOverlappingWithSeeker) {
+          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: allTracks.length + 1 }]);
+        }
       } else {
         setShowRefLines([]);
       }
@@ -111,20 +136,33 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
         }
       });
 
+      // get current frame
+      const seekerEl = document.getElementById('timeline-seeker');
+      if (!seekerEl) return;
+      const currentFrame = Number(seekerEl.getAttribute('data-current-frame')) || 0;
+
+      // check if it's current frame (seeker)
+      const isOverlappingWithSeeker = newEndFrame === currentFrame;
+
       const isOverlapping = overlappingFrames.length > 0;
-      if (isOverlapping) {
-        setShowRefLines([
-          overlappingFrames.reduce((acc, curr) => {
-            if (acc.frame === curr.frame) {
-              return {
-                ...acc,
-                startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
-                endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
-              };
-            }
-            return curr;
-          }),
-        ]);
+      if (isOverlapping || isOverlappingWithSeeker) {
+        if (isOverlapping) {
+          setShowRefLines([
+            overlappingFrames.reduce((acc, curr) => {
+              if (acc.frame === curr.frame) {
+                return {
+                  ...acc,
+                  startTrack: acc.startTrack < curr.startTrack ? acc.startTrack : curr.startTrack,
+                  endTrack: acc.endTrack > curr.endTrack ? acc.endTrack : curr.endTrack,
+                };
+              }
+              return curr;
+            }),
+          ]);
+        }
+        if (isOverlappingWithSeeker) {
+          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: allTracks.length + 1 }]);
+        }
       } else {
         setShowRefLines([]);
       }
@@ -160,23 +198,36 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
       }
     });
 
+    // get current frame
+    const seekerEl = document.getElementById('timeline-seeker');
+    if (!seekerEl) return;
+    const currentFrame = Number(seekerEl.getAttribute('data-current-frame')) || 0;
+
+    // check if it's current frame (seeker)
+    const isOverlappingWithSeeker = newStartFrame === currentFrame || newEndFrame === currentFrame;
+
     const isOverlapping = overlappingFrames.length > 0;
 
-    if (isOverlapping) {
-      setShowRefLines([
-        ...overlappingFrames.reduce((acc: ReferenceLine[], curr) => {
-          const existingFrame = acc.find(obj => obj.frame === curr.frame);
+    if (isOverlapping || isOverlappingWithSeeker) {
+      if (isOverlapping) {
+        setShowRefLines([
+          ...overlappingFrames.reduce((acc: ReferenceLine[], curr) => {
+            const existingFrame = acc.find(obj => obj.frame === curr.frame);
 
-          if (existingFrame) {
-            existingFrame.startTrack = Math.min(existingFrame.startTrack, curr.startTrack);
-            existingFrame.endTrack = Math.max(existingFrame.endTrack, curr.endTrack);
-          } else {
-            acc.push(curr);
-          }
+            if (existingFrame) {
+              existingFrame.startTrack = Math.min(existingFrame.startTrack, curr.startTrack);
+              existingFrame.endTrack = Math.max(existingFrame.endTrack, curr.endTrack);
+            } else {
+              acc.push(curr);
+            }
 
-          return acc;
-        }, []),
-      ]);
+            return acc;
+          }, []),
+        ]);
+      }
+      if (isOverlappingWithSeeker) {
+        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: allTracks.length + 1 }]);
+      }
     } else {
       setShowRefLines([]);
     }
@@ -231,22 +282,20 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
 
         {showRefLines.length > 0
           ? showRefLines.map(line => {
-              console.log('🚀 ~ file: TimelineTracks.tsx:235 ~ TimelineTracks ~ line:', line);
+              // minus 4 so that they don't touch the border of the other tracks
+              const linePosY = (line.startTrack - 1) * trackHeight + 8;
 
-              const linePosY = line.startTrack * trackHeight;
-
-              console.log('🚀 ~ file: TimelineTracks.tsx:238 ~ TimelineTracks ~ linePosY:', linePosY);
-
-              const lineHeight = (line.endTrack - line.startTrack) * trackHeight;
-
-              console.log('🚀 ~ file: TimelineTracks.tsx:237 ~ TimelineTracks ~ lineHeight:', lineHeight);
+              // minus 4 so that they don't touch the border of the other tracks
+              const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 10;
 
               return (
                 <hr
-                  className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                  className={`w-[2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                  // className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
                   key={nanoid()}
                   style={{
                     transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
+                    height: lineHeight + 'px',
                   }}
                 />
               );

@@ -18,8 +18,6 @@ const TimelineSeeker = ({
   timelineTrackScrollableWidth,
   scrollYPos,
 }: Props) => {
-  console.log('🚀 ~ file: TimelineSeeker.tsx:22 ~ scrollYPos:', scrollYPos);
-
   const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
 
   useEffect(() => {
@@ -52,7 +50,7 @@ const TimelineSeeker = ({
         grid={[frameWidth, 0]}
         bounds={{ top: 0, right: timelineTrackScrollableWidth, bottom: 0, left: 0 }}
       >
-        <div className='h-[28vh] absolute top-0 z-50 '>
+        <div className='h-[28vh] absolute top-0 z-50 ' id='timeline-seeker' data-current-frame={currentFrame}>
           <div className=' h-full cursor-move bg-transparent CC_dashedBorder_Seeker w-[1.6px]'>
             <span className='w-2.5 h-2.5 rounded-full bg-white absolute -top-1.5 -left-1'></span>
           </div>

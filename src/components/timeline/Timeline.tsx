@@ -10,7 +10,6 @@ import TimelineSeeker from './scrubber';
 import VideoControls from './video-controls';
 import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
-import throttle from 'raf-throttle';
 
 const TIMELINE_TRACK_HEIGHT = 40;
 // have to manually change scroll bar width from globals.css i if changed here
