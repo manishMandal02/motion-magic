@@ -15,6 +15,8 @@ type Props = {
   resetRefLines: () => void;
 };
 
+const ELEMENT_POS_Y = 10;
+
 const TimelineElementWrapper = ({
   children,
   frameWidth,
@@ -25,18 +27,18 @@ const TimelineElementWrapper = ({
   handleResize,
   resetRefLines,
 }: Props) => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: ELEMENT_POS_Y });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
   useEffect(() => {
-    setPosition({ x: translateX, y: 0 });
+    setPosition({ x: translateX, y: ELEMENT_POS_Y });
   }, [translateX]);
 
   return (
     <>
       <Rnd
         size={{ width, height }}
-        position={{ x: position.x, y: 5 }}
+        position={{ x: position.x, y: ELEMENT_POS_Y }}
         onDrag={throttle((_e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x);

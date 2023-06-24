@@ -11,7 +11,7 @@ import VideoControls from './video-controls';
 import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
 
-const TIMELINE_TRACK_HEIGHT = 40;
+const TIMELINE_TRACK_HEIGHT = 60;
 // have to manually change scroll bar width from globals.css i if changed here
 export const TIMELINE_SCROLLBAR_WIDTH = 7;
 
@@ -109,7 +109,7 @@ export default function Timeline() {
         <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
-            <div className='flex-none flex w-[3vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar  '>
+            <div className='flex-none flex w-[3vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[5px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar  '>
               <div className='flex sticky top-0 h-[3vh] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-xs py-[0.25rem] pr-2'>
                 Layer
               </div>
@@ -144,7 +144,7 @@ export default function Timeline() {
               {/* timeline tracks */}
 
               <div
-                className='h-[25vh] min-w-full w-full '
+                className='h-[25vh] min-w-full max-h-[25vh] '
                 style={{
                   width: totalFrameWidth + 'px',
                 }}

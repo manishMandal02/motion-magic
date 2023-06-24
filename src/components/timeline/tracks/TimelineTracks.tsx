@@ -5,6 +5,9 @@ import { useEditorSore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
 import { nanoid } from 'nanoid';
+import Tooltip from '@/components/common/tooltip';
+import framesToSeconds from '@/utils/common/framesToSeconds';
+import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 
 type HandleResizeProps = {
   id: string;
@@ -36,6 +39,11 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
 
+  const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>({
+    elementId: '',
+    startFrame: 0,
+    endFrame: 0,
+  });
   console.log('🚀 ~ file: TimelineTracks.tsx:40 ~ TimelineTracks ~ showRefLines:', showRefLines);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
@@ -69,6 +77,11 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
         startFrame: newStartFrame,
         endFrame,
       });
+
+      // show tooltip for new start frame
+      showTooltipRef.current.elementId = id;
+      showTooltipRef.current.startFrame = newStartFrame;
+      showTooltipRef.current.endFrame = 0;
 
       // checking if other elements have same start frame
       allTracks.forEach(track => {
@@ -121,7 +134,12 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
         endFrame: newEndFrame,
         startFrame,
       });
-      //
+
+      // show tooltip for new end frame
+      showTooltipRef.current.elementId = id;
+      showTooltipRef.current.endFrame = newEndFrame;
+      showTooltipRef.current.startFrame = 0;
+
       // checking if other elements have same end frame
       allTracks.forEach(track => {
         if (
@@ -179,7 +197,12 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
     const newEndFrame = newStartFrame + (endFrame - startFrame);
 
     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
-    //
+
+    // show tooltip for new start & end frame
+    showTooltipRef.current.elementId = id;
+    showTooltipRef.current.startFrame = newStartFrame;
+    showTooltipRef.current.endFrame = newEndFrame;
+
     // checking if other elements have same end frame
     allTracks.forEach(track => {
       if (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) {
@@ -245,7 +268,7 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
       return (
         <div
           key={track.layer}
-          className={` shadow-sm shadow-slate-900  relative `}
+          className={` shadow-sm shadow-slate-900  relative flex `}
           style={{ height: trackHeight }}
         >
           <TimelineElementWrapper
@@ -253,23 +276,36 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
             updateElFrameDuration={updateElFrameDuration}
             width={width}
             translateX={translateX}
-            height={trackHeight - 10}
+            height={trackHeight - 20}
             handleDrag={deltaX => handleDrag(id, deltaX, startFrame, endFrame, track.layer)}
             handleResize={(deltaWidth, direction) =>
               handleResize({ id, deltaWidth, direction, startFrame, endFrame, layer: track.layer })
             }
             resetRefLines={() => {
               setShowRefLines([]);
+              showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
             }}
           >
-            <div
-              key={track.layer}
-              className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center mb-2 justify-center overflow-hidden
+            <Tooltip
+              content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
+              position={'top-left'}
+              isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.startFrame}
+            >
+              <Tooltip
+                content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
+                position={'top-right'}
+                isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.endFrame}
+              >
+                <div
+                  key={track.layer}
+                  className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
               ${track.element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
               `}
-            >
-              {track.element.type}
-            </div>
+                >
+                  {track.element.type}
+                </div>
+              </Tooltip>
+            </Tooltip>
           </TimelineElementWrapper>
         </div>
       );
@@ -277,31 +313,29 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   };
   return (
     <>
-      <div className=' relative flex flex-col flex-1  w-full '>
-        <div className=' relative w-full flex-1 bg-slate-800'>{renderElements()}</div>
+      <div className=' relative min-w-full h-full bg-slate-800 max-h-[25vh]'>{renderElements()}</div>
 
-        {showRefLines.length > 0
-          ? showRefLines.map(line => {
-              // minus 4 so that they don't touch the border of the other tracks
-              const linePosY = (line.startTrack - 1) * trackHeight + 8;
+      {showRefLines.length > 0
+        ? showRefLines.map(line => {
+            // minus 4 so that they don't touch the border of the other tracks
+            const linePosY = (line.startTrack - 1) * trackHeight + 8;
 
-              // minus 4 so that they don't touch the border of the other tracks
-              const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 10;
+            // minus 4 so that they don't touch the border of the other tracks
+            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 10;
 
-              return (
-                <hr
-                  className={`w-[2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
-                  // className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
-                  key={nanoid()}
-                  style={{
-                    transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
-                    height: lineHeight + 'px',
-                  }}
-                />
-              );
-            })
-          : null}
-      </div>
+            return (
+              <hr
+                className={`w-[2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                // className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                key={nanoid()}
+                style={{
+                  transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
+                  height: lineHeight + 'px',
+                }}
+              />
+            );
+          })
+        : null}
     </>
   );
 };
