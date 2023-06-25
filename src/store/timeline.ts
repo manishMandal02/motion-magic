@@ -15,6 +15,7 @@ export interface ITimelineState {
   timelineTracks: ITimelineTrack[];
   isScaleFitToTimeline: boolean;
   setIsScaleFitToTimeline: (value: boolean) => void;
+  updateTrackElFrame: (id: string, startFrame: number, endFrame: number) => void;
   updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
   updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
@@ -31,21 +32,33 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
     }),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
+  updateTrackElFrame: (id, startFrame, endFrame) =>
+    set(
+      produce((draft: ITimelineState) => {
+        const trackElToUpdate = draft.timelineTracks.find(track => track.element.id === id)!;
+        trackElToUpdate.element.startFrame = startFrame;
+        // update total duration if element is moved beyond current limits
+        if (trackElToUpdate.element.endFrame > draft.durationInFrames) {
+          draft.durationInFrames = trackElToUpdate.element.endFrame;
+          draft.isScaleFitToTimeline = false;
+        }
+        trackElToUpdate.element.endFrame = endFrame;
+      })
+    ),
   updateTimelineTrack: (id, track) =>
     set(
       produce((draft: ITimelineState) => {
-        const trackToUpdate = draft.timelineTracks.find(track => track.element.id === id)!;
-        trackToUpdate.trackName = track.trackName || trackToUpdate.trackName;
-        trackToUpdate.element.startFrame =
-          track.element?.startFrame !== undefined
-            ? track.element.startFrame
-            : trackToUpdate.element.startFrame;
-        if (trackToUpdate.element.endFrame > draft.durationInFrames) {
-          draft.durationInFrames = trackToUpdate.element.endFrame;
-          draft.isScaleFitToTimeline = false;
+        const trackToUpdate = draft.timelineTracks.find(track => track.id === id)!;
+        // update track name TODO: check if this necessary or just it on per el basis
+        trackToUpdate.trackName = track.trackName ?? trackToUpdate.trackName;
+        // update lock status
+        if (typeof track.isLocked !== 'undefined') {
+          trackToUpdate.isLocked = track.isLocked;
         }
-        trackToUpdate.element.endFrame =
-          track.element?.endFrame !== undefined ? track.element.endFrame : trackToUpdate.element.endFrame;
+        // update hidden status
+        if (typeof track.isHidden !== 'undefined') {
+          trackToUpdate.isHidden = track.isHidden;
+        }
       })
     ),
   // update layer of the track based on button press forward, backward, top, bottom

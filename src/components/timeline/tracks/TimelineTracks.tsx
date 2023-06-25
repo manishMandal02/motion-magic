@@ -34,7 +34,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // global state
   const allTracks = useEditorSore(state => state.timelineTracks);
 
-  const updateTimelineTrack = useEditorSore(state => state.updateTimelineTrack);
+  const updateTrackElFrame = useEditorSore(state => state.updateTrackElFrame);
 
   // local state
   // array of frames to show reference lines
@@ -48,12 +48,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   console.log('🚀 ~ file: TimelineTracks.tsx:40 ~ TimelineTracks ~ showRefLines:', showRefLines);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
-    updateTimelineTrack(id, {
-      element: {
-        startFrame: duration.startFrame,
-        endFrame: duration.endFrame,
-      },
-    });
+    updateTrackElFrame(id, duration.startFrame, duration.endFrame);
   };
 
   // handle resize track elements
@@ -264,10 +259,21 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       return (
         <div
           key={track.layer}
-          className={` shadow-sm last:shadow-none shadow-slate-900  relative flex `}
+          className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
+          ${track.isHidden && 'opacity-60'}
+          ${track.isLocked && 'opacity-60'}
+          `}
           style={{
             width: timelineWidth + 'px',
             height: trackHeight,
+            // checkered bg
+            ...(track.isHidden
+              ? {
+                  backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
+                  backgroundSize: '100%',
+                  backgroundPosition: 'center',
+                }
+              : {}),
           }}
         >
           <TimelineElementWrapper
@@ -284,6 +290,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
               setShowRefLines([]);
               showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
             }}
+            isLocked={track.isLocked || track.isHidden}
           >
             <Tooltip
               content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
@@ -299,6 +306,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
                   key={track.layer}
                   className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
               ${track.element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
+              ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
               `}
                 >
                   {track.element.type}
@@ -313,7 +321,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   return (
     <>
       <div
-        className='relative min-w-full h-full bg-slate-800'
+        className='relative min-w-full h-full bg-brand-darkPrimary'
         style={{
           height: trackHeight * allTracks.length,
           width: timelineWidth + 'px',

@@ -92,7 +92,7 @@ export default function Timeline() {
       isScaleFitToTimeline: true,
     });
     setFrameWidth(frameWidthSize);
-    
+
     // scroll to start
     const tracksContainer = document.getElementById('timeline-tracks-wrapper');
     if (!tracksContainer) return;
@@ -128,9 +128,9 @@ export default function Timeline() {
         <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
-            <div className='flex-none flex w-[3vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar '>
+            <div className='flex-none flex w-[6vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar '>
               {/*  */}
-              <div className='flex sticky top-0 h-[3vh] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-xs py-[0.25rem] pr-2'>
+              <div className='flex sticky top-0 h-[3vh] min-h-[3vh] w-[6vw] min-w-[6vw] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-[10px] py-[0.25rem] pr-2'>
                 Layer
               </div>
               <div>
@@ -141,7 +141,7 @@ export default function Timeline() {
           {/* timeline tracks & timestamp wrapper */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[97vw] relative h-[28vh]  flex flex-col scroll-smooth  overflow-scroll bg-emerald-700 `}
+              className={`flex-auto w-[94vw] relative h-[28vh]  flex flex-col scroll-smooth  overflow-scroll bg-emerald-700 `}
               id='timeline-tracks-wrapper'
               ref={tracksScrollableContainer}
               onScroll={handleScroll}

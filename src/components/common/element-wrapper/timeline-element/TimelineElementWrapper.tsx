@@ -9,6 +9,7 @@ type Props = {
   width: number;
   height: number;
   translateX: number;
+  isLocked: boolean;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
   handleDrag: (deltaX: number) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
@@ -22,6 +23,7 @@ const TimelineElementWrapper = ({
   frameWidth,
   width,
   height,
+  isLocked,
   translateX,
   handleDrag,
   handleResize,
@@ -72,20 +74,19 @@ const TimelineElementWrapper = ({
         dragGrid={[frameWidth, 0]}
         // resizeGrid={[frameWidth, frameWidth]}
         // scale={videoScale}
-        className={`hover:shadow-sm  rounded-md hover:shadow-slate-400 transform-gpu  ${
-          !isResizingORDragging ? 'duration-300' : 'duration-0'
-        }`}
+        className={`rounded-md transform-gpu  ${!isResizingORDragging ? 'duration-300' : 'duration-0'}`}
         style={{
           position: 'absolute',
           // transform: `translate(${translateXValue}px, 0px)`,
         }}
+        disableDragging={isLocked}
         bounds={'parent'}
         enableResizing={{
           top: false,
           topLeft: false,
           topRight: false,
-          right: true,
-          left: true,
+          right: !isLocked ? true : false,
+          left: !isLocked ? true : false,
           bottom: false,
           bottomLeft: false,
           bottomRight: false,

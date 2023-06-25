@@ -40,6 +40,8 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
         id: nanoid(),
         trackName: type,
         layer: topLayerCurrent + 1,
+        isHidden: false,
+        isLocked: false,
         element: {
           id,
           type,
