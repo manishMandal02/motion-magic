@@ -84,7 +84,7 @@ export default function Timeline() {
   // seeker should stick to top when the timeline container is scrolled
   const [scrollYPos, setScrollYPos] = useState(0);
 
-  const handleTimelineScroll: UIEventHandler<HTMLDivElement> = ev => {
+  const handleScroll: UIEventHandler<HTMLDivElement> = ev => {
     setScrollYPos(ev.currentTarget.scrollTop);
   };
 
@@ -104,16 +104,23 @@ export default function Timeline() {
           />
         </>
       </div>
-      <ScrollSync horizontal={false} vertical={true}>
+      <ScrollSync
+        horizontal={false}
+        vertical={true}
+        onSync={el => {
+          // scrollPosYRef.current = el.scrollTop;
+        }}
+      >
         {/* parent container */}
         <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
-            <div className='flex-none flex w-[3vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[5px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar  '>
+            <div className='flex-none flex w-[3vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar '>
+              {/*  */}
               <div className='flex sticky top-0 h-[3vh] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-xs py-[0.25rem] pr-2'>
                 Layer
               </div>
-              <div className=''>
+              <div>
                 <TimelineLayer trackHeight={TIMELINE_TRACK_HEIGHT} />
               </div>
             </div>
@@ -121,9 +128,9 @@ export default function Timeline() {
           {/* timeline tracks & timestamp wrapper */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[97vw] relative h-[28vh]   flex flex-col   overflow-scroll bg-emerald-700 `}
+              className={`flex-auto w-[97vw] relative h-[28vh]  flex flex-col   overflow-scroll bg-emerald-700 `}
               id='timeline-tracks-wrapper'
-              onScroll={handleTimelineScroll}
+              onScroll={handleScroll}
             >
               {/* timeline ruler */}
               <div
@@ -144,12 +151,13 @@ export default function Timeline() {
               {/* timeline tracks */}
 
               <div
-                className='h-[25vh] min-w-full max-h-[25vh] '
-                style={{
-                  width: totalFrameWidth + 'px',
-                }}
+              
               >
-                <TimelineTracks trackHeight={TIMELINE_TRACK_HEIGHT} frameWidth={frameWidth} />
+                <TimelineTracks
+                  trackHeight={TIMELINE_TRACK_HEIGHT}
+                  frameWidth={frameWidth}
+                  timelineWidth={totalFrameWidth}
+                />
               </div>
               <TimelineSeeker
                 timelineTrackScrollableWidth={durationInFrames * frameWidth}
@@ -157,6 +165,7 @@ export default function Timeline() {
                 currentFrame={currentFrame}
                 setCurrentFrame={setCurrentFrame}
                 scrollYPos={scrollYPos}
+                trackHeight={TIMELINE_TRACK_HEIGHT}
               />
             </div>
           </ScrollSyncPane>

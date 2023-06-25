@@ -72,7 +72,7 @@ const TimelineElementWrapper = ({
         dragGrid={[frameWidth, 0]}
         // resizeGrid={[frameWidth, frameWidth]}
         // scale={videoScale}
-        className={`hover:shadow-sm rounded-md hover:shadow-slate-400 transform-gpu  ${
+        className={`hover:shadow-sm  rounded-md hover:shadow-slate-400 transform-gpu  ${
           !isResizingORDragging ? 'duration-300' : 'duration-0'
         }`}
         style={{

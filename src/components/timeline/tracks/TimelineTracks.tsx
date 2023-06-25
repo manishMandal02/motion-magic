@@ -27,9 +27,10 @@ type ReferenceLine = {
 type Props = {
   trackHeight: number;
   frameWidth: number;
+  timelineWidth: number;
 };
 
-const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
+const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // global state
   const allTracks = useEditorSore(state => state.timelineTracks);
 
@@ -268,8 +269,11 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
       return (
         <div
           key={track.layer}
-          className={` shadow-sm shadow-slate-900  relative flex `}
-          style={{ height: trackHeight }}
+          className={` shadow-sm last:shadow-none shadow-slate-900  relative flex `}
+          style={{
+            width: timelineWidth + 'px',
+            height: trackHeight,
+          }}
         >
           <TimelineElementWrapper
             frameWidth={frameWidth}
@@ -313,15 +317,23 @@ const TimelineTracks = ({ frameWidth, trackHeight }: Props) => {
   };
   return (
     <>
-      <div className=' relative min-w-full h-full bg-slate-800 max-h-[25vh]'>{renderElements()}</div>
+      <div
+        className='relative min-w-full h-full bg-slate-800'
+        style={{
+          height: trackHeight * allTracks.length,
+          width: timelineWidth + 'px',
+        }}
+      >
+        {renderElements()}
+      </div>
 
       {showRefLines.length > 0
         ? showRefLines.map(line => {
-            // minus 4 so that they don't touch the border of the other tracks
-            const linePosY = (line.startTrack - 1) * trackHeight + 8;
+            // minus 20 so that they don't touch the border of the other tracks
+            const linePosY = (line.startTrack - 1) * trackHeight + 16;
 
-            // minus 4 so that they don't touch the border of the other tracks
-            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 10;
+            // minus 26 so that they don't touch the border of the other tracks
+            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 26;
 
             return (
               <hr
