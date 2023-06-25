@@ -22,7 +22,7 @@ const getFrameWidthSize = ({
   const adjustedDurationInFrames = isStartingFromZero ? durationInFrames + 1 : durationInFrames;
   // if scale is fit-to-timeline
   if (isScaleFitToTimeline) {
-    return (timelineTrackWidth - 10) / adjustedDurationInFrames;
+    return (timelineTrackWidth - 15) / adjustedDurationInFrames;
   }
 
   // get scale-level info from current scale

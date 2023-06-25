@@ -17,11 +17,11 @@ export const TIMELINE_SCROLLBAR_WIDTH = 7;
 
 export default function Timeline() {
   //local state
-  const [scale, setScale] = useState(1);
   const [timelineTrackScrollableWidth, setTimelineTrackScrollableWidth] = useState(0);
   const [timelineTrackVisibleWidth, setTimelineTrackVisibleWidth] = useState(0);
   const [frameWidth, setFrameWidth] = useState(0);
-  const [isScaleFitToTimeline, setIsScaleFitToTimeline] = useState(false);
+
+  console.log('🚀 ~ file: Timeline.tsx:24 ~ Timeline ~ frameWidth:', frameWidth);
 
   // global state
   const fps = useEditorSore(state => state.fps);
@@ -29,21 +29,23 @@ export default function Timeline() {
   const setCurrentFrame = useEditorSore(state => state.setCurrentFrame);
   // const isVideoLengthFixed = useEditorSore(state => state.isVideoLengthFixed);
   const durationInFrames = useEditorSore(state => state.durationInFrames);
+  const isScaleFitToTimeline = useEditorSore(state => state.isScaleFitToTimeline);
+  const setIsScaleFitToTimeline = useEditorSore(state => state.setIsScaleFitToTimeline);
+
+  const [scale, setScale] = useState(getInitialTimelineScale(durationInFrames));
+
+  console.log('🚀 ~ file: Timeline.tsx:34 ~ Timeline ~ scale:', scale);
+
+  const tracksScrollableContainer = useRef<HTMLDivElement | null>(null);
 
   // get timeline width
   useEffect(() => {
-    const timelineWrapper = document.getElementById('timeline-tracks-wrapper');
-    if (!timelineWrapper) return;
-    setTimelineTrackScrollableWidth(timelineWrapper.scrollWidth);
-    setTimelineTrackVisibleWidth(timelineWrapper.clientWidth);
+    const tracksContainer = document.getElementById('timeline-tracks-wrapper');
+    if (!tracksContainer) return;
+
+    setTimelineTrackScrollableWidth(tracksContainer.scrollWidth);
+    setTimelineTrackVisibleWidth(tracksContainer.clientWidth);
   }, [scale]);
-
-  useEffect(() => {
-    const initialTimelineScale = getInitialTimelineScale(durationInFrames);
-
-    setIsScaleFitToTimeline(true);
-    setScale(initialTimelineScale);
-  }, [durationInFrames]);
 
   // get frameWidth
   useEffect(() => {
@@ -57,13 +59,7 @@ export default function Timeline() {
       });
       setFrameWidth(frameWidthSize);
     }
-  }, [
-    scale,
-    timelineTrackScrollableWidth,
-    durationInFrames,
-    isScaleFitToTimeline,
-    timelineTrackVisibleWidth,
-  ]);
+  }, [scale, timelineTrackScrollableWidth, timelineTrackVisibleWidth]);
 
   // calculate total track length in frames (more than total video length)
   const totalTrackDuration = useMemo(
@@ -88,6 +84,23 @@ export default function Timeline() {
     setScrollYPos(ev.currentTarget.scrollTop);
   };
 
+  const handleSetIsScaleFitToTimeline = () => {
+    const frameWidthSize = getFrameWidthSize({
+      scale,
+      durationInFrames,
+      timelineTrackWidth: timelineTrackVisibleWidth,
+      isScaleFitToTimeline: true,
+    });
+    setFrameWidth(frameWidthSize);
+    
+    // scroll to start
+    const tracksContainer = document.getElementById('timeline-tracks-wrapper');
+    if (!tracksContainer) return;
+    tracksContainer.scrollTo({
+      left: 0,
+    });
+  };
+
   return (
     <>
       {/* video controls & timeline options */}
@@ -96,7 +109,7 @@ export default function Timeline() {
           <VideoControls
             fps={fps}
             scale={scale}
-            setIsScaleFitToTimeline={setIsScaleFitToTimeline}
+            setIsScaleFitToTimeline={handleSetIsScaleFitToTimeline}
             updateScale={handleScaleChange}
             currentFrame={currentFrame}
             durationInFrames={durationInFrames}
@@ -128,8 +141,9 @@ export default function Timeline() {
           {/* timeline tracks & timestamp wrapper */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[97vw] relative h-[28vh]  flex flex-col   overflow-scroll bg-emerald-700 `}
+              className={`flex-auto w-[97vw] relative h-[28vh]  flex flex-col scroll-smooth  overflow-scroll bg-emerald-700 `}
               id='timeline-tracks-wrapper'
+              ref={tracksScrollableContainer}
               onScroll={handleScroll}
             >
               {/* timeline ruler */}
@@ -150,9 +164,7 @@ export default function Timeline() {
               </div>
               {/* timeline tracks */}
 
-              <div
-              
-              >
+              <div>
                 <TimelineTracks
                   trackHeight={TIMELINE_TRACK_HEIGHT}
                   frameWidth={frameWidth}

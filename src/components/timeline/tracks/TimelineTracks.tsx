@@ -56,17 +56,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     });
   };
 
-  // get current frame without causing a full component re-rendering
-  const currentFrameRef = useRef<number>(0);
-
-  const handleUpdateCurrentFrame = useCallback(
-    (frame: number) => {
-      currentFrameRef.current = frame;
-      // Perform any additional logic if needed
-    },
-    [currentFrameRef]
-  );
-
   // handle resize track elements
   const handleResize = ({ id, deltaWidth, endFrame, startFrame, direction, layer }: HandleResizeProps) => {
     // frames to show reference lines
@@ -206,14 +195,20 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
     // checking if other elements have same end frame
     allTracks.forEach(track => {
-      if (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) {
+      if (
+        (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) &&
+        id !== track.element.id
+      ) {
         overlappingFrames.push({
           frame: newStartFrame,
           startTrack: layer < track.layer ? layer : track.layer,
           endTrack: layer > track.layer ? layer : track.layer,
         });
       }
-      if (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) {
+      if (
+        (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) &&
+        id !== track.element.id
+      ) {
         overlappingFrames.push({
           frame: newEndFrame,
           startTrack: layer < track.layer ? layer : track.layer,
@@ -330,7 +325,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       {showRefLines.length > 0
         ? showRefLines.map(line => {
             // minus 20 so that they don't touch the border of the other tracks
-            const linePosY = (line.startTrack - 1) * trackHeight + 16;
+            const linePosY = (line.startTrack - 1) * trackHeight + 40;
 
             // minus 26 so that they don't touch the border of the other tracks
             const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 26;

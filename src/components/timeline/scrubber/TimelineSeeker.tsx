@@ -21,8 +21,6 @@ const TimelineSeeker = ({
   scrollYPos,
   trackHeight,
 }: Props) => {
-  console.log('🚀 ~ file: TimelineSeeker.tsx:22 ~ scrollYPos:', scrollYPos);
-
   // global state
   const allTracks = useEditorSore(state => state.timelineTracks);
 
@@ -35,8 +33,6 @@ const TimelineSeeker = ({
       scrollYPos + SEEKER_Y_AXIS_POS < allTracks.length * trackHeight - 200 ? scrollYPos : prev
     );
   }, [scrollYPos, allTracks, trackHeight]);
-
-  console.log('🚀 ~ file: TimelineSeeker.tsx:32 ~ position.y:', position.y);
 
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;

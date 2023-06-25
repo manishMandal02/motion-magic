@@ -13,6 +13,8 @@ export interface ITimelineState {
   durationInFrames: number;
   setDurationInFrames: (duration: number) => void;
   timelineTracks: ITimelineTrack[];
+  isScaleFitToTimeline: boolean;
+  setIsScaleFitToTimeline: (value: boolean) => void;
   updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
   updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
@@ -22,6 +24,11 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
   durationInFrames: projectConstants.VIDEO_LENGTH,
   setCurrentFrame: time => set(() => ({ currentFrame: time })),
   setDurationInFrames: duration => set(() => ({ durationInFrames: duration })),
+  isScaleFitToTimeline: true,
+  setIsScaleFitToTimeline: value =>
+    set(() => {
+      return { isScaleFitToTimeline: value };
+    }),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
   updateTimelineTrack: (id, track) =>
@@ -35,6 +42,7 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
             : trackToUpdate.element.startFrame;
         if (trackToUpdate.element.endFrame > draft.durationInFrames) {
           draft.durationInFrames = trackToUpdate.element.endFrame;
+          draft.isScaleFitToTimeline = false;
         }
         trackToUpdate.element.endFrame =
           track.element?.endFrame !== undefined ? track.element.endFrame : trackToUpdate.element.endFrame;

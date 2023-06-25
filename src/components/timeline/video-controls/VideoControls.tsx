@@ -6,7 +6,7 @@ import { IoPlayForward, IoPlaySkipForwardSharp } from 'react-icons/io5';
 type Props = {
   scale: number;
   updateScale: (scale: number) => void;
-  setIsScaleFitToTimeline: Dispatch<SetStateAction<boolean>>;
+  setIsScaleFitToTimeline: (value: boolean) => void;
   fps: number;
   currentFrame: number;
   durationInFrames: number;
