@@ -15,7 +15,12 @@ export interface ITimelineState {
   timelineTracks: ITimelineTrack[];
   isScaleFitToTimeline: boolean;
   setIsScaleFitToTimeline: (value: boolean) => void;
-  updateTrackElFrame: (id: string, startFrame: number, endFrame: number) => void;
+  updateTrackElFrame: (
+    elementId: string,
+    startFrame: number,
+    endFrame: number,
+    newTrackLayer?: number
+  ) => void;
   updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
   updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
@@ -32,17 +37,33 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
     }),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
-  updateTrackElFrame: (id, startFrame, endFrame) =>
+  updateTrackElFrame: (elementId, startFrame, endFrame, newTrackLayer) =>
     set(
       produce((draft: ITimelineState) => {
-        const trackElToUpdate = draft.timelineTracks.find(track => track.element.id === id)!;
-        trackElToUpdate.element.startFrame = startFrame;
+        const trackWithEl = draft.timelineTracks.find(track =>
+          track.elements.some(el => el.id === elementId)
+        )!;
+
+        const elementToUpdate = trackWithEl.elements.find(el => el.id === elementId);
+        if (!elementToUpdate) return;
+
+        //
+        elementToUpdate.startFrame = startFrame;
         // update total duration if element is moved beyond current limits
-        if (trackElToUpdate.element.endFrame > draft.durationInFrames) {
-          draft.durationInFrames = trackElToUpdate.element.endFrame;
+        if (elementToUpdate.endFrame > draft.durationInFrames) {
+          draft.durationInFrames = elementToUpdate.endFrame;
           draft.isScaleFitToTimeline = false;
         }
-        trackElToUpdate.element.endFrame = endFrame;
+        elementToUpdate.endFrame = endFrame;
+        // update element track
+        if (typeof newTrackLayer !== 'undefined') {
+          // remove from old track/layer
+          trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
+          // add to new track/layer
+          const trackToAddEl = draft.timelineTracks.find(track => track.layer === newTrackLayer);
+          if (!trackToAddEl) return;
+          trackToAddEl.elements = [...trackToAddEl.elements, elementToUpdate];
+        }
       })
     ),
   updateTimelineTrack: (id, track) =>

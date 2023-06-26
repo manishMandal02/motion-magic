@@ -9,6 +9,16 @@ import Tooltip from '@/components/common/tooltip';
 import framesToSeconds from '@/utils/common/framesToSeconds';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  OnDragUpdateResponder,
+  OnDragEndResponder,
+} from 'react-beautiful-dnd';
+import { IReferenceLine } from '@/types/timeline.type';
+import getOverlappingEl from '@/utils/timeline/getOverlappingEl';
+
 type HandleResizeProps = {
   id: string;
   deltaWidth: number;
@@ -16,12 +26,6 @@ type HandleResizeProps = {
   endFrame: number;
   direction: 'left' | 'right';
   layer: number;
-};
-
-type ReferenceLine = {
-  frame: number;
-  startTrack: number;
-  endTrack: number;
 };
 
 type Props = {
@@ -38,14 +42,13 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
   // local state
   // array of frames to show reference lines
-  const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
+  const [showRefLines, setShowRefLines] = useState<IReferenceLine[] | []>([]);
 
   const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>({
     elementId: '',
     startFrame: 0,
     endFrame: 0,
   });
-  console.log('🚀 ~ file: TimelineTracks.tsx:40 ~ TimelineTracks ~ showRefLines:', showRefLines);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTrackElFrame(id, duration.startFrame, duration.endFrame);
@@ -54,7 +57,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // handle resize track elements
   const handleResize = ({ id, deltaWidth, endFrame, startFrame, direction, layer }: HandleResizeProps) => {
     // frames to show reference lines
-    const overlappingFrames: ReferenceLine[] = [];
     if (direction === 'left') {
       const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
 
@@ -69,18 +71,8 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       showTooltipRef.current.endFrame = 0;
 
       // checking if other elements have same start frame
-      allTracks.forEach(track => {
-        if (
-          (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) &&
-          id !== track.element.id
-        ) {
-          overlappingFrames.push({
-            frame: newStartFrame,
-            startTrack: layer < track.layer ? layer : track.layer,
-            endTrack: layer > track.layer ? layer : track.layer,
-          });
-        }
-      });
+      const overlappingFrames = getOverlappingEl(allTracks, id, layer, startFrame);
+
       // get current frame
       const seekerEl = document.getElementById('timeline-seeker');
       if (!seekerEl) return;
@@ -126,18 +118,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       showTooltipRef.current.startFrame = 0;
 
       // checking if other elements have same end frame
-      allTracks.forEach(track => {
-        if (
-          (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) &&
-          id !== track.element.id
-        ) {
-          overlappingFrames.push({
-            frame: newEndFrame,
-            startTrack: layer < track.layer ? layer : track.layer,
-            endTrack: layer > track.layer ? layer : track.layer,
-          });
-        }
-      });
+      const overlappingFrames = getOverlappingEl(allTracks, id, layer, undefined, endFrame);
 
       // get current frame
       const seekerEl = document.getElementById('timeline-seeker');
@@ -175,7 +156,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // handle drag elements
   const handleDrag = (id: string, deltaX: number, startFrame: number, endFrame: number, layer: number) => {
     // frames to show reference lines
-    const overlappingFrames: ReferenceLine[] = [];
 
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
 
@@ -189,28 +169,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     showTooltipRef.current.endFrame = newEndFrame;
 
     // checking if other elements have same end frame
-    allTracks.forEach(track => {
-      if (
-        (newStartFrame === track.element.startFrame || newStartFrame === track.element.endFrame) &&
-        id !== track.element.id
-      ) {
-        overlappingFrames.push({
-          frame: newStartFrame,
-          startTrack: layer < track.layer ? layer : track.layer,
-          endTrack: layer > track.layer ? layer : track.layer,
-        });
-      }
-      if (
-        (newEndFrame === track.element.endFrame || newEndFrame === track.element.startFrame) &&
-        id !== track.element.id
-      ) {
-        overlappingFrames.push({
-          frame: newEndFrame,
-          startTrack: layer < track.layer ? layer : track.layer,
-          endTrack: layer > track.layer ? layer : track.layer,
-        });
-      }
-    });
+    const overlappingFrames = getOverlappingEl(allTracks, id, layer, startFrame, endFrame);
 
     // get current frame
     const seekerEl = document.getElementById('timeline-seeker');
@@ -225,7 +184,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     if (isOverlapping || isOverlappingWithSeeker) {
       if (isOverlapping) {
         setShowRefLines([
-          ...overlappingFrames.reduce((acc: ReferenceLine[], curr) => {
+          ...overlappingFrames.reduce((acc: IReferenceLine[], curr) => {
             const existingFrame = acc.find(obj => obj.frame === curr.frame);
 
             if (existingFrame) {
@@ -250,74 +209,132 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
     return allTracks.map(track => {
-      const { startFrame, endFrame, id } = track.element;
-      // width of el based on their start & end time
-      const width = (endFrame - startFrame) * frameWidth;
-      // position of el from left to position them based on their start time
-      const translateX = startFrame * frameWidth;
-
       return (
-        <div
-          key={track.layer}
-          className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
-          ${track.isHidden && 'opacity-60'}
-          ${track.isLocked && 'opacity-60'}
-          `}
-          style={{
-            width: timelineWidth + 'px',
-            height: trackHeight,
-            // checkered bg
-            ...(track.isHidden
-              ? {
-                  backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
-                  backgroundSize: '100%',
-                  backgroundPosition: 'center',
-                }
-              : {}),
-          }}
-        >
-          <TimelineElementWrapper
-            frameWidth={frameWidth}
-            updateElFrameDuration={updateElFrameDuration}
-            width={width}
-            translateX={translateX}
-            height={trackHeight - 20}
-            handleDrag={deltaX => handleDrag(id, deltaX, startFrame, endFrame, track.layer)}
-            handleResize={(deltaWidth, direction) =>
-              handleResize({ id, deltaWidth, direction, startFrame, endFrame, layer: track.layer })
-            }
-            resetRefLines={() => {
-              setShowRefLines([]);
-              showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
-            }}
-            isLocked={track.isLocked || track.isHidden}
-          >
-            <Tooltip
-              content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
-              position={'top-left'}
-              isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.startFrame}
+        <Droppable droppableId={track.id} key={track.id}>
+          {droppableProvided => (
+            <div
+              ref={droppableProvided.innerRef}
+              {...droppableProvided.droppableProps}
+              style={{ border: '1px solid black', marginBottom: '8px' }}
             >
-              <Tooltip
-                content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
-                position={'top-right'}
-                isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.endFrame}
+              <div
+                key={track.layer}
+                className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
+                ${track.isHidden && 'opacity-60'}
+                ${track.isLocked && 'opacity-60'}
+               `}
+                style={{
+                  width: timelineWidth + 'px',
+                  height: trackHeight,
+                  // checkered bg
+                  ...(track.isHidden
+                    ? {
+                        backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
+                        backgroundSize: '100%',
+                        backgroundPosition: 'center',
+                      }
+                    : {}),
+                }}
               >
-                <div
-                  key={track.layer}
-                  className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
-              ${track.element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
-              ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
-              `}
-                >
-                  {track.element.type}
-                </div>
-              </Tooltip>
-            </Tooltip>
-          </TimelineElementWrapper>
-        </div>
+                {track.elements.map(element => {
+                  const { startFrame, endFrame, id } = element;
+                  // width of el based on their start & end time
+                  const width = (endFrame - startFrame) * frameWidth;
+                  // position of el from left to position them based on their start time
+                  const translateX = startFrame * frameWidth;
+
+                  return (
+                    <Draggable key={element.id} draggableId={element.id} index={1}>
+                      {draggableProvided => (
+                        <TimelineElementWrapper
+                          frameWidth={frameWidth}
+                          updateElFrameDuration={updateElFrameDuration}
+                          width={width}
+                          translateX={translateX}
+                          height={trackHeight - 20}
+                          handleDrag={deltaX => handleDrag(id, deltaX, startFrame, endFrame, track.layer)}
+                          handleResize={(deltaWidth, direction) =>
+                            handleResize({
+                              id,
+                              deltaWidth,
+                              direction,
+                              startFrame,
+                              endFrame,
+                              layer: track.layer,
+                            })
+                          }
+                          resetRefLines={() => {
+                            setShowRefLines([]);
+                            showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
+                          }}
+                          isLocked={track.isLocked || track.isHidden}
+                        >
+                          <Tooltip
+                            content={toTwoDigitsNum(
+                              framesToSeconds(showTooltipRef.current.startFrame, 1)
+                            ).toString()}
+                            position={'top-left'}
+                            isOpen={
+                              showTooltipRef.current.elementId === id && !!showTooltipRef.current.startFrame
+                            }
+                          >
+                            <Tooltip
+                              content={toTwoDigitsNum(
+                                framesToSeconds(showTooltipRef.current.endFrame, 1)
+                              ).toString()}
+                              position={'top-right'}
+                              isOpen={
+                                showTooltipRef.current.elementId === id && !!showTooltipRef.current.endFrame
+                              }
+                            >
+                              <div
+                                ref={draggableProvided.innerRef}
+                                {...draggableProvided.draggableProps}
+                                {...draggableProvided.dragHandleProps}
+                                key={element.id}
+                                className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
+                       ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
+                     ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
+                       `}
+                                style={{
+                                  ...draggableProvided.draggableProps.style,
+                                }}
+                              >
+                                {element.type}
+                              </div>
+                            </Tooltip>
+                          </Tooltip>
+                        </TimelineElementWrapper>
+                      )}
+                    </Draggable>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Droppable>
       );
     });
   };
+
+  const onDragEnd: OnDragEndResponder = result => {
+    // Handle the drag end event
+    // You can update the state or perform any necessary actions here
+    console.log('🚀 ~ file: TimelineTracks.tsx:385 ~ TimelineTracks ~ result:', result);
+  };
+
+  const onDragUpdate: OnDragUpdateResponder = update => {
+    const { destination } = update;
+    if (destination) {
+      const draggingElement = document.getElementById(update.draggableId);
+      if (draggingElement) {
+        const { x } = draggingElement.getBoundingClientRect();
+
+        console.log('🚀 ~ file: TimelineTracks.tsx:341 ~ TimelineTracks ~ x:', x);
+      }
+    }
+  };
+
   return (
     <>
       <div
@@ -327,7 +344,9 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
           width: timelineWidth + 'px',
         }}
       >
-        {renderElements()}
+        <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}>
+          {renderElements()}
+        </DragDropContext>
       </div>
 
       {showRefLines.length > 0

@@ -42,12 +42,14 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
         layer: topLayerCurrent + 1,
         isHidden: false,
         isLocked: false,
-        element: {
-          id,
-          type,
-          startFrame,
-          endFrame,
-        },
+        elements: [
+          {
+            id,
+            type,
+            startFrame,
+            endFrame,
+          },
+        ],
       };
 
       return {
