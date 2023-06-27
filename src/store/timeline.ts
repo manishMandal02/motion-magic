@@ -1,5 +1,5 @@
 import { projectConstants } from '@/constants/projectConstants';
-import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
+import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
 import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
@@ -12,7 +12,7 @@ export interface ITimelineState {
   setCurrentFrame: (time: number) => void;
   durationInFrames: number;
   setDurationInFrames: (duration: number) => void;
-  timelineTracks: ITimelineTrack[];
+  timelineTracks: TimelineTrack[];
   isScaleFitToTimeline: boolean;
   setIsScaleFitToTimeline: (value: boolean) => void;
   updateTrackElFrame: (
@@ -21,7 +21,7 @@ export interface ITimelineState {
     endFrame: number,
     newTrackLayer?: number
   ) => void;
-  updateTimelineTrack: (id: string, track: RecursivePartial<ITimelineTrack>) => void;
+  updateTimelineTrack: (id: string, track: RecursivePartial<TimelineTrack>) => void;
   updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
 }
 

@@ -1,7 +1,16 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { MutableRefObject, ReactNode, useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { IElementFrameDuration } from '@/types/elements.type';
 import throttle from 'raf-throttle';
+import Tooltip from '../../tooltip';
+import { toTwoDigitsNum } from '@/utils/common/formatNumber';
+import framesToSeconds from '@/utils/common/framesToSeconds';
+
+export type TooltipRef = {
+  elementId: string;
+  startFrame: number;
+  endFrame: number;
+};
 
 type Props = {
   children: ReactNode;
@@ -14,6 +23,7 @@ type Props = {
   handleDrag: (deltaX: number, deltaY: number) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
+  showTooltipRef: MutableRefObject<TooltipRef>;
 };
 
 const ELEMENT_POS_Y = 2;
@@ -28,12 +38,13 @@ const TimelineElementWrapper = ({
   handleDrag,
   handleResize,
   resetRefLines,
+  showTooltipRef,
 }: Props) => {
-  const [position, setPosition] = useState({ x: 0, y: ELEMENT_POS_Y });
+  const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
   useEffect(() => {
-    setPosition({ x: translateX, y: ELEMENT_POS_Y });
+    setPosition(prev => ({ ...prev, x: translateX }));
   }, [translateX]);
 
   return (
@@ -44,6 +55,9 @@ const TimelineElementWrapper = ({
         onDrag={throttle((_e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x, d.y - position.y);
+          if (d.y !== 2) {
+            resetRefLines();
+          }
         })}
         onDragStart={() => {
           setIsResizingORDragging(true);
@@ -52,8 +66,8 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(true);
         }}
         onDragStop={() => {
-          setIsResizingORDragging(false);
           resetRefLines();
+          setIsResizingORDragging(false);
         }}
         // @ts-ignore
         onResize={throttle((_e, direction, ref: HTMLDivElement) => {
@@ -67,8 +81,8 @@ const TimelineElementWrapper = ({
           }
         })}
         onResizeStop={() => {
-          setIsResizingORDragging(false);
           resetRefLines();
+          setIsResizingORDragging(false);
         }}
         dragAxis='both'
         dragGrid={[frameWidth, height]}
@@ -91,7 +105,19 @@ const TimelineElementWrapper = ({
           bottomRight: false,
         }}
       >
-        {children}
+        <Tooltip
+          content={toTwoDigitsNum(framesToSeconds(showTooltipRef!.current.startFrame, 1)).toString()}
+          position={'top-left'}
+          isOpen={isResizingORDragging && !!showTooltipRef!.current.startFrame}
+        >
+          <Tooltip
+            content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
+            position={'top-right'}
+            isOpen={isResizingORDragging && !!showTooltipRef!.current.endFrame}
+          >
+            {children}
+          </Tooltip>
+        </Tooltip>
       </Rnd>
     </>
   );

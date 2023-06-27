@@ -8,7 +8,7 @@ import {
 } from '@/types/elements.type';
 import type { StateCreator } from 'zustand';
 import { produce } from 'immer';
-import { ITimelineTrack } from '@/types/timeline.type';
+import { TimelineTrack } from '@/types/timeline.type';
 import { nanoid } from 'nanoid';
 
 export interface IElementsState {
@@ -36,7 +36,7 @@ const createElementsSlice: StateCreator<IElementsState & ITimelineState, [], [],
       if (state.timelineTracks.length >= 1) {
         topLayerCurrent = state.timelineTracks[state.timelineTracks.length - 1].layer;
       }
-      const newTrack: ITimelineTrack = {
+      const newTrack: TimelineTrack = {
         id: nanoid(),
         trackName: type,
         layer: topLayerCurrent + 1,

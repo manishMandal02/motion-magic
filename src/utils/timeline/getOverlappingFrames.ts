@@ -1,16 +1,17 @@
-import type { IReferenceLine, ITimelineTrack } from '@/types/timeline.type';
+import type { ReferenceLine, TimelineTrack } from '@/types/timeline.type';
 import { type } from 'os';
 
 // find all elements on the timeline that have same start & end frame
-const getOverlappingEl = (
-  tracks: ITimelineTrack[],
+const getOverlappingFrames = (
+  tracks: TimelineTrack[],
   elementId: string,
   elementLayer: number,
   startFrame?: number,
   endFrame?: number
 ) => {
   // storing the overlapping elements
-  const overlappingFrames: IReferenceLine[] = [];
+  const overlappingFrames: ReferenceLine[] = [];
+  //TODO: update this fn to use for loops instead of forEach
   // checking if other elements have same end frame
   tracks.forEach(track => {
     track.elements.forEach(element => {
@@ -41,4 +42,4 @@ const getOverlappingEl = (
   });
   return overlappingFrames;
 };
-export default getOverlappingEl;
+export { getOverlappingFrames };

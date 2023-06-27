@@ -5,7 +5,7 @@ export interface TrackElement {
   endFrame: number;
 }
 
-export interface ITimelineTrack {
+export interface TimelineTrack {
   trackName: string;
   id: string;
   layer: number; // higher the layer upper the el on z-index
@@ -14,7 +14,7 @@ export interface ITimelineTrack {
   elements: TrackElement[];
 }
 
-export interface IReferenceLine {
+export interface ReferenceLine {
   frame: number;
   startTrack: number;
   endTrack: number;

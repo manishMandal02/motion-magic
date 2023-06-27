@@ -11,9 +11,8 @@ import VideoControls from './video-controls';
 import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
 
+// height of each track
 const TIMELINE_TRACK_HEIGHT = 50;
-// have to manually change scroll bar width from globals.css i if changed here
-export const TIMELINE_SCROLLBAR_WIDTH = 7;
 
 export default function Timeline() {
   //local state
