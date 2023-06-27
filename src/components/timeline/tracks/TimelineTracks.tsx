@@ -50,8 +50,12 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     endFrame: 0,
   });
 
-  const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
-    updateTrackElFrame(id, duration.startFrame, duration.endFrame);
+  const updateElFrameDuration = (id: string, duration: IElementFrameDuration, newLayer?: number) => {
+    if (typeof newLayer !== 'undefined') {
+      updateTrackElFrame(id, duration.startFrame, duration.endFrame, newLayer);
+    } else {
+      updateTrackElFrame(id, duration.startFrame, duration.endFrame);
+    }
   };
 
   // handle resize track elements
@@ -154,14 +158,29 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   };
 
   // handle drag elements
-  const handleDrag = (id: string, deltaX: number, startFrame: number, endFrame: number, layer: number) => {
-    // frames to show reference lines
+  const handleDrag = (
+    id: string,
+    deltaX: number,
+    deltaY: number,
+    startFrame: number,
+    endFrame: number,
+    layer: number
+  ) => {
+    console.log('🚀 ~ file: TimelineTracks.tsx:166 ~ TimelineTracks ~ deltaY:', deltaY);
 
+    // frames to show reference lines
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
 
     const newEndFrame = newStartFrame + (endFrame - startFrame);
 
-    updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
+    // check if layer has changed
+    const currentLayer = layer;
+
+    if (deltaY >= 46) {
+      updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame }, layer + 1);
+    } else {
+      updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
+    }
 
     // show tooltip for new start & end frame
     showTooltipRef.current.elementId = id;
@@ -210,143 +229,100 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   const renderElements = () => {
     return allTracks.map(track => {
       return (
-        <Droppable droppableId={track.id} key={track.id}>
-          {droppableProvided => (
-            <div
-              ref={droppableProvided.innerRef}
-              {...droppableProvided.droppableProps}
-              style={{ border: '1px solid black', marginBottom: '8px' }}
-            >
-              <div
-                key={track.layer}
-                className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
+        <div
+          key={track.layer}
+          className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
                 ${track.isHidden && 'opacity-60'}
                 ${track.isLocked && 'opacity-60'}
                `}
-                style={{
-                  width: timelineWidth + 'px',
-                  height: trackHeight,
-                  // checkered bg
-                  ...(track.isHidden
-                    ? {
-                        backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
-                        backgroundSize: '100%',
-                        backgroundPosition: 'center',
-                      }
-                    : {}),
-                }}
-              >
-                {track.elements.map(element => {
-                  const { startFrame, endFrame, id } = element;
-                  // width of el based on their start & end time
-                  const width = (endFrame - startFrame) * frameWidth;
-                  // position of el from left to position them based on their start time
-                  const translateX = startFrame * frameWidth;
+          style={{
+            width: timelineWidth + 'px',
+            height: trackHeight,
+            // checkered bg
+            ...(track.isHidden
+              ? {
+                  backgroundImage: `repeating-linear-gradient(-45deg, #2e3b4e, #353f4f 4px, #334156 1px, #2f3c4e 15px)`,
+                  backgroundSize: '100%',
+                  backgroundPosition: 'center',
+                }
+              : {}),
+          }}
+        >
+          {track.elements.map(element => {
+            const { startFrame, endFrame, id } = element;
+            // width of el based on their start & end time
+            const width = (endFrame - startFrame) * frameWidth;
+            // position of el from left to position them based on their start time
+            const translateX = startFrame * frameWidth;
 
-                  return (
-                    <Draggable key={element.id} draggableId={element.id} index={1}>
-                      {draggableProvided => (
-                        <TimelineElementWrapper
-                          frameWidth={frameWidth}
-                          updateElFrameDuration={updateElFrameDuration}
-                          width={width}
-                          translateX={translateX}
-                          height={trackHeight - 20}
-                          handleDrag={deltaX => handleDrag(id, deltaX, startFrame, endFrame, track.layer)}
-                          handleResize={(deltaWidth, direction) =>
-                            handleResize({
-                              id,
-                              deltaWidth,
-                              direction,
-                              startFrame,
-                              endFrame,
-                              layer: track.layer,
-                            })
-                          }
-                          resetRefLines={() => {
-                            setShowRefLines([]);
-                            showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
-                          }}
-                          isLocked={track.isLocked || track.isHidden}
-                        >
-                          <Tooltip
-                            content={toTwoDigitsNum(
-                              framesToSeconds(showTooltipRef.current.startFrame, 1)
-                            ).toString()}
-                            position={'top-left'}
-                            isOpen={
-                              showTooltipRef.current.elementId === id && !!showTooltipRef.current.startFrame
-                            }
-                          >
-                            <Tooltip
-                              content={toTwoDigitsNum(
-                                framesToSeconds(showTooltipRef.current.endFrame, 1)
-                              ).toString()}
-                              position={'top-right'}
-                              isOpen={
-                                showTooltipRef.current.elementId === id && !!showTooltipRef.current.endFrame
-                              }
-                            >
-                              <div
-                                ref={draggableProvided.innerRef}
-                                {...draggableProvided.draggableProps}
-                                {...draggableProvided.dragHandleProps}
-                                key={element.id}
-                                className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
+            return (
+              <TimelineElementWrapper
+                frameWidth={frameWidth}
+                updateElFrameDuration={updateElFrameDuration}
+                width={width}
+                translateX={translateX}
+                height={trackHeight - 4}
+                key={element.id}
+                handleDrag={(deltaX, deltaY) =>
+                  handleDrag(id, deltaX, deltaY, startFrame, endFrame, track.layer)
+                }
+                handleResize={(deltaWidth, direction) =>
+                  handleResize({
+                    id,
+                    deltaWidth,
+                    direction,
+                    startFrame,
+                    endFrame,
+                    layer: track.layer,
+                  })
+                }
+                resetRefLines={() => {
+                  setShowRefLines([]);
+                  showTooltipRef.current = { elementId: '', startFrame: 0, endFrame: 0 };
+                }}
+                isLocked={track.isLocked || track.isHidden}
+              >
+                <Tooltip
+                  content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
+                  position={'top-left'}
+                  isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.startFrame}
+                >
+                  <Tooltip
+                    content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
+                    position={'top-right'}
+                    isOpen={showTooltipRef.current.elementId === id && !!showTooltipRef.current.endFrame}
+                  >
+                    <div
+                      key={element.id}
+                      className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
                        ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
                      ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
                        `}
-                                style={{
-                                  ...draggableProvided.draggableProps.style,
-                                }}
-                              >
-                                {element.type}
-                              </div>
-                            </Tooltip>
-                          </Tooltip>
-                        </TimelineElementWrapper>
-                      )}
-                    </Draggable>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </Droppable>
+                    >
+                      {element.type}
+                    </div>
+                  </Tooltip>
+                </Tooltip>
+              </TimelineElementWrapper>
+            );
+          })}
+        </div>
       );
     });
-  };
-
-  const onDragEnd: OnDragEndResponder = result => {
-    // Handle the drag end event
-    // You can update the state or perform any necessary actions here
-    console.log('🚀 ~ file: TimelineTracks.tsx:385 ~ TimelineTracks ~ result:', result);
-  };
-
-  const onDragUpdate: OnDragUpdateResponder = update => {
-    const { destination } = update;
-    if (destination) {
-      const draggingElement = document.getElementById(update.draggableId);
-      if (draggingElement) {
-        const { x } = draggingElement.getBoundingClientRect();
-
-        console.log('🚀 ~ file: TimelineTracks.tsx:341 ~ TimelineTracks ~ x:', x);
-      }
-    }
   };
 
   return (
     <>
       <div
-        className='relative min-w-full h-full bg-brand-darkPrimary'
+        className='relative min-w-full h-full bg-brand-darkPrimary tracksContainer'
         style={{
           height: trackHeight * allTracks.length,
           width: timelineWidth + 'px',
         }}
       >
-        <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}>
-          {renderElements()}
-        </DragDropContext>
+        {/* <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}> */}
+        {renderElements()}
+        {/* </DragDropContext> */}
       </div>
 
       {showRefLines.length > 0

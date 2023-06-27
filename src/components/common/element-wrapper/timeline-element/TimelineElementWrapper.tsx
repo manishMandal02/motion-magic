@@ -11,12 +11,12 @@ type Props = {
   translateX: number;
   isLocked: boolean;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
-  handleDrag: (deltaX: number) => void;
+  handleDrag: (deltaX: number, deltaY: number) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
 };
 
-const ELEMENT_POS_Y = 10;
+const ELEMENT_POS_Y = 2;
 
 const TimelineElementWrapper = ({
   children,
@@ -43,7 +43,7 @@ const TimelineElementWrapper = ({
         position={{ x: position.x, y: ELEMENT_POS_Y }}
         onDrag={throttle((_e, d) => {
           setPosition({ x: d.x, y: d.y });
-          handleDrag(d.x - position.x);
+          handleDrag(d.x - position.x, d.y - position.y);
         })}
         onDragStart={() => {
           setIsResizingORDragging(true);
@@ -70,17 +70,16 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(false);
           resetRefLines();
         }}
-        dragAxis='x'
-        dragGrid={[frameWidth, 0]}
-        // resizeGrid={[frameWidth, frameWidth]}
-        // scale={videoScale}
-        className={`rounded-md transform-gpu  ${!isResizingORDragging ? 'duration-300' : 'duration-0'}`}
+        dragAxis='both'
+        dragGrid={[frameWidth, height]}
+        resizeGrid={[frameWidth, frameWidth]}
+        // className={`rounded-md transform-gpu  ${!isResizingORDragging ? 'duration-300' : 'duration-0'}`}
+        className={`rounded-md`}
         style={{
           position: 'absolute',
-          // transform: `translate(${translateXValue}px, 0px)`,
         }}
         disableDragging={isLocked}
-        bounds={'parent'}
+        bounds={'.tracksContainer'}
         enableResizing={{
           top: false,
           topLeft: false,
