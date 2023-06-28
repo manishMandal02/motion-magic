@@ -24,6 +24,7 @@ type Props = {
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
   showTooltipRef: MutableRefObject<TooltipRef>;
+  onDragStop: () => void;
 };
 
 const ELEMENT_POS_Y = 3;
@@ -39,6 +40,7 @@ const TimelineElementWrapper = ({
   handleResize,
   resetRefLines,
   showTooltipRef,
+  onDragStop,
 }: Props) => {
   const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
@@ -56,6 +58,7 @@ const TimelineElementWrapper = ({
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x, d.y - position.y);
           if (d.y > 10 || d.y < 0) {
+            onDragStop();
             resetRefLines();
           }
         })}
@@ -66,6 +69,7 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(true);
         }}
         onDragStop={() => {
+          onDragStop();
           resetRefLines();
           setIsResizingORDragging(false);
         }}

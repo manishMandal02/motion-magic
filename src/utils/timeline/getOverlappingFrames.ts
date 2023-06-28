@@ -9,10 +9,6 @@ const getOverlappingFrames = (
   startFrame?: number,
   endFrame?: number
 ) => {
-  console.log('🚀 ~ file: getOverlappingFrames.ts:13 ~ startFrame:', startFrame);
-
-  console.log('🚀 ~ file: getOverlappingFrames.ts:13 ~ endFrame:', endFrame);
-
   // storing the overlapping elements
   const overlappingFrames: ReferenceLine[] = [];
   //TODO: update this fn to use for loops instead of forEach

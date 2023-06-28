@@ -5,10 +5,11 @@ import { useEditorSore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
 
-import { ReferenceLine } from '@/types/timeline.type';
+import { ReferenceLine, TrackElement } from '@/types/timeline.type';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import type { TooltipRef } from '@/components/common/element-wrapper/timeline-element/TimelineElementWrapper';
 import { nanoid } from 'nanoid';
+import { getOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -67,6 +68,18 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       updateTrackElFrame(id, duration.startFrame, duration.endFrame, newLayer);
     } else {
       updateTrackElFrame(id, duration.startFrame, duration.endFrame);
+    }
+  };
+
+  // handle drag stop
+  const handleOverlappingEl = (elements: TrackElement[], startFrame: number, endFrame: number) => {
+    if (elements.length <= 1) return;
+    const overlappingElements = getOverlappingElements({ elements, endFrame, startFrame });
+
+    // update frame duration of overlapping elements
+    for (let i = 0; i < overlappingElements.length; i++) {
+      const { id, newStartFrame, newEndFrame } = overlappingElements[i];
+      updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
     }
   };
 
@@ -178,6 +191,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     const newEndFrame = newStartFrame + (endFrame - startFrame);
 
     // check if layer has changed
+
     if (deltaY >= trackHeight - TRACK_PADDING_SPACING) {
       updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame }, layer + 1);
     } else if (deltaY <= TRACK_PADDING_SPACING - trackHeight) {
@@ -283,6 +297,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
                     layer: track.layer,
                   })
                 }
+                onDragStop={() => handleOverlappingEl(track.elements, startFrame, endFrame)}
                 resetRefLines={() => {
                   setShowRefLines([]);
                   showTooltipRef.current = tooltipRefInitialData;
@@ -324,10 +339,10 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
       {showRefLines.length > 0
         ? showRefLines.map(line => {
             // minus 20 so that they don't touch the border of the other tracks
-            const linePosY = (line.startTrack - 1) * trackHeight + 40;
+            const linePosY = (line.startTrack - 1) * trackHeight + 35;
 
             // minus 26 so that they don't touch the border of the other tracks
-            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 26;
+            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 16;
 
             return (
               <hr
