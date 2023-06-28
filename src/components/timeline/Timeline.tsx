@@ -12,7 +12,7 @@ import getFrameWidthSize from '@/utils/timeline/getFrameWidthSize';
 import getInitialTimelineScale from '@/utils/timeline/getInitialTimelineScale';
 
 // height of each track
-const TIMELINE_TRACK_HEIGHT = 50;
+const TIMELINE_TRACK_HEIGHT = 60;
 
 export default function Timeline() {
   //local state

@@ -26,7 +26,7 @@ type Props = {
   showTooltipRef: MutableRefObject<TooltipRef>;
 };
 
-const ELEMENT_POS_Y = 2;
+const ELEMENT_POS_Y = 3;
 
 const TimelineElementWrapper = ({
   children,
@@ -55,7 +55,7 @@ const TimelineElementWrapper = ({
         onDrag={throttle((_e, d) => {
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x, d.y - position.y);
-          if (d.y !== 2) {
+          if (d.y > 10 || d.y < 0) {
             resetRefLines();
           }
         })}
@@ -87,8 +87,12 @@ const TimelineElementWrapper = ({
         dragAxis='both'
         dragGrid={[frameWidth, height]}
         resizeGrid={[frameWidth, frameWidth]}
-        // className={`rounded-md transform-gpu  ${!isResizingORDragging ? 'duration-300' : 'duration-0'}`}
-        className={`rounded-md`}
+        // className={`rounded-lg transition-opacity   duration-150   select-none
+        // ${isResizingORDragging && 'opacity-[.85]  z-10'}
+        // `}
+        className={`rounded-md transition-opacity outline border-offset-1 duration-150  hover:border-2 hover:border-slate-300 select-none
+        ${isResizingORDragging && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
+        `}
         style={{
           position: 'absolute',
         }}

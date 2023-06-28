@@ -9,13 +9,17 @@ const getOverlappingFrames = (
   startFrame?: number,
   endFrame?: number
 ) => {
+  console.log('🚀 ~ file: getOverlappingFrames.ts:13 ~ startFrame:', startFrame);
+
+  console.log('🚀 ~ file: getOverlappingFrames.ts:13 ~ endFrame:', endFrame);
+
   // storing the overlapping elements
   const overlappingFrames: ReferenceLine[] = [];
   //TODO: update this fn to use for loops instead of forEach
   // checking if other elements have same end frame
   tracks.forEach(track => {
     track.elements.forEach(element => {
-      // check for overlapping start frame
+      // check for overlapping start frame`
       if (typeof startFrame !== 'undefined') {
         if (
           (startFrame === element.startFrame || startFrame === element.endFrame) &&

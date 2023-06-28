@@ -11,7 +11,7 @@ import type { TooltipRef } from '@/components/common/element-wrapper/timeline-el
 import { nanoid } from 'nanoid';
 
 // track spacing top & bottom
-const TRACK_PADDING_SPACING = 4;
+const TRACK_PADDING_SPACING = 6;
 
 // initial data for tooltip ref object
 const tooltipRefInitialData: TooltipRef = {
@@ -56,6 +56,8 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
 
+  console.log('🚀 ~ file: TimelineTracks.tsx:59 ~ TimelineTracks ~ showRefLines:', showRefLines);
+
   const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>(
     tooltipRefInitialData
   );
@@ -70,7 +72,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
   //TODO: refactor this handler to many code repeats (also reuse some for the drag handler, even that needs bit of refactoring)
   // handle resize track elements
-  const handleResize = ({ id, deltaWidth, endFrame, startFrame, direction, layer }: HandleResizeProps) => {
+  const handleResize = ({ id, deltaWidth, startFrame, endFrame, direction, layer }: HandleResizeProps) => {
     // frames to show reference lines
     if (direction === 'left') {
       const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
@@ -194,7 +196,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     }
 
     // checking if other elements have same end frame
-    const overlappingFrames = getOverlappingFrames(allTracks, id, layer, startFrame, endFrame);
+    const overlappingFrames = getOverlappingFrames(allTracks, id, layer, newStartFrame, newEndFrame);
 
     // get current frame
     const seekerEl = document.getElementById('timeline-seeker');
@@ -218,7 +220,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
             } else {
               acc.push(curr);
             }
-
             return acc;
           }, []),
         ]);
@@ -291,7 +292,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
               >
                 <div
                   key={element.id}
-                  className={`rounded-md h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
+                  className={`rounded-sm h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
                        ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
                      ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
                        `}
@@ -331,7 +332,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
             return (
               <hr
                 className={`w-[2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
-                // className={`w-[1.5px]  h-[${lineHeight}] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
                 key={nanoid()}
                 style={{
                   transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
