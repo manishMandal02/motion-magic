@@ -1,5 +1,6 @@
 import { projectConstants } from '@/constants/projectConstants';
 import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
+import { getOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
@@ -47,7 +48,6 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         const elementToUpdate = trackWithEl.elements.find(el => el.id === elementId);
         if (!elementToUpdate) return;
 
-        //
         elementToUpdate.startFrame = startFrame;
         // update total duration if element is moved beyond current limits
         if (elementToUpdate.endFrame > draft.durationInFrames) {
@@ -57,12 +57,43 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         elementToUpdate.endFrame = endFrame;
         // update element track
         if (typeof newTrackLayer !== 'undefined') {
+          console.log('🚀 ~ file: timeline.ts:50 ~ produce ~ newTrackLayer:', newTrackLayer);
+
           // remove from old track/layer
-          trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
-          // add to new track/layer
-          const trackToAddEl = draft.timelineTracks.find(track => track.layer === newTrackLayer);
-          if (!trackToAddEl) return;
-          trackToAddEl.elements = [...trackToAddEl.elements, elementToUpdate];
+          if (trackWithEl.elements.length === 1) {
+            // delete the track if empty
+            draft.timelineTracks = draft.timelineTracks.filter(track => track.id !== trackWithEl.id);
+            draft.timelineTracks = draft.timelineTracks.map((track, idx) => {
+              track.layer = idx + 1;
+              return track;
+            });
+          } else {
+            // remove the el from track
+            trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
+          }
+          // add el to new track/layer
+          const trackToAddElTo = draft.timelineTracks.find(track => track.layer === newTrackLayer);
+          if (!trackToAddElTo) return;
+          trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
+          // handler overlapping
+          const overlappingElements = getOverlappingElements({
+            elementId: elementToUpdate.id,
+            elements: trackToAddElTo.elements,
+            startFrame: elementToUpdate.startFrame,
+            endFrame: elementToUpdate.endFrame,
+          });
+          if (overlappingElements.length > 0) {
+            // update frame duration of overlapping elements
+            for (let i = 0; i < overlappingElements.length; i++) {
+              const { id, newStartFrame, newEndFrame } = overlappingElements[i];
+              for (let el of trackToAddElTo.elements) {
+                if (el.id === id) {
+                  el.startFrame = newStartFrame;
+                  el.endFrame = newEndFrame;
+                }
+              }
+            }
+          }
         }
       })
     ),

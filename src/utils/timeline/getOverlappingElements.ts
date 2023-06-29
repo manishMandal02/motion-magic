@@ -6,14 +6,20 @@ type OverlappingElement = {
   newEndFrame: number; // frame
 };
 
-type GetOverlappingElementsProps = {
+export type GetOverlappingElementsProps = {
+  elementId: string;
   startFrame: number;
   endFrame: number;
   elements: TrackElement[];
 };
 //TODO:  make this fn modular in such a way that it can search for overlapping el --
 //TODO:  --for for one side resize (just like getOverlappingFrame)
-const getOverlappingElements = ({ startFrame, endFrame, elements }: GetOverlappingElementsProps) => {
+const getOverlappingElements = ({
+  elementId,
+  startFrame,
+  endFrame,
+  elements,
+}: GetOverlappingElementsProps) => {
   const overlappingElements: OverlappingElement[] = [];
   // element center
 
@@ -33,7 +39,8 @@ const getOverlappingElements = ({ startFrame, endFrame, elements }: GetOverlappi
     if (
       (startFrame < el.endFrame && startFrame > el.startFrame) ||
       (endFrame > el.startFrame && endFrame < el.endFrame) ||
-      (el.startFrame > startFrame && el.endFrame < endFrame)
+      (el.startFrame > startFrame && el.endFrame < endFrame) ||
+      (startFrame === el.startFrame && endFrame === el.endFrame && elementId !== el.id)
     ) {
       // move this element to the left
       if (elCenterFrame <= selectedElCenterFrame) {

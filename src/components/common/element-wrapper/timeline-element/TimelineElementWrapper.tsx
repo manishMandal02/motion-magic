@@ -58,7 +58,6 @@ const TimelineElementWrapper = ({
           setPosition({ x: d.x, y: d.y });
           handleDrag(d.x - position.x, d.y - position.y);
           if (d.y > 10 || d.y < 0) {
-            onDragStop();
             resetRefLines();
           }
         })}
