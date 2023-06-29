@@ -10,6 +10,7 @@ import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import type { TooltipRef } from '@/components/common/element-wrapper/timeline-element/TimelineElementWrapper';
 import { nanoid } from 'nanoid';
 import { GetOverlappingElementsProps, getOverlappingElements } from '@/utils/timeline/getOverlappingElements';
+import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBounds';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -29,6 +30,7 @@ type HandleResizeProps = {
   endFrame: number;
   direction: 'left' | 'right';
   layer: number;
+  resizeBounds: ResizeBound;
 };
 
 // resize handle props
@@ -93,15 +95,33 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
   //TODO: refactor this handler to many code repeats (also reuse some for the drag handler, even that needs bit of refactoring)
   // handle resize track elements
-  const handleResize = ({ id, deltaWidth, startFrame, endFrame, direction, layer }: HandleResizeProps) => {
+  const handleResize = ({
+    id,
+    deltaWidth,
+    startFrame,
+    endFrame,
+    direction,
+    layer,
+    resizeBounds,
+  }: HandleResizeProps) => {
+    console.log('🚀 ~ file: TimelineTracks.tsx:108 ~ TimelineTracks ~ resizeBounds:', resizeBounds);
+
     // frames to show reference lines
     if (direction === 'left') {
       const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
-
-      updateElFrameDuration(id, {
-        startFrame: newStartFrame,
-        endFrame,
-      });
+      // check if within  resize bounds
+      if (newStartFrame > resizeBounds.startFrame) {
+        updateElFrameDuration(id, {
+          startFrame: newStartFrame,
+          endFrame,
+        });
+      } else {
+        // update start frame to it's to bound limits
+        updateElFrameDuration(id, {
+          startFrame: resizeBounds.startFrame,
+          endFrame,
+        });
+      }
 
       // show tooltip for new start frame
       showTooltipRef.current.elementId = id;
@@ -144,11 +164,19 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
     }
     if (direction === 'right') {
       const newEndFrame = Math.max(startFrame, endFrame + Math.round(deltaWidth / frameWidth));
-
-      updateElFrameDuration(id, {
-        endFrame: newEndFrame,
-        startFrame,
-      });
+      // check if within  resize bounds
+      if (newEndFrame < resizeBounds.endFrame) {
+        updateElFrameDuration(id, {
+          endFrame: newEndFrame,
+          startFrame,
+        });
+      } else {
+        // update end frame to it's to bound limits
+        updateElFrameDuration(id, {
+          endFrame: resizeBounds.endFrame,
+          startFrame,
+        });
+      }
 
       // show tooltip for new end frame
       showTooltipRef.current.elementId = id;
@@ -284,7 +312,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
             // position of el from left to position them based on their start time
             const translateX = startFrame * frameWidth;
             // resize bounds
-            const resizeBounds = [0, 0];
+            const resizeBounds = getElResizeBounds({ elements: track.elements, startFrame, endFrame });
             return (
               <TimelineElementWrapper
                 frameWidth={frameWidth}
@@ -306,6 +334,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
                     startFrame,
                     endFrame,
                     layer: track.layer,
+                    resizeBounds,
                   })
                 }
                 onDragStop={() =>

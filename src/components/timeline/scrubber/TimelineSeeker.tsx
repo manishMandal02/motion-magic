@@ -34,6 +34,8 @@ const TimelineSeeker = ({
     );
   }, [scrollYPos, allTracks, trackHeight]);
 
+  //TODO: get tracks container height dynamically
+
   useEffect(() => {
     const currentPlaybackPosition = frameWidth * currentFrame || 0;
 

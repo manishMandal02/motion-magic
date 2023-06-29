@@ -57,24 +57,23 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         elementToUpdate.endFrame = endFrame;
         // update element track
         if (typeof newTrackLayer !== 'undefined') {
-          console.log('🚀 ~ file: timeline.ts:50 ~ produce ~ newTrackLayer:', newTrackLayer);
+          // add el to new track/layer
+          const trackToAddElTo = draft.timelineTracks.find(track => track.layer === newTrackLayer);
+          if (!trackToAddElTo) return;
+          trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
 
-          // remove from old track/layer
-          if (trackWithEl.elements.length === 1) {
-            // delete the track if empty
+          // remove the el from track
+          trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
+
+          // delete the track if empty
+          if (trackWithEl.elements.length === 0) {
             draft.timelineTracks = draft.timelineTracks.filter(track => track.id !== trackWithEl.id);
             draft.timelineTracks = draft.timelineTracks.map((track, idx) => {
               track.layer = idx + 1;
               return track;
             });
-          } else {
-            // remove the el from track
-            trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
           }
-          // add el to new track/layer
-          const trackToAddElTo = draft.timelineTracks.find(track => track.layer === newTrackLayer);
-          if (!trackToAddElTo) return;
-          trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
+
           // handler overlapping
           const overlappingElements = getOverlappingElements({
             elementId: elementToUpdate.id,
