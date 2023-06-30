@@ -127,9 +127,9 @@ export default function Timeline() {
         <div className='h-[28vh] w-[100vw] bg-pink-600  overflow-hidden relative  flex'>
           {/* timeline layers */}
           <ScrollSyncPane>
-            <div className='flex-none flex w-[6vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar '>
+            <div className='flex-none flex w-[4.5vw] flex-col relative  z-10 bg-brand-darkPrimary  h-[28vh] pb-[6px] overflow-y-auto overflow-x-hidden  CC_hideScrollBar '>
               {/*  */}
-              <div className='flex sticky top-0 h-[3vh] min-h-[3vh] w-[6vw] min-w-[6vw] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-[10px] py-[0.25rem] pr-2'>
+              <div className='flex sticky top-0 h-[3vh] min-h-[3vh] w-[4.5vw] min-w-[4.5vw] items-center justify-center bg-brand-darkSecondary z-30 font-light text-slate-300 text-[10px] py-[0.25rem] pr-2'>
                 Layer
               </div>
               <div>
@@ -140,7 +140,7 @@ export default function Timeline() {
           {/* timeline tracks & timestamp wrapper */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[94vw] relative h-[28vh] pb-[1px] flex flex-col scroll-smooth  overflow-scroll bg-sky-500 `}
+              className={`flex-auto w-[96vw] relative h-[28vh] flex flex-col   overflow-scroll CC_customScrollBar bg-brand-darkPrimary `}
               id='timeline-tracks-wrapper'
               ref={tracksScrollableContainer}
               onScroll={handleScroll}

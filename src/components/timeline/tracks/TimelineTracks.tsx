@@ -367,16 +367,14 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   return (
     <>
       <div
-        className='relative min-w-full h-full bg-brand-darkPrimary '
+        className='relative min-w-full h-full bg-brand-darkPrimary'
         style={{
           height: trackHeight * allTracks.length,
           width: timelineWidth + 6 + 'px',
         }}
         id='tracksContainer'
       >
-        {/* <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}> */}
         {renderElements()}
-        {/* </DragDropContext> */}
       </div>
 
       {showRefLines.length > 0

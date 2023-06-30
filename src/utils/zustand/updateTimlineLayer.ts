@@ -1,10 +1,10 @@
-import { IMoveTimelineLayerTo, ITimelineTrack } from '@/types/timeline.type';
+import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
 
 const moveTrackToLayer = (
   trackId: string,
   newLayer: number,
   currentLayer: number,
-  timelineTracks: ITimelineTrack[]
+  timelineTracks: TimelineTrack[]
 ) => {
   const track = timelineTracks.find((track) => track.id === trackId);
   if (!track) {
@@ -35,7 +35,7 @@ type UpdateTimelineLayerProps = {
   trackId: string;
   currentLayer: number;
   moveTo: IMoveTimelineLayerTo;
-  timelineTracks: ITimelineTrack[];
+  timelineTracks: TimelineTrack[];
 };
 
 const updateTimelineLayer = ({ trackId, currentLayer, moveTo, timelineTracks }: UpdateTimelineLayerProps) => {
