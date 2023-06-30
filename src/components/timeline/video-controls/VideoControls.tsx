@@ -13,8 +13,6 @@ type Props = {
   setCurrentFrame: (frame: number) => void;
 };
 
-const ZOOM_IN_RATIO = 6;
-
 const VideoControls = ({
   fps,
   currentFrame,
@@ -24,8 +22,6 @@ const VideoControls = ({
   updateScale,
   setIsScaleFitToTimeline,
 }: Props) => {
-  //TODO: scale * 12.5 to get the max zoom in scale
-
   // [frames, seconds, minutes]
   type CurrentTIme = [number, number, number];
 

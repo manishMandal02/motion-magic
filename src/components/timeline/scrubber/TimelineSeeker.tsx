@@ -8,7 +8,6 @@ type Props = {
   setCurrentFrame: (frame: number) => void;
   timelineTrackScrollableWidth: number;
   scrollYPos: number;
-  trackHeight: number;
 };
 
 const SEEKER_Y_AXIS_POS = 6;
@@ -19,20 +18,21 @@ const TimelineSeeker = ({
   setCurrentFrame,
   timelineTrackScrollableWidth,
   scrollYPos,
-  trackHeight,
 }: Props) => {
-  // global state
-  const allTracks = useEditorSore(state => state.timelineTracks);
-
   // local state
   const [position, setPosition] = useState({ x: 0, y: SEEKER_Y_AXIS_POS });
   const [scroll, setScroll] = useState(0);
 
+  useEffect(() => {}, []);
+
   useEffect(() => {
+    const tracksContainer = document.getElementById('tracksContainer');
+    if (!tracksContainer) return;
     setScroll(prev =>
-      scrollYPos + SEEKER_Y_AXIS_POS < allTracks.length * trackHeight - 200 ? scrollYPos : prev
+      scrollYPos + SEEKER_Y_AXIS_POS < tracksContainer.clientHeight - 190 ? scrollYPos : prev
     );
-  }, [scrollYPos, allTracks, trackHeight]);
+    console.log('🚀 ~ file: TimelineSeeker.tsx:36 ~ useEffect ~ scrollYPos:', scrollYPos);
+  }, [scrollYPos]);
 
   //TODO: get tracks container height dynamically
 
@@ -70,7 +70,7 @@ const TimelineSeeker = ({
         bounds={{ top: 0, right: timelineTrackScrollableWidth, bottom: 0, left: 0 }}
       >
         <div
-          className='h-[calc(28vh-10px)] absolute top-0 z-50 '
+          className='h-[calc(28vh-15px)] absolute top-0 z-50 '
           id='timeline-seeker'
           data-current-frame={currentFrame}
         >

@@ -90,17 +90,15 @@ const TimelineElementWrapper = ({
         dragAxis='both'
         dragGrid={[frameWidth, height]}
         resizeGrid={[frameWidth, frameWidth]}
-        // className={`rounded-lg transition-opacity   duration-150   select-none
-        // ${isResizingORDragging && 'opacity-[.85]  z-10'}
-        // `}
-        className={`rounded-md transition-opacity outline border-offset-1 duration-150  hover:border-2 hover:border-slate-300 select-none
+        className={`rounded-md transition-opacity outline border-offset-1 duration-150   select-none
         ${isResizingORDragging && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
+        ${!isLocked && 'hover:border-2 hover:border-slate-300'}
         `}
         style={{
           position: 'absolute',
         }}
         disableDragging={isLocked}
-        bounds={'.tracksContainer'}
+        bounds={'#tracksContainer'}
         enableResizing={{
           top: false,
           topLeft: false,

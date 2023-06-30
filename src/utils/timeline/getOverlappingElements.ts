@@ -12,8 +12,6 @@ export type GetOverlappingElementsProps = {
   endFrame: number;
   elements: TrackElement[];
 };
-//TODO:  make this fn modular in such a way that it can search for overlapping el --
-//TODO:  --for for one side resize (just like getOverlappingFrame)
 const getOverlappingElements = ({
   elementId,
   startFrame,
@@ -24,8 +22,6 @@ const getOverlappingElements = ({
   // element center
 
   const selectedElCenterFrame = startFrame + Math.round((endFrame - startFrame) / 2);
-
-  //TODO: also check if the element goes below 0 frame duration for left overlap or above total duration for right overlap
 
   for (let i = 0; i < elements.length; i++) {
     // get current el

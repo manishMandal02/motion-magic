@@ -349,7 +349,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
               >
                 <div
                   key={element.id}
-                  className={`rounded-sm h-full w-[${width}px] flex text-xs font-medium items-center  mb-2 justify-center overflow-hidden
+                  className={`rounded-sm h-full w-[${width}px] flex text-xs font-medium items-center  justify-center overflow-hidden
                        ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
                      ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
                        `}
@@ -367,11 +367,12 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   return (
     <>
       <div
-        className='relative min-w-full h-full bg-brand-darkPrimary tracksContainer'
+        className='relative min-w-full h-full bg-brand-darkPrimary '
         style={{
           height: trackHeight * allTracks.length,
-          width: timelineWidth + 'px',
+          width: timelineWidth + 6 + 'px',
         }}
+        id='tracksContainer'
       >
         {/* <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}> */}
         {renderElements()}

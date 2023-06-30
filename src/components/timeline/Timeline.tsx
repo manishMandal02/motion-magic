@@ -1,6 +1,6 @@
 'use client';
 
-import { MouseEventHandler, UIEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import { UIEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
@@ -140,7 +140,7 @@ export default function Timeline() {
           {/* timeline tracks & timestamp wrapper */}
           <ScrollSyncPane>
             <div
-              className={`flex-auto w-[94vw] relative h-[28vh]  flex flex-col scroll-smooth  overflow-scroll bg-emerald-700 `}
+              className={`flex-auto w-[94vw] relative h-[28vh] pb-[1px] flex flex-col scroll-smooth  overflow-scroll bg-sky-500 `}
               id='timeline-tracks-wrapper'
               ref={tracksScrollableContainer}
               onScroll={handleScroll}
@@ -162,21 +162,19 @@ export default function Timeline() {
                 />
               </div>
               {/* timeline tracks */}
-
-              <div>
+              <>
                 <TimelineTracks
                   trackHeight={TIMELINE_TRACK_HEIGHT}
                   frameWidth={frameWidth}
                   timelineWidth={totalFrameWidth}
                 />
-              </div>
+              </>
               <TimelineSeeker
                 timelineTrackScrollableWidth={durationInFrames * frameWidth}
                 frameWidth={frameWidth}
                 currentFrame={currentFrame}
                 setCurrentFrame={setCurrentFrame}
                 scrollYPos={scrollYPos}
-                trackHeight={TIMELINE_TRACK_HEIGHT}
               />
             </div>
           </ScrollSyncPane>
