@@ -31,6 +31,7 @@ export default function Timeline() {
   const isScaleFitToTimeline = useEditorSore(state => state.isScaleFitToTimeline);
   const setIsScaleFitToTimeline = useEditorSore(state => state.setIsScaleFitToTimeline);
 
+  
   const [scale, setScale] = useState(getInitialTimelineScale(durationInFrames));
 
   console.log('🚀 ~ file: Timeline.tsx:34 ~ Timeline ~ scale:', scale);

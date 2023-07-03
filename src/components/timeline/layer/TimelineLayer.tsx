@@ -6,7 +6,6 @@ import {
   EyeClosedIcon,
   LockClosedIcon,
   LockOpen1Icon,
-  ArrowUpIcon,
 } from '@radix-ui/react-icons';
 
 type Props = {

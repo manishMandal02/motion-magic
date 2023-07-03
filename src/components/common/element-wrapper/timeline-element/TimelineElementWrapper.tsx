@@ -5,6 +5,7 @@ import throttle from 'raf-throttle';
 import Tooltip from '../../tooltip';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 import framesToSeconds from '@/utils/common/framesToSeconds';
+import { DraggableEventHandler } from 'react-draggable';
 
 export type TooltipRef = {
   elementId: string;
@@ -20,13 +21,14 @@ type Props = {
   translateX: number;
   isLocked: boolean;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
-  handleDrag: (deltaX: number, deltaY: number) => void;
+  onDrag: (deltaX: number, deltaY: number) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
   showTooltipRef: MutableRefObject<TooltipRef>;
-  onDragStop: () => void;
+  onDragStop: (deltaX: number, deltaY: number) => void;
 };
 
+// extra el pos on Y axis
 const ELEMENT_POS_Y = 3;
 
 const TimelineElementWrapper = ({
@@ -36,7 +38,7 @@ const TimelineElementWrapper = ({
   height,
   isLocked,
   translateX,
-  handleDrag,
+  onDrag,
   handleResize,
   resetRefLines,
   showTooltipRef,
@@ -53,13 +55,14 @@ const TimelineElementWrapper = ({
     <>
       <Rnd
         size={{ width, height }}
-        position={{ x: position.x, y: ELEMENT_POS_Y }}
+        position={{ x: position.x, y: position.y }}
         onDrag={throttle((_e, d) => {
           setPosition({ x: d.x, y: d.y });
-          handleDrag(d.x - position.x, d.y - position.y);
-          if (d.y > 10 || d.y < 0) {
-            resetRefLines();
-          }
+          // handleDragEnd(d.x - position.x, d.y - position.y);
+          // if (d.y > 10 || d.y < 0) {
+          //   resetRefLines();
+          // }
+          onDrag(d.x - position.x, d.y);
         })}
         onDragStart={() => {
           setIsResizingORDragging(true);
@@ -67,8 +70,8 @@ const TimelineElementWrapper = ({
         onResizeStart={() => {
           setIsResizingORDragging(true);
         }}
-        onDragStop={() => {
-          onDragStop();
+        onDragStop={(_e, d) => {
+          onDragStop(d.x - position.x, d.y - position.y);
           resetRefLines();
           setIsResizingORDragging(false);
         }}
@@ -88,7 +91,7 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(false);
         }}
         dragAxis='both'
-        dragGrid={[frameWidth, height]}
+        dragGrid={[frameWidth, 1]}
         resizeGrid={[frameWidth, frameWidth]}
         className={`rounded-md transition-opacity outline border-offset-1 duration-150   select-none
         ${isResizingORDragging && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
@@ -98,7 +101,7 @@ const TimelineElementWrapper = ({
           position: 'absolute',
         }}
         disableDragging={isLocked}
-        bounds={'#tracksContainer'}
+        bounds={'.tracksContainer'}
         enableResizing={{
           top: false,
           topLeft: false,
