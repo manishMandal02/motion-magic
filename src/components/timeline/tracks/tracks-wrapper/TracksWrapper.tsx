@@ -297,12 +297,19 @@ const TracksWrapper = memo(
 
       // calculate current track
       //   const currentTackOfEl = Math.floor(posY / elementHeight) + (layer - 1);
+
+      console.log('🚀 ~ file: TracksWrapper.tsx:301 ~ posY:', posY);
+
+      console.log('🚀 ~ file: TracksWrapper.tsx:301 ~ elementHeight:', elementHeight);
+
       const currentTackOfEl =
-        posY <= elementHeight / 2 && posY >= elementHeight / 2 + 4
-          ? layer
+        posY <= -Math.abs(elementHeight / 2)
+          ? layer - 1
           : posY >= elementHeight / 2 && posY <= elementHeight / 2 - 4
           ? layer + 1
-          : layer - 1;
+          : layer;
+
+      console.log('🚀 ~ file: TracksWrapper.tsx:302 ~ currentTackOfEl:', currentTackOfEl);
 
       setCurrentDragEl({
         id,
@@ -500,7 +507,7 @@ const TracksWrapper = memo(
                 width: currentDragEl.width,
                 height: trackHeight - TRACK_PADDING_SPACING,
                 left: currentDragEl.startFrame * frameWidth + 'px',
-                top: currentDragEl.currentTrack * trackHeight + 'px',
+                top: (currentDragEl.currentTrack - 1) * trackHeight + 'px',
               }}
             ></div>
           </>
