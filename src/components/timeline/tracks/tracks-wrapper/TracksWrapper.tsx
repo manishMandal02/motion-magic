@@ -77,8 +77,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     width: 0,
   });
 
-  console.log('🚀 ~ file: TracksWrapper.tsx:81 ~ currentDragEl:', currentDragEl);
-
   //  new track
   const [createNewTrack, setCreateNewTrack] = useState({
     newTrackNum: 0,
@@ -132,7 +130,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     });
   };
 
-  //TODO: refactor these 2 handlers, too many code repeats
+  //TODO: refactor these 2 handlers (resize & drag), too many code repeats
 
   // handle resize track elements
   const handleResize = ({
@@ -144,8 +142,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     layer,
     resizeBounds,
   }: HandleResizeProps) => {
-    console.log('🚀 ~ file: TimelineTracks.tsx:108 ~ TimelineTracks ~ resizeBounds:', resizeBounds);
-
     // frames to show reference lines
     if (direction === 'left') {
       const newStartFrame = Math.max(0, startFrame - Math.round(deltaWidth / frameWidth));
@@ -282,7 +278,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     const newEndFrame = newStartFrame + (endFrame - startFrame);
 
     // update element position while dragging
-
     const trackToUpdate = tracksClone.find(track => track.layer === layer);
     if (!trackToUpdate) return;
 
@@ -309,23 +304,30 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       width,
     });
 
-    // check if layer has changed
-    //   if (deltaY >= trackHeight - TRACK_PADDING_SPACING) {
-    //     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame }, layer + 1);
-    //   } else if (deltaY <= TRACK_PADDING_SPACING - trackHeight) {
-    //     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame }, layer - 1);
-    //   } else {
-    //     updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
-    //   }
-
     // check if el is hovering on a track or in between (to create a new track)
-    if (posY >= elementHeight / 2 - 4 && posY <= elementHeight / 2 + 4) {
+    const posYByHeight = posY / (elementHeight / 2);
+
+    if (Number.isInteger(posYByHeight) && posYByHeight % 2 !== 0) {
       // reset drag el position
       resetDragElPos();
-      const newTrackNum = Math.ceil(posY / trackHeight) + 1;
+
+      const newLayerValue = Math.ceil(Math.abs(posY / elementHeight));
+
+      const newTrackNum =
+        posY > 0
+          ? Math.min(tracksClone.length + 1, layer + newLayerValue)
+          : Math.max(1, layer + 1 - newLayerValue);
+
       // create new Track with this el in it
       setCreateNewTrack({ newTrackNum });
     }
+
+    //TODO: show new layer line when hovering between layers
+    //TODO: overlapping elements while dragging & showing the place holder accordingly
+    //TODO: revert back if still drag after overlapping of elements occur
+    //TODO: Auto scroll on dragging to the extreme end on X & Y axis 
+    //TODO: add memo() for all major components under timeline directly
+    //TODO:   
 
     // show tooltip
     if (layer === layer) {

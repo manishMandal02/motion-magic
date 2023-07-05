@@ -31,7 +31,6 @@ const TimelineSeeker = ({
     setScroll(prev =>
       scrollYPos + SEEKER_Y_AXIS_POS < tracksContainer.clientHeight - 190 ? scrollYPos : prev
     );
-    console.log('🚀 ~ file: TimelineSeeker.tsx:36 ~ useEffect ~ scrollYPos:', scrollYPos);
   }, [scrollYPos]);
 
   //TODO: get tracks container height dynamically

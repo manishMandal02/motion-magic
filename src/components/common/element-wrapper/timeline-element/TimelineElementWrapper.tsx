@@ -64,8 +64,6 @@ const TimelineElementWrapper = ({
           //   containerBounds
           // );
 
-          console.log('🚀 ~ file: TimelineElementWrapper.tsx:61 ~ onDrag={throttle ~ _e:', _e);
-
           setPosition({ x: d.x, y: d.y });
           // handleDragEnd(d.x - position.x, d.y - position.y);
           // if (d.y > 10 || d.y < 0) {
@@ -123,14 +121,14 @@ const TimelineElementWrapper = ({
         }}
       >
         <Tooltip
-          content={toTwoDigitsNum(framesToSeconds(showTooltipRef!.current.startFrame, 1)).toString()}
+          content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
           position={'top-left'}
-          isOpen={isResizingORDragging && !!showTooltipRef!.current.startFrame}
+          isOpen={isResizingORDragging && !!showTooltipRef.current.startFrame}
         >
           <Tooltip
             content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
             position={'top-right'}
-            isOpen={isResizingORDragging && !!showTooltipRef!.current.endFrame}
+            isOpen={isResizingORDragging && !!showTooltipRef.current.endFrame}
           >
             {children}
           </Tooltip>
