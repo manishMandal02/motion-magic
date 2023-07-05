@@ -1,3 +1,3 @@
-import { TracksWrapper } from './TracksWrapper';
+import TracksWrapper from './TracksWrapper';
 
 export default TracksWrapper;
