@@ -26,6 +26,7 @@ type Props = {
   resetRefLines: () => void;
   showTooltipRef: MutableRefObject<TooltipRef>;
   onDragStop: (deltaX: number, deltaY: number) => void;
+  onDragStart: () => void;
 };
 
 // extra el pos on Y axis
@@ -43,6 +44,7 @@ const TimelineElementWrapper = ({
   resetRefLines,
   showTooltipRef,
   onDragStop,
+  onDragStart,
 }: Props) => {
   const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
@@ -72,6 +74,7 @@ const TimelineElementWrapper = ({
           onDrag(d.x - position.x, d.y);
         })}
         onDragStart={() => {
+          onDragStart();
           setIsResizingORDragging(true);
         }}
         onResizeStart={() => {

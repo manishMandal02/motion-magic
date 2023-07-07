@@ -1,27 +1,31 @@
+import { CurrentDragElement } from '@/components/timeline/tracks/tracks-wrapper/TracksWrapper';
 import { TrackElement } from '@/types/timeline.type';
+import { Dispatch, SetStateAction } from 'react';
 
-type OverlappingElement = {
-  id: string;
-  newStartFrame: number; // frame
-  newEndFrame: number; // frame
-};
-
-export type GetOverlappingElementsProps = {
+export type HandleOverlappingElementsProps = {
   elementId: string;
   startFrame: number;
   endFrame: number;
   elements: TrackElement[];
+  currentTrack: number;
+  setCurrentDragEl: Dispatch<SetStateAction<CurrentDragElement>>;
 };
-const getOverlappingElements = ({
+const handleOverlappingElements = ({
   elementId,
   startFrame,
   endFrame,
   elements,
-}: GetOverlappingElementsProps) => {
-  const overlappingElements: OverlappingElement[] = [];
+  setCurrentDragEl,
+  currentTrack,
+}: HandleOverlappingElementsProps) => {
+  let isOverlapping = false;
   // element center
 
-  const selectedElCenterFrame = startFrame + Math.round((endFrame - startFrame) / 2);
+  // new overlapping logic
+  //TODO: have rune this fn recursively to check for overlapping after moving the overlapping elements and/or placeholder
+
+  const activeElTotalFrames = endFrame - startFrame;
+  if (elements.length === 1 && elements[0].id === elementId) return;
 
   for (let i = 0; i < elements.length; i++) {
     // get current el
@@ -31,37 +35,69 @@ const getOverlappingElements = ({
 
     const elCenterFrame = el.startFrame + Math.round((el.endFrame - el.startFrame) / 2);
 
-    // check if any elements are overlapping the selected el
-    if (
-      (startFrame < el.endFrame && startFrame > el.startFrame) ||
-      (endFrame > el.startFrame && endFrame < el.endFrame) ||
-      (el.startFrame > startFrame && el.endFrame < endFrame) ||
-      (startFrame === el.startFrame && endFrame === el.endFrame && elementId !== el.id)
-    ) {
-      // move this element to the left
-      if (elCenterFrame <= selectedElCenterFrame) {
-        const newEndFrame = startFrame - 1;
-        overlappingElements.push({
-          id: el.id,
-          newEndFrame,
-          newStartFrame: Math.max(0, newEndFrame - elTotalFrames),
-        });
-      }
+    // check if any elements are overlapping the selected el from right side (placeholder will be placed at the end of overlapping element)
+    if (startFrame < el.endFrame && startFrame >= elCenterFrame) {
+      isOverlapping = true;
+      // move the active el's placeholder after the element's end frame
+      const newStartFrame = el.endFrame + 1;
 
-      // move this element to the right
-      if (elCenterFrame >= selectedElCenterFrame) {
-        const newStartFrame = endFrame + 1;
+      setCurrentDragEl(prev => ({
+        ...prev,
+        startFrame: newStartFrame,
+        endFrame: newStartFrame + activeElTotalFrames,
+      }));
+    }
+    // check if any elements are overlapping the selected el from right side (placeholder will be placed at the start of overlapping element)
+    if (startFrame <= elCenterFrame && startFrame >= el.startFrame) {
+      isOverlapping = true;
+      // move the active el's placeholder after the element's end frame
+      const activeElNewStartFrame = el.startFrame;
+      const activeElNewEndFrame = activeElNewStartFrame + activeElTotalFrames;
 
-        overlappingElements.push({
-          id: el.id,
-          newStartFrame,
-          newEndFrame: newStartFrame + elTotalFrames,
-        });
+      setCurrentDragEl(prev => ({
+        ...prev,
+        startFrame: activeElNewStartFrame,
+        endFrame: activeElNewEndFrame,
+      }));
+      // move the overlapping el to the end of the active el's placeholder
+      for (let overlappingEl of elements) {
+        const newOverlappingElStartFrame = activeElNewEndFrame + 1;
+        if (overlappingEl.id === el.id) {
+          overlappingEl.startFrame = newOverlappingElStartFrame;
+          overlappingEl.endFrame = newOverlappingElStartFrame + elTotalFrames;
+        }
       }
+    }
+
+    // check if any elements are overlapping the selected el from left side (placeholder will be placed at the start of overlapping element)
+    if (endFrame > el.startFrame && endFrame <= elCenterFrame) {
+      isOverlapping = true;
+      // move the active el's placeholder after the element's end frame
+      const newEndFrame = el.startFrame - 1;
+
+      setCurrentDragEl(prev => ({
+        ...prev,
+        endFrame: newEndFrame,
+        startFrame: newEndFrame - activeElTotalFrames,
+      }));
+
+      // TODO: update the overlapping elements position
+    }
+    // check if any elements are overlapping the selected el from left side (placeholder will be placed at the end of overlapping element)
+    if (endFrame > elCenterFrame && endFrame <= el.endFrame) {
+      isOverlapping = true;
+      // move the active el's placeholder after the element's end frame
+      const newStartFrame = el.endFrame + 1;
+
+      setCurrentDragEl(prev => ({
+        ...prev,
+        startFrame: newStartFrame,
+        endFrame: newStartFrame + activeElTotalFrames,
+      }));
     }
   }
 
-  return overlappingElements;
+  return isOverlapping;
 };
 
-export { getOverlappingElements };
+export { handleOverlappingElements };

@@ -3,7 +3,7 @@ import { TooltipRef } from '@/components/common/element-wrapper/timeline-element
 import { IElementFrameDuration } from '@/types/elements.type';
 import { ReferenceLine, TimelineTrack, TrackElement } from '@/types/timeline.type';
 import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBounds';
-import { GetOverlappingElementsProps, getOverlappingElements } from '@/utils/timeline/getOverlappingElements';
+import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import { nanoid } from 'nanoid';
 import { memo, useMemo, useRef, useState } from 'react';
@@ -18,7 +18,7 @@ const tooltipRefInitialData: TooltipRef = {
   endFrame: 0,
 };
 
-type CurrentDragElement = {
+export type CurrentDragElement = {
   id: string;
   startFrame: number;
   endFrame: number;
@@ -84,6 +84,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
 
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
+  const [isOverlappingElements, setIsOverlappingElements] = useState(false);
   // tooltip
   const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>(
     tooltipRefInitialData
@@ -93,32 +94,32 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
   let tracksClone = useMemo(() => [...tracks], [tracks]);
 
   // handle overlapping elements while dragging
-  const handleOverlappingEl = ({
-    elementId,
-    elements,
-    startFrame,
-    endFrame,
-    currentTrack,
-  }: GetOverlappingElementsProps & { currentTrack: number }) => {
-    if (elements.length <= 1) return;
-    const overlappingElements = getOverlappingElements({ elementId, elements, endFrame, startFrame });
+  // const handleOverlappingEl = ({
+  //   elementId,
+  //   elements,
+  //   startFrame,
+  //   endFrame,
+  //   currentTrack,
+  // }: GetOverlappingElementsProps & { currentTrack: number }) => {
+  //   if (elements.length <= 1) return;
+  //   const overlappingElements = getOverlappingElements({ elementId, elements, endFrame, startFrame });
 
-    const trackToUpdate = tracksClone.find(track => track.layer === currentTrack);
-    if (!trackToUpdate) return;
+  //   const trackToUpdate = tracksClone.find(track => track.layer === currentTrack);
+  //   if (!trackToUpdate) return;
 
-    // update frame duration of overlapping elements
-    for (let i = 0; i < overlappingElements.length; i++) {
-      const { id, newStartFrame, newEndFrame } = overlappingElements[i];
-      // updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
-      for (let el of trackToUpdate.elements) {
-        if (el.id === id) {
-          el.startFrame = newStartFrame;
-          el.endFrame = newEndFrame;
-        }
-      }
-    }
-    tracksClone[trackToUpdate.layer - 1] = trackToUpdate;
-  };
+  //   // update frame duration of overlapping elements
+  //   for (let i = 0; i < overlappingElements.length; i++) {
+  //     const { id, newStartFrame, newEndFrame } = overlappingElements[i];
+  //     // updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
+  //     for (let el of trackToUpdate.elements) {
+  //       if (el.id === id) {
+  //         el.startFrame = newStartFrame;
+  //         el.endFrame = newEndFrame;
+  //       }
+  //     }
+  //   }
+  //   tracksClone[trackToUpdate.layer - 1] = trackToUpdate;
+  // };
 
   const resetDragElPos = () => {
     setCurrentDragEl({
@@ -175,9 +176,9 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       // check if it's current frame (seeker)
       const isOverlappingWithSeeker = newStartFrame === currentFrame;
 
-      const isOverlapping = overlappingFrames.length > 0;
-      if (isOverlapping || isOverlappingWithSeeker) {
-        if (isOverlapping) {
+      const isOverlappingFrames = overlappingFrames.length > 0;
+      if (isOverlappingFrames || isOverlappingWithSeeker) {
+        if (isOverlappingFrames) {
           setShowRefLines([
             overlappingFrames.reduce((acc: ReferenceLine, curr: ReferenceLine) => {
               if (acc.frame === curr.frame) {
@@ -230,9 +231,9 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       // check if it's current frame (seeker)
       const isOverlappingWithSeeker = newEndFrame === currentFrame;
 
-      const isOverlapping = overlappingFrames.length > 0;
-      if (isOverlapping || isOverlappingWithSeeker) {
-        if (isOverlapping) {
+      const isOverlappingFrames = overlappingFrames.length > 0;
+      if (isOverlappingFrames || isOverlappingWithSeeker) {
+        if (isOverlappingFrames) {
           setShowRefLines([
             overlappingFrames.reduce((acc: ReferenceLine, curr: ReferenceLine) => {
               if (acc.frame === curr.frame) {
@@ -281,6 +282,17 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     const trackToUpdate = tracksClone.find(track => track.layer === layer);
     if (!trackToUpdate) return;
 
+    // get active el state from tracks (all elements)
+    const activeEl = trackToUpdate.elements.find(el => el.id === id);
+    if (!activeEl) return;
+
+    // check if overlapping
+    // if (activeEl.startFrame !== currentDragEl.startFrame && activeEl.endFrame !== currentDragEl.endFrame) {
+    //   setIsOverlappingElements(true);
+    // } else {
+    //   setIsOverlappingElements(false);
+    // }
+
     for (let el of trackToUpdate.elements) {
       if (el.id === id) {
         el.startFrame = newStartFrame;
@@ -289,20 +301,41 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     }
     tracksClone[trackToUpdate.layer - 1] = trackToUpdate;
 
-    const currentTackOfEl =
+    const currentTrackOfEl =
       posY <= -Math.abs(elementHeight / 2)
         ? layer - Math.round(Math.abs(posY) / elementHeight)
         : posY >= elementHeight / 2
         ? layer + Math.round(posY / elementHeight)
         : layer;
 
-    setCurrentDragEl({
-      id,
-      currentTrack: currentTackOfEl,
-      startFrame: newStartFrame,
+    // check if the dragging el is overlapping any other elements
+    const isOverlappingWithOtherElements = handleOverlappingElements({
+      elementId: id,
+      elements: tracksClone[currentTrackOfEl - 1].elements,
       endFrame: newEndFrame,
-      width,
+      startFrame: newStartFrame,
+      currentTrack: currentTrackOfEl,
+      setCurrentDragEl: setCurrentDragEl,
     });
+
+    // if (isOverlappingWithOtherElements) {
+
+    //   setIsOverlappingElements(true);
+    // }
+    console.log(
+      '🚀 ~ file: TracksWrapper.tsx:323 ~ TracksWrapper ~ isOverlappingWithOtherElements:',
+      isOverlappingWithOtherElements
+    );
+
+    if (!isOverlappingWithOtherElements) {
+      setCurrentDragEl({
+        id,
+        currentTrack: currentTrackOfEl,
+        startFrame: newStartFrame,
+        endFrame: newEndFrame,
+        width,
+      });
+    }
 
     // check if el is hovering on a track or in between (to create a new track)
     const posYByHeight = posY / (elementHeight / 2);
@@ -322,36 +355,30 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       setCreateNewTrack({ newTrackNum });
     }
 
-    //TODO: show new layer line when hovering between layers
     //TODO: overlapping elements while dragging & showing the place holder accordingly
+    //TODO: show new layer line when hovering between layers
     //TODO: revert back if still drag after overlapping of elements occur
-    //TODO: Auto scroll on dragging to the extreme end on X & Y axis 
+    //TODO: Auto scroll on dragging to the extreme end on X & Y axis
     //TODO: add memo() for all major components under timeline directly
-    //TODO:   
+    //TODO:
 
     // show tooltip
-    if (layer === layer) {
-      showTooltipRef.current.elementId = id;
-      showTooltipRef.current.startFrame = newStartFrame;
-      showTooltipRef.current.endFrame = newEndFrame;
-    } else {
-      showTooltipRef.current = tooltipRefInitialData;
-    }
+    showTooltipRef.current.elementId = id;
+    showTooltipRef.current.startFrame = newStartFrame;
+    showTooltipRef.current.endFrame = newEndFrame;
 
-    // check if the dragging el is overlapping any other elements
-
-    handleOverlappingEl({
-      elementId: id,
-      elements: elements,
-      endFrame: newEndFrame,
-      startFrame: newStartFrame,
-      currentTrack: currentTackOfEl,
-    });
+    // handleOverlappingEl({
+    //   elementId: id,
+    //   elements: tracksClone[currentTrackOfEl].elements,
+    //   endFrame: newEndFrame,
+    //   startFrame: newStartFrame,
+    //   currentTrack: currentTrackOfEl,
+    // });
 
     const overlappingFrames = getOverlappingFrames(
       tracksClone,
       id,
-      currentTackOfEl,
+      currentTrackOfEl,
       newStartFrame,
       newEndFrame
     );
@@ -364,10 +391,10 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     // check if it's current frame (seeker)
     const isOverlappingWithSeeker = newStartFrame === currentFrame || newEndFrame === currentFrame;
 
-    const isOverlapping = overlappingFrames.length > 0;
+    const isOverlappingFrames = overlappingFrames.length > 0;
 
-    if (isOverlapping || isOverlappingWithSeeker) {
-      if (isOverlapping) {
+    if (isOverlappingFrames || isOverlappingWithSeeker) {
+      if (isOverlappingFrames) {
         setShowRefLines([
           ...overlappingFrames.reduce((acc: ReferenceLine[], curr: ReferenceLine) => {
             const existingFrame = acc.find(obj => obj.frame === curr.frame);
@@ -433,6 +460,15 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
                 translateX={translateX}
                 height={trackHeight - TRACK_PADDING_SPACING}
                 key={element.id}
+                onDragStart={() => {
+                  setCurrentDragEl({
+                    startFrame,
+                    endFrame,
+                    id,
+                    width,
+                    currentTrack: track.layer,
+                  });
+                }}
                 onDrag={(deltaX, posY) => {
                   handleOnDrag({
                     id,
