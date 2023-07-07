@@ -55,6 +55,9 @@ dependencies:
   immer:
     specifier: ^10.0.2
     version: 10.0.2
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   nanoid:
     specifier: ^4.0.2
     version: 4.0.2
@@ -108,6 +111,9 @@ dependencies:
     version: 4.3.8(immer@10.0.2)(react@18.2.0)
 
 devDependencies:
+  '@types/lodash':
+    specifier: ^4.14.195
+    version: 4.14.195
   '@types/react-beautiful-dnd':
     specifier: ^13.1.4
     version: 13.1.4
@@ -2491,12 +2497,11 @@ packages:
   /@types/lodash.mergewith@4.6.7:
     resolution: {integrity: sha512-3m+lkO5CLRRYU0fhGRp7zbsGi6+BZj0uTVSwvcKU+nSlhjA9/QRNfuSGnD2mX6hQA7ZbmcCkzk5h4ZYGOtk14A==}
     dependencies:
-      '@types/lodash': 4.14.194
+      '@types/lodash': 4.14.195
     dev: false
 
-  /@types/lodash@4.14.194:
-    resolution: {integrity: sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==}
-    dev: false
+  /@types/lodash@4.14.195:
+    resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
 
   /@types/node@20.2.1:
     resolution: {integrity: sha512-DqJociPbZP1lbZ5SQPk4oag6W7AyaGMO6gSfRwq3PWl4PXTwJpRQJhDq4W0kzrg3w6tJ1SwlvGZ5uKFHY13LIg==}
@@ -4632,6 +4637,10 @@ packages:
 
   /lodash.sortby@4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
+    dev: false
+
+  /lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: false
 
   /loose-envify@1.4.0:

@@ -6,7 +6,8 @@ import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBoun
 import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import { nanoid } from 'nanoid';
-import { memo, useMemo, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
+import _deepClone from 'lodash/cloneDeep';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -46,7 +47,6 @@ type HandleOnDragProps = {
   endFrame: number;
   layer: number;
   width: number;
-  elements: TrackElement[];
 };
 // dragend handle props
 type HandleDragEndProps = {
@@ -63,10 +63,18 @@ type Props = {
   trackWidth: number;
   trackHeight: number;
   frameWidth: number;
-  updateElFrameDuration: (id: string, duration: IElementFrameDuration, newLayer?: number) => void;
+  updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
+  updateAllTracksWithOnDragEnd: (tracks: TimelineTrack[]) => void;
 };
 
-const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFrameDuration }: Props) => {
+const TracksWrapper = ({
+  tracks,
+  frameWidth,
+  trackHeight,
+  trackWidth,
+  updateElFrameDuration,
+  updateAllTracksWithOnDragEnd,
+}: Props) => {
   // local state
   // store position of elements dragging
   const [currentDragEl, setCurrentDragEl] = useState<CurrentDragElement>({
@@ -84,42 +92,13 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
 
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
-  const [isOverlappingElements, setIsOverlappingElements] = useState(false);
-  // tooltip
+  // time stamp tooltip
   const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>(
     tooltipRefInitialData
   );
 
   // copy of tracks state for updating elements position while dragging
-  let tracksClone = useMemo(() => [...tracks], [tracks]);
-
-  // handle overlapping elements while dragging
-  // const handleOverlappingEl = ({
-  //   elementId,
-  //   elements,
-  //   startFrame,
-  //   endFrame,
-  //   currentTrack,
-  // }: GetOverlappingElementsProps & { currentTrack: number }) => {
-  //   if (elements.length <= 1) return;
-  //   const overlappingElements = getOverlappingElements({ elementId, elements, endFrame, startFrame });
-
-  //   const trackToUpdate = tracksClone.find(track => track.layer === currentTrack);
-  //   if (!trackToUpdate) return;
-
-  //   // update frame duration of overlapping elements
-  //   for (let i = 0; i < overlappingElements.length; i++) {
-  //     const { id, newStartFrame, newEndFrame } = overlappingElements[i];
-  //     // updateElFrameDuration(id, { startFrame: newStartFrame, endFrame: newEndFrame });
-  //     for (let el of trackToUpdate.elements) {
-  //       if (el.id === id) {
-  //         el.startFrame = newStartFrame;
-  //         el.endFrame = newEndFrame;
-  //       }
-  //     }
-  //   }
-  //   tracksClone[trackToUpdate.layer - 1] = trackToUpdate;
-  // };
+  let tracksClone: TimelineTrack[] = tracks.map(track => ({ ...track }));
 
   const resetDragElPos = () => {
     setCurrentDragEl({
@@ -166,7 +145,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       showTooltipRef.current.endFrame = 0;
 
       // checking if other elements have same start frame
-      const overlappingFrames = getOverlappingFrames(tracks, id, layer, startFrame);
+      const overlappingFrames = getOverlappingFrames(tracksClone, id, layer, startFrame);
 
       // get current frame
       const seekerEl = document.getElementById('timeline-seeker');
@@ -193,7 +172,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
           ]);
         }
         if (isOverlappingWithSeeker) {
-          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracks.length + 1 }]);
+          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
         }
       } else {
         setShowRefLines([]);
@@ -221,7 +200,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       showTooltipRef.current.startFrame = 0;
 
       // checking if other elements have same end frame
-      const overlappingFrames = getOverlappingFrames(tracks, id, layer, undefined, endFrame);
+      const overlappingFrames = getOverlappingFrames(tracksClone, id, layer, undefined, endFrame);
 
       // get current frame
       const seekerEl = document.getElementById('timeline-seeker');
@@ -248,7 +227,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
           ]);
         }
         if (isOverlappingWithSeeker) {
-          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracks.length + 1 }]);
+          setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
         }
       } else {
         setShowRefLines([]);
@@ -256,20 +235,8 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     }
   };
 
-  // handle drag end elements
-  const handleDragEnd = ({ id, deltaX, deltaY, startFrame, endFrame, layer }: HandleDragEndProps) => {};
-
   // handle on drag elements
-  const handleOnDrag = ({
-    id,
-    elements,
-    width,
-    deltaX,
-    posY,
-    startFrame,
-    endFrame,
-    layer,
-  }: HandleOnDragProps) => {
+  const handleOnDrag = ({ id, width, deltaX, posY, startFrame, endFrame, layer }: HandleOnDragProps) => {
     // reset the tracks clone state to reset the position of elements that were moved while dragging
     const elementHeight = trackHeight - TRACK_PADDING_SPACING;
 
@@ -285,13 +252,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     // get active el state from tracks (all elements)
     const activeEl = trackToUpdate.elements.find(el => el.id === id);
     if (!activeEl) return;
-
-    // check if overlapping
-    // if (activeEl.startFrame !== currentDragEl.startFrame && activeEl.endFrame !== currentDragEl.endFrame) {
-    //   setIsOverlappingElements(true);
-    // } else {
-    //   setIsOverlappingElements(false);
-    // }
 
     for (let el of trackToUpdate.elements) {
       if (el.id === id) {
@@ -317,15 +277,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
       currentTrack: currentTrackOfEl,
       setCurrentDragEl: setCurrentDragEl,
     });
-
-    // if (isOverlappingWithOtherElements) {
-
-    //   setIsOverlappingElements(true);
-    // }
-    console.log(
-      '🚀 ~ file: TracksWrapper.tsx:323 ~ TracksWrapper ~ isOverlappingWithOtherElements:',
-      isOverlappingWithOtherElements
-    );
 
     if (!isOverlappingWithOtherElements) {
       setCurrentDragEl({
@@ -410,7 +361,7 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
         ]);
       }
       if (isOverlappingWithSeeker) {
-        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracks.length + 1 }]);
+        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
       }
     } else {
       setShowRefLines([]);
@@ -419,6 +370,46 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
     //
     //if yes, adjust the frames accordingly
     // store the new start & end frames while it's being dragged to show a reference placeholder
+  };
+
+  // handle drag end elements
+  const handleDragEnd = ({ id, deltaX, deltaY, startFrame, endFrame, layer }: HandleDragEndProps) => {
+    //TODO: check if the if the drag was for create new track (users stopped in between the tracks), if yes then handle it
+    //
+    //
+    //TODO: update the tracks clone state to to main state
+
+    const currentTrackWithEl = tracksClone.find(track => track.layer === layer);
+    if (!currentTrackWithEl) return;
+
+    const elementToUpdate = currentTrackWithEl.elements.find(el => el.id === currentDragEl.id);
+    if (!elementToUpdate) return;
+    // update dragged element time-frame to the placeholder time-frame
+    elementToUpdate.startFrame = currentDragEl.startFrame;
+    elementToUpdate.endFrame = currentDragEl.endFrame;
+
+    if (currentDragEl.currentTrack !== layer) {
+      // add el to new track/layer
+      const trackToAddElTo = tracksClone.find(track => track.layer === currentDragEl.currentTrack);
+      if (!trackToAddElTo) return;
+      trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
+
+      // remove the el from track
+      currentTrackWithEl.elements = [...currentTrackWithEl.elements.filter(el => el.id !== currentDragEl.id)];
+
+      // delete the track if empty
+      if (currentTrackWithEl.elements.length === 0) {
+        tracksClone = tracksClone.filter(track => track.id !== currentTrackWithEl.id);
+        // giver a layer number to each track
+        tracksClone = tracksClone.map((track, idx) => {
+          track.layer = idx + 1;
+          return track;
+        });
+      }
+    }
+
+    updateAllTracksWithOnDragEnd(tracksClone);
+    //
   };
 
   // renders all el on timeline tracks based on their layer levels
@@ -472,7 +463,6 @@ const TracksWrapper = ({ tracks, frameWidth, trackHeight, trackWidth, updateElFr
                 onDrag={(deltaX, posY) => {
                   handleOnDrag({
                     id,
-                    elements: track.elements,
                     width,
                     posY: posY,
                     deltaX,

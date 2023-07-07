@@ -1,6 +1,5 @@
 import { projectConstants } from '@/constants/projectConstants';
 import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
-import { getOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
 import type { StateCreator } from 'zustand';
@@ -16,14 +15,10 @@ export interface ITimelineState {
   timelineTracks: TimelineTrack[];
   isScaleFitToTimeline: boolean;
   setIsScaleFitToTimeline: (value: boolean) => void;
-  updateTrackElFrame: (
-    elementId: string,
-    startFrame: number,
-    endFrame: number,
-    newTrackLayer?: number
-  ) => void;
+  updateTrackElFrame: (elementId: string, startFrame: number, endFrame: number) => void;
   updateTimelineTrack: (id: string, track: RecursivePartial<TimelineTrack>) => void;
-  updateTimelineLayer: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
+  updateTimelineLayerPosition: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
+  updateAllTimelineTracks: (tracks: TimelineTrack[]) => void;
 }
 
 const createTimelineSlice: StateCreator<ITimelineState> = set => ({
@@ -38,7 +33,7 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
     }),
   timelineTracks: [],
   // Update tracks name, startFrame & endFrame of el of the track
-  updateTrackElFrame: (elementId, startFrame, endFrame, newTrackLayer) =>
+  updateTrackElFrame: (elementId, startFrame, endFrame) =>
     set(
       produce((draft: ITimelineState) => {
         const trackWithEl = draft.timelineTracks.find(track =>
@@ -56,44 +51,9 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         }
         elementToUpdate.endFrame = endFrame;
         // update element track
-        if (typeof newTrackLayer !== 'undefined') {
-          // add el to new track/layer
-          const trackToAddElTo = draft.timelineTracks.find(track => track.layer === newTrackLayer);
-          if (!trackToAddElTo) return;
-          trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
+        // if (typeof newTrackLayer !== 'undefined') {
 
-          // remove the el from track
-          trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
-
-          // delete the track if empty
-          if (trackWithEl.elements.length === 0) {
-            draft.timelineTracks = draft.timelineTracks.filter(track => track.id !== trackWithEl.id);
-            draft.timelineTracks = draft.timelineTracks.map((track, idx) => {
-              track.layer = idx + 1;
-              return track;
-            });
-          }
-
-          // handler overlapping
-          const overlappingElements = getOverlappingElements({
-            elementId: elementToUpdate.id,
-            elements: trackToAddElTo.elements,
-            startFrame: elementToUpdate.startFrame,
-            endFrame: elementToUpdate.endFrame,
-          });
-          if (overlappingElements.length > 0) {
-            // update frame duration of overlapping elements
-            for (let i = 0; i < overlappingElements.length; i++) {
-              const { id, newStartFrame, newEndFrame } = overlappingElements[i];
-              for (let el of trackToAddElTo.elements) {
-                if (el.id === id) {
-                  el.startFrame = newStartFrame;
-                  el.endFrame = newEndFrame;
-                }
-              }
-            }
-          }
-        }
+        // }
       })
     ),
   updateTimelineTrack: (id, track) =>
@@ -113,7 +73,7 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
       })
     ),
   // update layer of the track based on button press forward, backward, top, bottom
-  updateTimelineLayer: (id, currentLayer, moveTo) =>
+  updateTimelineLayerPosition: (id, currentLayer, moveTo) =>
     set(
       produce((draft: ITimelineState) => {
         updateTimelineLayer({
@@ -124,6 +84,11 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         });
       })
     ),
+  updateAllTimelineTracks: tracks =>
+    set(state => ({
+      ...state,
+      timelineTracks: [...tracks],
+    })),
 });
 
 export { createTimelineSlice };

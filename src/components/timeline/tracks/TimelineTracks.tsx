@@ -1,10 +1,10 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
+import { memo } from 'react';
 
 import { useEditorSore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
 
+import { TimelineTrack } from '@/types/timeline.type';
 import TracksWrapper from './tracks-wrapper';
 
 type Props = {
@@ -15,15 +15,21 @@ type Props = {
 
 const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // global state
-  const allTracks = useEditorSore(state => state.timelineTracks);
-  const updateTrackElFrame = useEditorSore(state => state.updateTrackElFrame);
+  const allTracks = useEditorSore(state => state.timelineTracks, );
 
-  const updateElFrameDuration = (id: string, duration: IElementFrameDuration, newLayer?: number) => {
-    if (typeof newLayer !== 'undefined') {
-      updateTrackElFrame(id, duration.startFrame, duration.endFrame, newLayer);
-    } else {
-      updateTrackElFrame(id, duration.startFrame, duration.endFrame);
-    }
+  console.log('🚀 ~ file: TimelineTracks.tsx:20 ~ TimelineTracks ~ allTracks:', allTracks);
+
+  const updateTrackElFrame = useEditorSore(state => state.updateTrackElFrame);
+  const updateAllTimelineTracks = useEditorSore(state => state.updateAllTimelineTracks);
+
+  const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
+    updateTrackElFrame(id, duration.startFrame, duration.endFrame);
+  };
+
+  const updateAllTracksWithOnDragEnd = (tracks: TimelineTrack[]) => {
+    console.log('🚀 ~ file: TimelineTracks.tsx:28 ~ updateAllTracksWithOnDragEnd ~ tracks:', tracks);
+
+    updateAllTimelineTracks(tracks);
   };
 
   return (
@@ -37,11 +43,12 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
         id='tracksContainer'
       >
         <TracksWrapper
-          tracks={allTracks}
+          tracks={[...allTracks]}
           frameWidth={frameWidth}
           trackHeight={trackHeight}
           trackWidth={timelineWidth}
           updateElFrameDuration={updateElFrameDuration}
+          updateAllTracksWithOnDragEnd={updateAllTracksWithOnDragEnd}
         />
       </div>
     </>

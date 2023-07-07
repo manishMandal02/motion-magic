@@ -14,7 +14,7 @@ type Props = {
 
 const TimelineLayer = ({ trackHeight }: Props) => {
   const allTracks = useEditorSore(state => state.timelineTracks);
-  const updateTimelineLayer = useEditorSore(state => state.updateTimelineLayer);
+  const updateTimelineLayerPosition = useEditorSore(state => state.updateTimelineLayerPosition);
   const updateTimelineTrack = useEditorSore(state => state.updateTimelineTrack);
 
   return (
@@ -36,7 +36,7 @@ const TimelineLayer = ({ trackHeight }: Props) => {
               <button
                 className=' rounded-md -mb-[.95rem] cursor-pointer hover:text-opacity-75 transition-all duration-300  py-1 px-1 disabled:text-slate-700 disabled'
                 disabled={track.layer === 1}
-                onClick={() => updateTimelineLayer(track.id, track.layer, 'FORWARD')}
+                onClick={() => updateTimelineLayerPosition(track.id, track.layer, 'FORWARD')}
               >
                 <CaretUpIcon className=' scale-[1.8]  opacity-70' />
               </button>
@@ -46,7 +46,7 @@ const TimelineLayer = ({ trackHeight }: Props) => {
               <button
                 className=' rounded-md  rotate-180 cursor-pointer  transition-all duration-300  py-1 px-1 disabled:text-slate-700 disabled'
                 disabled={track.layer === allTracks[allTracks.length - 1].layer}
-                onClick={() => updateTimelineLayer(track.id, track.layer, 'BACKWARD')}
+                onClick={() => updateTimelineLayerPosition(track.id, track.layer, 'BACKWARD')}
               >
                 <CaretUpIcon className='scale-[1.8]  opacity-70' />
               </button>
