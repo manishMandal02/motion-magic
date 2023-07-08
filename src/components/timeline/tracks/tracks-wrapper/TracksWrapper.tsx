@@ -11,6 +11,8 @@ import _deepClone from 'lodash/cloneDeep';
 import { produce } from 'immer';
 import { useEditorStore } from '@/store';
 
+import { PlusCircledIcon } from '@radix-ui/react-icons';
+
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
 
@@ -19,6 +21,12 @@ const tooltipRefInitialData: TooltipRef = {
   elementId: '',
   startFrame: 0,
   endFrame: 0,
+};
+
+export type CreateTrackOnDragParams = {
+  trackNum: number;
+  element: Omit<TrackElement, 'type'>;
+  elPrevTrack: number;
 };
 
 export type CurrentDragElement = {
@@ -65,8 +73,8 @@ type Props = {
   trackWidth: number;
   trackHeight: number;
   frameWidth: number;
+  timelineVisibleWidth: number;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
-  updateAllTracksWithOnDragEnd: (tracks: TimelineTrack[]) => void;
 };
 
 const TracksWrapper = ({
@@ -75,10 +83,11 @@ const TracksWrapper = ({
   trackHeight,
   trackWidth,
   updateElFrameDuration,
-  updateAllTracksWithOnDragEnd,
+  timelineVisibleWidth,
 }: Props) => {
   // global state
   const updateAllTimelineTracks = useEditorStore(state => state.updateAllTimelineTracks);
+  const createNewTrackOnDrag = useEditorStore(state => state.createNewTrackOnDrag);
 
   // local state
   // store position of elements dragging
@@ -90,11 +99,9 @@ const TracksWrapper = ({
     width: 0,
   });
   //  new track
-  const [createNewTrack, setCreateNewTrack] = useState({
-    newTrackNum: 0,
-  });
+  const [createNewTrack, setCreateNewTrack] = useState<CreateTrackOnDragParams | undefined>(undefined);
   // array of frames to show reference lines
-  const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
+  const [showRefLines, setShowRefLines] = useState<ReferenceLine[]>([]);
   // time stamp tooltip
   const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>(
     tooltipRefInitialData
@@ -320,7 +327,17 @@ const TracksWrapper = ({
           : Math.max(1, layer + 1 - newLayerValue);
 
       // create new Track with this el in it
-      setCreateNewTrack({ newTrackNum });
+      setCreateNewTrack({
+        trackNum: newTrackNum,
+        element: {
+          id,
+          startFrame: newStartFrame,
+          endFrame: newEndFrame,
+        },
+        elPrevTrack: layer,
+      });
+    } else {
+      setCreateNewTrack(undefined);
     }
 
     //TODO: overlapping elements while dragging & showing the place holder accordingly
@@ -392,6 +409,10 @@ const TracksWrapper = ({
   // handle drag end elements
   const handleDragEnd = ({ id, deltaX, deltaY, startFrame, endFrame, layer }: HandleDragEndProps) => {
     //TODO: check if the if the drag was for create new track (users stopped in between the tracks), if yes then handle it
+    if (createNewTrack?.trackNum && !currentDragEl.id) {
+      createNewTrackOnDrag(createNewTrack);
+      return;
+    }
     //
     //
     //TODO: update the tracks clone state to to main state
@@ -407,7 +428,7 @@ const TracksWrapper = ({
       return (
         <div
           key={track.id}
-          className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
+          className={` shadow-sm  shadow-brand-darkSecondary  relative flex
                 ${track.isHidden && 'opacity-60'}
                 ${track.isLocked && 'opacity-60'}
                `}
@@ -465,6 +486,7 @@ const TracksWrapper = ({
                 onDragStop={(deltaX, deltaY) => {
                   handleDragEnd({ id, deltaX, deltaY, startFrame, endFrame, layer: track.layer });
                   resetDragElPos();
+                  setCreateNewTrack(undefined);
                 }}
                 handleResize={(deltaWidth, direction) =>
                   handleResize({
@@ -505,7 +527,7 @@ const TracksWrapper = ({
     <>
       {renderElements()}
 
-      {/* current dragging elements placeholder  */}
+      {/* placeholder for element when its dragged  */}
       {currentDragEl.id ? (
         <>
           <div
@@ -520,6 +542,28 @@ const TracksWrapper = ({
         </>
       ) : null}
 
+      {/* new track line: show a a line between tracks when the element is hovered there */}
+      {createNewTrack ? (
+        <>
+          <div
+            className='w-full h-1 absolute bg-brand-primary left-0'
+            style={{
+              top: (createNewTrack.trackNum - 1) * (trackHeight - 2) + 'px',
+            }}
+          >
+            <div
+              className='absolute -top-[.36rem] bg-slate-200 rounded-full text-brand-primary h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
+              style={{
+                left: timelineVisibleWidth / 2 + 'px',
+              }}
+            >
+              +
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {/* reference lines when two or more elements have same frames */}
       {showRefLines.length > 0
         ? showRefLines.map(line => {
             // minus 20 so that they don't touch the border of the other tracks

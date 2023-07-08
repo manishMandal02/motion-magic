@@ -165,6 +165,7 @@ export default function Timeline() {
                   trackHeight={TIMELINE_TRACK_HEIGHT}
                   frameWidth={frameWidth}
                   timelineWidth={totalFrameWidth}
+                  timelineVisibleWidth={timelineTrackVisibleWidth}
                 />
               </>
               <TimelineSeeker

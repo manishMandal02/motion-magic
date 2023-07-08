@@ -11,9 +11,10 @@ type Props = {
   trackHeight: number;
   frameWidth: number;
   timelineWidth: number;
+  timelineVisibleWidth: number;
 };
 
-const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
+const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth, timelineVisibleWidth }: Props) => {
   // global state
   const allTracks = useEditorStore(state => state.timelineTracks);
 
@@ -23,10 +24,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTrackElFrame(id, duration.startFrame, duration.endFrame);
-  };
-
-  const updateAllTracksWithOnDragEnd = (tracks: TimelineTrack[]) => {
-    console.log('🚀 ~ file: TimelineTracks.tsx:28 ~ updateAllTracksWithOnDragEnd ~ tracks:', tracks);
   };
 
   return (
@@ -45,7 +42,7 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
           trackHeight={trackHeight}
           trackWidth={timelineWidth}
           updateElFrameDuration={updateElFrameDuration}
-          updateAllTracksWithOnDragEnd={updateAllTracksWithOnDragEnd}
+          timelineVisibleWidth={timelineVisibleWidth}
         />
       </div>
     </>

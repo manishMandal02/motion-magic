@@ -1,8 +1,12 @@
-import { CurrentDragElement } from '@/components/timeline/tracks/tracks-wrapper/TracksWrapper';
+import {
+  CreateTrackOnDragParams,
+  CurrentDragElement,
+} from '@/components/timeline/tracks/tracks-wrapper/TracksWrapper';
 import { projectConstants } from '@/constants/projectConstants';
 import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
 import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
 import { produce } from 'immer';
+import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 
 type RecursivePartial<T> = {
@@ -19,6 +23,7 @@ export interface ITimelineState {
   updateTrackElFrame: (elementId: string, startFrame: number, endFrame: number) => void;
   updateTimelineTrack: (id: string, track: RecursivePartial<TimelineTrack>) => void;
   updateTimelineLayerPosition: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
+  createNewTrackOnDrag: (newTrackInfo: CreateTrackOnDragParams) => void;
   updateAllTimelineTracks: (
     tracks: TimelineTrack[],
     currentDragEl: CurrentDragElement,
@@ -55,25 +60,6 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
           draft.isScaleFitToTimeline = false;
         }
         elementToUpdate.endFrame = endFrame;
-        // update element track
-        // if (typeof newTrackLayer !== 'undefined') {
-        //   // add el to new track/layer
-        //   const trackToAddElTo = draft.timelineTracks.find(track => track.layer === newTrackLayer);
-        //   if (!trackToAddElTo) return;
-        //   trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
-
-        //   // remove the el from track
-        //   trackWithEl.elements = [...trackWithEl.elements.filter(el => el.id !== elementId)];
-
-        //   // delete the track if empty
-        //   if (trackWithEl.elements.length === 0) {
-        //     draft.timelineTracks = draft.timelineTracks.filter(track => track.id !== trackWithEl.id);
-        //     draft.timelineTracks = draft.timelineTracks.map((track, idx) => {
-        //       track.layer = idx + 1;
-        //       return track;
-        //     });
-        //   }
-        // }
       })
     ),
   updateTimelineTrack: (id, track) =>
@@ -102,6 +88,47 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
           moveTo,
           timelineTracks: draft.timelineTracks,
         });
+      })
+    ),
+  createNewTrackOnDrag: ({ element, trackNum, elPrevTrack }) =>
+    set(
+      produce((draft: ITimelineState) => {
+        // remove element from previous track
+        const elPrevTrackState = draft.timelineTracks.find(track => track.layer === elPrevTrack);
+        if (!elPrevTrackState) return;
+        const elementFromState = elPrevTrackState.elements.find(el => el.id === element.id)!;
+        elPrevTrackState.elements = elPrevTrackState.elements.filter(el => el.id !== element.id);
+
+        //
+        const { id, startFrame, endFrame } = element;
+        let topLayerCurrent = 0;
+        if (draft.timelineTracks.length >= 1) {
+          topLayerCurrent = draft.timelineTracks[draft.timelineTracks.length - 1].layer;
+        }
+        const newTrack: TimelineTrack = {
+          id: nanoid(),
+          trackName: elementFromState.type,
+          layer: topLayerCurrent + 1,
+          isHidden: false,
+          isLocked: false,
+          elements: [{ ...elementFromState, startFrame, endFrame }],
+        };
+        // add new track at correct layer
+        draft.timelineTracks.splice(trackNum - 1, 0, newTrack);
+        draft.timelineTracks.forEach((track, idx) => {
+          track.layer = idx + 1;
+        });
+
+        // delete the track if empty
+        if (elPrevTrackState.elements.length === 0) {
+          draft.timelineTracks = draft.timelineTracks.filter(track => track.id !== elPrevTrackState.id);
+
+          // giver a layer number to each track
+          draft.timelineTracks = draft.timelineTracks.map((track, idx) => {
+            track.layer = idx + 1;
+            return track;
+          });
+        }
       })
     ),
   updateAllTimelineTracks: (tracks, currentDragEl, layer) =>
