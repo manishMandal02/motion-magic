@@ -48,8 +48,6 @@ const TimelineElementWrapper = ({
 }: Props) => {
   const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
 
-  console.log('🚀 ~ file: TimelineElementWrapper.tsx:51 ~ position:', position);
-
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
   useEffect(() => {

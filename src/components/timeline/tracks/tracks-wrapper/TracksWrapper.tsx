@@ -259,12 +259,8 @@ const TracksWrapper = ({
     // calculate new start frame
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
 
-    console.log('🚀 ~ file: TracksWrapper.tsx:254 ~ handleOnDrag ~ newStartFrame:', newStartFrame);
-
     // calculate end frame
     const newEndFrame = newStartFrame + (endFrame - startFrame);
-
-    console.log('🚀 ~ file: TracksWrapper.tsx:256 ~ handleOnDrag ~ newEndFrame:', newEndFrame);
 
     // update element position while dragging
     setTracksClone(prevTracks =>
@@ -298,7 +294,6 @@ const TracksWrapper = ({
       elements: tracksClone[currentTrackOfEl - 1].elements,
       endFrame: newEndFrame,
       startFrame: newStartFrame,
-      currentTrack: currentTrackOfEl,
       setCurrentDragEl: setCurrentDragEl,
     });
 
@@ -533,7 +528,7 @@ const TracksWrapper = ({
           <div
             className='bg-brand-primary bg-opacity-50 rounded-md border-2 border-dashed border-slate-100 absolute top-0 left-0'
             style={{
-              width: currentDragEl.width,
+              width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
               height: trackHeight - TRACK_PADDING_SPACING,
               left: currentDragEl.startFrame * frameWidth + 'px',
               top: (currentDragEl.currentTrack - 1) * trackHeight + 'px',
