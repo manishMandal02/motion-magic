@@ -1,16 +1,16 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { IElementType } from '@/types/elements.type';
 import Rectangle from '../art-board/elements/shapes/rectangle';
 import BasicText from '../art-board/elements/text/basic-text';
 
 export const MyComposition = () => {
-  const allElements = useEditorSore((state) => state.elements);
-  const setElPos = useEditorSore((state) => state.setElPos);
-  const setElSize = useEditorSore((state) => state.setElSize);
+  const allElements = useEditorStore(state => state.elements);
+  const setElPos = useEditorStore(state => state.setElPos);
+  const setElSize = useEditorStore(state => state.setElSize);
 
   return (
     <div className='bg-white w-full h-full'>
-      {allElements.map((el) => {
+      {allElements.map(el => {
         if (el.type === IElementType.SHAPE) {
           return (
             <Rectangle

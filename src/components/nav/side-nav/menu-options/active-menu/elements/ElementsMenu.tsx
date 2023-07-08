@@ -2,10 +2,10 @@ import { IElementType } from '@/types/elements.type';
 import { nanoid } from 'nanoid';
 import { BsCircle } from 'react-icons/bs';
 import { BiRectangle } from 'react-icons/bi';
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 
 const ElementsMenu = () => {
-  const addElement = useEditorSore(state => state.addElement);
+  const addElement = useEditorStore(state => state.addElement);
 
   const addElements = (type: string) => {
     addElement(IElementType.SHAPE, {
@@ -27,14 +27,16 @@ const ElementsMenu = () => {
         className='w-14 h-12 ml-3 bg-slate-400 border border-slate-300 flex items-center cursor-pointer justify-center'
         onClick={() => {
           addElements('shape');
-        }}>
+        }}
+      >
         <BiRectangle />
       </div>
       <div
         className='w-14 h-12 ml-3 bg-slate-400 border border-slate-300 flex items-center cursor-pointer justify-center'
         onClick={() => {
           addElements('shape');
-        }}>
+        }}
+      >
         <BsCircle />
       </div>
     </>

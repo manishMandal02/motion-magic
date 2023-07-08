@@ -6,8 +6,10 @@ import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBoun
 import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import { nanoid } from 'nanoid';
-import { memo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import _deepClone from 'lodash/cloneDeep';
+import { produce } from 'immer';
+import { useEditorStore } from '@/store';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -75,6 +77,9 @@ const TracksWrapper = ({
   updateElFrameDuration,
   updateAllTracksWithOnDragEnd,
 }: Props) => {
+  // global state
+  const updateAllTimelineTracks = useEditorStore(state => state.updateAllTimelineTracks);
+
   // local state
   // store position of elements dragging
   const [currentDragEl, setCurrentDragEl] = useState<CurrentDragElement>({
@@ -84,12 +89,10 @@ const TracksWrapper = ({
     currentTrack: 0,
     width: 0,
   });
-
   //  new track
   const [createNewTrack, setCreateNewTrack] = useState({
     newTrackNum: 0,
   });
-
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[] | []>([]);
   // time stamp tooltip
@@ -97,8 +100,14 @@ const TracksWrapper = ({
     tooltipRefInitialData
   );
 
+  const [tracksClone, setTracksClone] = useState([...tracks]);
+
   // copy of tracks state for updating elements position while dragging
-  let tracksClone: TimelineTrack[] = tracks.map(track => ({ ...track }));
+  // let tracksClone: TimelineTrack[] = tracks.map(track => ({ ...track }));
+
+  useEffect(() => {
+    setTracksClone([...tracks]);
+  }, [tracks]);
 
   const resetDragElPos = () => {
     setCurrentDragEl({
@@ -242,24 +251,32 @@ const TracksWrapper = ({
 
     // calculate new start frame
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
+
+    console.log('🚀 ~ file: TracksWrapper.tsx:254 ~ handleOnDrag ~ newStartFrame:', newStartFrame);
+
     // calculate end frame
     const newEndFrame = newStartFrame + (endFrame - startFrame);
 
+    console.log('🚀 ~ file: TracksWrapper.tsx:256 ~ handleOnDrag ~ newEndFrame:', newEndFrame);
+
     // update element position while dragging
-    const trackToUpdate = tracksClone.find(track => track.layer === layer);
-    if (!trackToUpdate) return;
+    setTracksClone(prevTracks =>
+      produce(prevTracks, (draft: TimelineTrack[]) => {
+        const trackToUpdate = draft.find(track => track.layer === layer);
+        if (!trackToUpdate) return;
 
-    // get active el state from tracks (all elements)
-    const activeEl = trackToUpdate.elements.find(el => el.id === id);
-    if (!activeEl) return;
+        // get active el state from tracks (all elements)
+        const activeEl = trackToUpdate.elements.find(el => el.id === id);
+        if (!activeEl) return;
 
-    for (let el of trackToUpdate.elements) {
-      if (el.id === id) {
-        el.startFrame = newStartFrame;
-        el.endFrame = newEndFrame;
-      }
-    }
-    tracksClone[trackToUpdate.layer - 1] = trackToUpdate;
+        for (let el of trackToUpdate.elements) {
+          if (el.id === id) {
+            el.startFrame = newStartFrame;
+            el.endFrame = newEndFrame;
+          }
+        }
+      })
+    );
 
     const currentTrackOfEl =
       posY <= -Math.abs(elementHeight / 2)
@@ -379,36 +396,8 @@ const TracksWrapper = ({
     //
     //TODO: update the tracks clone state to to main state
 
-    const currentTrackWithEl = tracksClone.find(track => track.layer === layer);
-    if (!currentTrackWithEl) return;
+    updateAllTimelineTracks(tracks, currentDragEl, layer);
 
-    const elementToUpdate = currentTrackWithEl.elements.find(el => el.id === currentDragEl.id);
-    if (!elementToUpdate) return;
-    // update dragged element time-frame to the placeholder time-frame
-    elementToUpdate.startFrame = currentDragEl.startFrame;
-    elementToUpdate.endFrame = currentDragEl.endFrame;
-
-    if (currentDragEl.currentTrack !== layer) {
-      // add el to new track/layer
-      const trackToAddElTo = tracksClone.find(track => track.layer === currentDragEl.currentTrack);
-      if (!trackToAddElTo) return;
-      trackToAddElTo.elements = [...trackToAddElTo.elements, elementToUpdate];
-
-      // remove the el from track
-      currentTrackWithEl.elements = [...currentTrackWithEl.elements.filter(el => el.id !== currentDragEl.id)];
-
-      // delete the track if empty
-      if (currentTrackWithEl.elements.length === 0) {
-        tracksClone = tracksClone.filter(track => track.id !== currentTrackWithEl.id);
-        // giver a layer number to each track
-        tracksClone = tracksClone.map((track, idx) => {
-          track.layer = idx + 1;
-          return track;
-        });
-      }
-    }
-
-    updateAllTracksWithOnDragEnd(tracksClone);
     //
   };
 
@@ -417,7 +406,7 @@ const TracksWrapper = ({
     return tracksClone.map(track => {
       return (
         <div
-          key={track.layer}
+          key={track.id}
           className={` shadow-sm  shadow-brand-darkSecondary  relative flex 
                 ${track.isHidden && 'opacity-60'}
                 ${track.isLocked && 'opacity-60'}

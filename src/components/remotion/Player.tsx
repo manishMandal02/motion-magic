@@ -2,14 +2,14 @@ import { Player, PlayerRef, RenderLoading } from '@remotion/player';
 import { MyComposition } from './Composition';
 import { useCallback, useEffect, useRef } from 'react';
 import { AbsoluteFill } from 'remotion';
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 
 export const ArtBoardPlayer: React.FC = () => {
   // playerRef:  to manipulate player
   const playerRef = useRef<PlayerRef | null>(null);
 
   // global state
-  const currentFrame = useEditorSore((state) => state.currentFrame);
+  const currentFrame = useEditorStore(state => state.currentFrame);
 
   useEffect(() => {
     if (playerRef) {

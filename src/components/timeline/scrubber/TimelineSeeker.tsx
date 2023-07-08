@@ -1,4 +1,4 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { useEffect, useRef, useState } from 'react';
 import Draggable, { DraggableEventHandler } from 'react-draggable';
 

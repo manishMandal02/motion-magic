@@ -1,10 +1,10 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import Elements from './elements';
 import TextMenu from './text';
 import SettingsMenu from './settings';
 
 const ActiveMenuOptions = () => {
-  const activeMenu = useEditorSore((state) => state.activeMenu);
+  const activeMenu = useEditorStore(state => state.activeMenu);
 
   switch (activeMenu) {
     case 'Settings': {

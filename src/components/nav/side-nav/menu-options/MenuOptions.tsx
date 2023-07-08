@@ -1,9 +1,9 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import SelectedElOptions from './selected-el-options';
 import ActiveMenuOptions from './active-menu';
 
 const MenuOptions = () => {
-  const selectedEl = useEditorSore((state) => state.selectedEl);
+  const selectedEl = useEditorStore(state => state.selectedEl);
 
   if (selectedEl) {
     return (

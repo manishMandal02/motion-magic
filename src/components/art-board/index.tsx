@@ -1,8 +1,8 @@
 import { ArtBoardPlayer } from '@/components/remotion/Player';
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 
 export default function ArtBoard() {
-  const allElements = useEditorSore((state) => state.elements);
+  const allElements = useEditorStore(state => state.elements);
 
   return (
     <>

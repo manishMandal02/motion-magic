@@ -1,10 +1,10 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { IElementType } from '@/types/elements.type';
 import { RxText } from 'react-icons/rx';
 import { nanoid } from 'nanoid';
 
 const TextMenu = () => {
-  const addElement = useEditorSore(state => state.addElement);
+  const addElement = useEditorStore(state => state.addElement);
 
   const addText = () => {
     addElement(IElementType.TEXT, {

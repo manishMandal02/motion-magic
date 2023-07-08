@@ -6,7 +6,7 @@ import { IElementsState, createElementsSlice } from './elements/elements';
 
 type IEditorStore = ITimelineState & IElementsState & IEditorSettingsState;
 
-const useEditorSore = create<IEditorStore>()(
+const useEditorStore = create<IEditorStore>()(
   devtools((...a) => ({
     ...createEditorSettingsSlice(...a),
     ...createTimelineSlice(...a),
@@ -14,4 +14,4 @@ const useEditorSore = create<IEditorStore>()(
   }))
 );
 
-export { useEditorSore };
+export { useEditorStore };

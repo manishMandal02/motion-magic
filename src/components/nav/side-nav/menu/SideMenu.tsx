@@ -3,7 +3,7 @@ import { FaShapes } from 'react-icons/fa';
 import { RxText } from 'react-icons/rx';
 import MenuItems from './MenuItems';
 import { IconType } from 'react-icons/lib';
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { SideMenuItems } from '@/types/settings.type';
 
 type SideMenuItemsWithIcons = {
@@ -24,14 +24,14 @@ const sideMenuItemsWithIcons: SideMenuItemsWithIcons[] = [
 ];
 
 const SideMenu = () => {
-  const selectedEl = useEditorSore((state) => state.selectedEl);
-  const setSelectedEl = useEditorSore((state) => state.setSelectedEl);
-  const setActiveMenu = useEditorSore((state) => state.setActiveMenu);
-  const activeMenu = useEditorSore((state) => state.activeMenu);
+  const selectedEl = useEditorStore(state => state.selectedEl);
+  const setSelectedEl = useEditorStore(state => state.setSelectedEl);
+  const setActiveMenu = useEditorStore(state => state.setActiveMenu);
+  const activeMenu = useEditorStore(state => state.activeMenu);
 
   return (
     <div className='h-full w-full bg-gray-900 flex flex-col items-center justify-start'>
-      {sideMenuItemsWithIcons.map((item) => (
+      {sideMenuItemsWithIcons.map(item => (
         <MenuItems
           key={item.label}
           Icon={item.Icon}

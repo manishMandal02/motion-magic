@@ -1,4 +1,4 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 
 import {
   EyeOpenIcon,
@@ -13,9 +13,9 @@ type Props = {
 };
 
 const TimelineLayer = ({ trackHeight }: Props) => {
-  const allTracks = useEditorSore(state => state.timelineTracks);
-  const updateTimelineLayerPosition = useEditorSore(state => state.updateTimelineLayerPosition);
-  const updateTimelineTrack = useEditorSore(state => state.updateTimelineTrack);
+  const allTracks = useEditorStore(state => state.timelineTracks);
+  const updateTimelineLayerPosition = useEditorStore(state => state.updateTimelineLayerPosition);
+  const updateTimelineTrack = useEditorStore(state => state.updateTimelineTrack);
 
   return (
     <div className=''>

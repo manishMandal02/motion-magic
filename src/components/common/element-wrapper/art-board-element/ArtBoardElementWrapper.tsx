@@ -1,4 +1,4 @@
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { IElementPosition, IElementSize } from '@/types/elements.type';
 import { ReactNode, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
@@ -19,9 +19,9 @@ const ArtBoardElementWrapper = ({ children, id, size, position, setPosition, set
   const { x, y } = position;
 
   // global states
-  const videoScale = useEditorSore((state) => state.scale);
-  const selectedEl = useEditorSore((state) => state.selectedEl);
-  const setSelectedEl = useEditorSore((state) => state.setSelectedEl);
+  const videoScale = useEditorStore(state => state.scale);
+  const selectedEl = useEditorStore(state => state.selectedEl);
+  const setSelectedEl = useEditorStore(state => state.setSelectedEl);
 
   const isSelected = selectedEl?.id == id;
 

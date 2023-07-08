@@ -47,6 +47,9 @@ const TimelineElementWrapper = ({
   onDragStart,
 }: Props) => {
   const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
+
+  console.log('🚀 ~ file: TimelineElementWrapper.tsx:51 ~ position:', position);
+
   const [isResizingORDragging, setIsResizingORDragging] = useState(false);
 
   useEffect(() => {
@@ -82,6 +85,7 @@ const TimelineElementWrapper = ({
         }}
         onDragStop={(_e, d) => {
           onDragStop(d.x - position.x, d.y - position.y);
+          setPosition(prevPos => ({ ...prevPos, y: ELEMENT_POS_Y }));
           resetRefLines();
           setIsResizingORDragging(false);
         }}

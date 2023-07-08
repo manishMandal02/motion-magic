@@ -4,7 +4,7 @@ import { UIEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import TimelineTracks from './tracks';
 import TimelineRuler from './timeline-ruler';
 import TimelineLayer from './layer';
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import TimelineSeeker from './scrubber';
 import VideoControls from './video-controls';
@@ -23,13 +23,13 @@ export default function Timeline() {
   console.log('🚀 ~ file: Timeline.tsx:24 ~ Timeline ~ frameWidth:', frameWidth);
 
   // global state
-  const fps = useEditorSore(state => state.fps);
-  const currentFrame = useEditorSore(state => state.currentFrame);
-  const setCurrentFrame = useEditorSore(state => state.setCurrentFrame);
-  // const isVideoLengthFixed = useEditorSore(state => state.isVideoLengthFixed);
-  const durationInFrames = useEditorSore(state => state.durationInFrames);
-  const isScaleFitToTimeline = useEditorSore(state => state.isScaleFitToTimeline);
-  const setIsScaleFitToTimeline = useEditorSore(state => state.setIsScaleFitToTimeline);
+  const fps = useEditorStore(state => state.fps);
+  const currentFrame = useEditorStore(state => state.currentFrame);
+  const setCurrentFrame = useEditorStore(state => state.setCurrentFrame);
+  // const isVideoLengthFixed = useEditorStore(state => state.isVideoLengthFixed);
+  const durationInFrames = useEditorStore(state => state.durationInFrames);
+  const isScaleFitToTimeline = useEditorStore(state => state.isScaleFitToTimeline);
+  const setIsScaleFitToTimeline = useEditorStore(state => state.setIsScaleFitToTimeline);
 
   const [scale, setScale] = useState(getInitialTimelineScale(durationInFrames));
 

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { useEditorSore } from '@/store';
+import { useEditorStore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
 
@@ -15,12 +15,11 @@ type Props = {
 
 const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
   // global state
-  const allTracks = useEditorSore(state => state.timelineTracks, );
+  const allTracks = useEditorStore(state => state.timelineTracks);
 
   console.log('🚀 ~ file: TimelineTracks.tsx:20 ~ TimelineTracks ~ allTracks:', allTracks);
 
-  const updateTrackElFrame = useEditorSore(state => state.updateTrackElFrame);
-  const updateAllTimelineTracks = useEditorSore(state => state.updateAllTimelineTracks);
+  const updateTrackElFrame = useEditorStore(state => state.updateTrackElFrame);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
     updateTrackElFrame(id, duration.startFrame, duration.endFrame);
@@ -28,8 +27,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth }: Props) => {
 
   const updateAllTracksWithOnDragEnd = (tracks: TimelineTrack[]) => {
     console.log('🚀 ~ file: TimelineTracks.tsx:28 ~ updateAllTracksWithOnDragEnd ~ tracks:', tracks);
-
-    updateAllTimelineTracks(tracks);
   };
 
   return (
