@@ -24,11 +24,7 @@ export interface ITimelineState {
   updateTimelineTrack: (id: string, track: RecursivePartial<TimelineTrack>) => void;
   updateTimelineLayerPosition: (id: string, layer: number, moveTo: IMoveTimelineLayerTo) => void;
   createNewTrackOnDrag: (newTrackInfo: CreateTrackOnDragParams) => void;
-  updateAllTimelineTracks: (
-    tracks: TimelineTrack[],
-    currentDragEl: CurrentDragElement,
-    layer: number
-  ) => void;
+  updateAllTimelineTracks: (currentDragEl: CurrentDragElement, layer: number) => void;
 }
 
 const createTimelineSlice: StateCreator<ITimelineState> = set => ({
@@ -131,7 +127,7 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         }
       })
     ),
-  updateAllTimelineTracks: (tracks, currentDragEl, layer) =>
+  updateAllTimelineTracks: (currentDragEl, layer) =>
     set(
       produce((draft: ITimelineState) => {
         const currentTrackWithEl = draft.timelineTracks.find(track => track.layer === layer);

@@ -60,18 +60,8 @@ const TimelineElementWrapper = ({
         size={{ width, height }}
         position={{ x: position.x, y: position.y }}
         onDrag={throttle((_e, d) => {
-          // const containerBounds = _e.currentTarget.parentNode.getBoundingClientRect();
-
-          // console.log(
-          //   '🚀 ~ file: TimelineElementWrapper.tsx:62 ~ onDrag={throttle ~ containerBounds:',
-          //   containerBounds
-          // );
-
           setPosition({ x: d.x, y: d.y });
-          // handleDragEnd(d.x - position.x, d.y - position.y);
-          // if (d.y > 10 || d.y < 0) {
-          //   resetRefLines();
-          // }
+
           onDrag(d.x - position.x, d.y);
         })}
         onDragStart={() => {

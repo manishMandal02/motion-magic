@@ -18,7 +18,6 @@ const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth, timelineVisibl
   // global state
   const allTracks = useEditorStore(state => state.timelineTracks);
 
-  console.log('🚀 ~ file: TimelineTracks.tsx:20 ~ TimelineTracks ~ allTracks:', allTracks);
 
   const updateTrackElFrame = useEditorStore(state => state.updateTrackElFrame);
 

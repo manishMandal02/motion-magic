@@ -268,16 +268,11 @@ const TracksWrapper = ({
         const trackToUpdate = draft.find(track => track.layer === layer);
         if (!trackToUpdate) return;
 
-        // get active el state from tracks (all elements)
         const activeEl = trackToUpdate.elements.find(el => el.id === id);
         if (!activeEl) return;
 
-        for (let el of trackToUpdate.elements) {
-          if (el.id === id) {
-            el.startFrame = newStartFrame;
-            el.endFrame = newEndFrame;
-          }
-        }
+        activeEl.startFrame = newStartFrame;
+        activeEl.endFrame = newEndFrame;
       })
     );
 
@@ -408,13 +403,22 @@ const TracksWrapper = ({
       createNewTrackOnDrag(createNewTrack);
       return;
     }
-    //
-    //
-    //TODO: update the tracks clone state to to main state
 
-    updateAllTimelineTracks(tracks, currentDragEl, layer);
+    //TODO: temporary solution for elements flickering after onDrag completed (it goes to it's previous track and then shit back to new track)
+    if (layer !== currentDragEl.currentTrack) {
+      setTracksClone(prevTracks =>
+        produce(prevTracks, (draft: TimelineTrack[]) => {
+          const trackToUpdate = draft.find(track => track.layer === layer);
+          if (!trackToUpdate) return;
 
-    //
+          const activeEl = trackToUpdate.elements.find(el => el.id === id);
+          if (!activeEl) return;
+          activeEl.startFrame = 0;
+          activeEl.endFrame = 0;
+        })
+      );
+    }
+    updateAllTimelineTracks(currentDragEl, layer);
   };
 
   // renders all el on timeline tracks based on their layer levels
@@ -523,6 +527,7 @@ const TracksWrapper = ({
       {renderElements()}
 
       {/* placeholder for element when its dragged  */}
+
       {currentDragEl.id ? (
         <>
           <div
@@ -531,7 +536,9 @@ const TracksWrapper = ({
               width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
               height: trackHeight - TRACK_PADDING_SPACING,
               left: currentDragEl.startFrame * frameWidth + 'px',
-              top: (currentDragEl.currentTrack - 1) * trackHeight + 'px',
+              top:
+                (currentDragEl.currentTrack - 1) * (trackHeight + TRACK_PADDING_SPACING / 2) ||
+                TRACK_PADDING_SPACING / 2 + 'px',
             }}
           ></div>
         </>

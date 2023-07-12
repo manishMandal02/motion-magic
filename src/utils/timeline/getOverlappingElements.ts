@@ -51,7 +51,7 @@ const handleOverlappingElements = ({
       // move the active el's placeholder after the element's end frame
       const newEndFrame = el.startFrame - 1;
 
-      console.log("🚀 ~ file: getOverlappingElements.ts:54 ~ newEndFrame:", newEndFrame);
+      console.log('🚀 ~ file: getOverlappingElements.ts:54 ~ newEndFrame:', newEndFrame);
 
       let newStartFrame = newEndFrame - activeElTotalFrames;
 
@@ -60,8 +60,6 @@ const handleOverlappingElements = ({
       // check for overlapping el for newState frame
       for (const elLoop of elements) {
         if (elLoop.endFrame >= newStartFrame && elLoop.endFrame < newEndFrame && elLoop.id !== elementId) {
-          console.log('🚀 ~ file: getOverlappingElements.ts:61 ~ el:', elLoop.endFrame);
-
           newStartFrame = elLoop.endFrame + 1;
         }
       }
@@ -90,13 +88,24 @@ const handleOverlappingElements = ({
       isOverlapping = true;
       // move the active el's placeholder after the element's end frame
       const newStartFrame = el.endFrame + 1;
+      let newEndFrame = newStartFrame + activeElTotalFrames;
+
+      // check for overlapping el for newState frame
+      for (const elLoop of elements) {
+        if (elLoop.startFrame <= newEndFrame && elLoop.endFrame > newEndFrame && elLoop.id !== elementId) {
+          newEndFrame = elLoop.startFrame - 1;
+        }
+      }
 
       setCurrentDragEl(prev => ({
         ...prev,
         startFrame: newStartFrame,
-        endFrame: newStartFrame + activeElTotalFrames,
+        endFrame: newEndFrame,
       }));
     }
+
+    // if the active element is overlapping between two elements and there is a space/frames in between,
+    // place it in between them
   }
 
   return isOverlapping;
