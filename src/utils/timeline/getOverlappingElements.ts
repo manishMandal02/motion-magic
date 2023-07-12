@@ -38,11 +38,19 @@ const handleOverlappingElements = ({
       isOverlapping = true;
       // move the active el's placeholder after the element's end frame
       const newStartFrame = el.endFrame + 1;
+      let newEndFrame = newStartFrame + activeElTotalFrames;
+
+      // check for overlapping el for newState frame
+      for (const elLoop of elements) {
+        if (elLoop.startFrame <= newEndFrame && elLoop.endFrame > newEndFrame && elLoop.id !== elementId) {
+          newEndFrame = elLoop.startFrame - 1;
+        }
+      }
 
       setCurrentDragEl(prev => ({
         ...prev,
         startFrame: newStartFrame,
-        endFrame: newStartFrame + activeElTotalFrames,
+        endFrame: newEndFrame,
       }));
     }
     // check if any elements are overlapping the selected el from right side (placeholder will be placed at the start of overlapping element)
@@ -76,6 +84,13 @@ const handleOverlappingElements = ({
       // move the active el's placeholder after the element's end frame
       const newEndFrame = el.startFrame - 1;
       let newStartFrame = Math.max(0, newEndFrame - activeElTotalFrames);
+
+      // check for overlapping el for newState frame
+      for (const elLoop of elements) {
+        if (elLoop.endFrame >= newStartFrame && elLoop.endFrame < newEndFrame && elLoop.id !== elementId) {
+          newStartFrame = elLoop.endFrame + 1;
+        }
+      }
 
       setCurrentDragEl(prev => ({
         ...prev,
