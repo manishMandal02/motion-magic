@@ -60,6 +60,8 @@ const TimelineElementWrapper = ({
         size={{ width, height }}
         position={{ x: position.x, y: position.y }}
         onDrag={throttle((_e, d) => {
+          console.log('🚀 ~ file: TimelineElementWrapper.tsx:64 ~ onDrag={throttle ~ d:', d);
+
           setPosition({ x: d.x, y: d.y });
 
           onDrag(d.x - position.x, d.y);

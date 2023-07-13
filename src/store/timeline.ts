@@ -130,14 +130,24 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
   updateAllTimelineTracks: (currentDragEl, layer) =>
     set(
       produce((draft: ITimelineState) => {
+        console.log('🚀 ~ file: timeline.ts:132 ~ currentDragEl:', currentDragEl);
         const currentTrackWithEl = draft.timelineTracks.find(track => track.layer === layer);
         if (!currentTrackWithEl) return;
 
         const elementToUpdate = currentTrackWithEl.elements.find(el => el.id === currentDragEl.id);
         if (!elementToUpdate) return;
+
+        console.log('🚀 ~ file: timeline.ts:140 ~ produce ~ elementToUpdate:', elementToUpdate);
+
         // update dragged element time-frame to the placeholder time-frame
         elementToUpdate.startFrame = currentDragEl.startFrame;
         elementToUpdate.endFrame = currentDragEl.endFrame;
+
+        // update total duration if element is moved beyond current limits
+        if (elementToUpdate.endFrame > draft.durationInFrames) {
+          draft.durationInFrames = elementToUpdate.endFrame;
+          draft.isScaleFitToTimeline = false;
+        }
 
         if (currentDragEl.currentTrack !== layer) {
           console.log('🚀 ~ file: TracksWrapper.tsx:407 ~ produce ~ layer:', layer);

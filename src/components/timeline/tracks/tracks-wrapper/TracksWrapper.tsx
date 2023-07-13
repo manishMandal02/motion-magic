@@ -108,6 +108,8 @@ const TracksWrapper = ({
 
   useEffect(() => {
     setTracksClone([...tracks]);
+
+    console.log('🚀 ~ file: TracksWrapper.tsx:112 ~ useEffect ~ tracks:', tracks[0]);
   }, [tracks]);
 
   const resetDragElPos = () => {
@@ -402,6 +404,7 @@ const TracksWrapper = ({
         })
       );
     }
+    setTracksClone([...tracks]);
     updateAllTimelineTracks(currentDragEl, layer);
   };
 
@@ -490,7 +493,7 @@ const TracksWrapper = ({
               >
                 <div
                   key={element.id}
-                  className={`rounded-sm h-full w-[${width}px] flex text-xs font-medium items-center  justify-center overflow-hidden
+                  className={`rounded-sm h-full  w-[${width}px] flex text-xs font-medium items-center  justify-center overflow-hidden
                        ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
                      ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
                        `}
