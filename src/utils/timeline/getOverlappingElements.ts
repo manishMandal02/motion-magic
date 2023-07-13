@@ -7,6 +7,7 @@ export type HandleOverlappingElementsProps = {
   startFrame: number;
   endFrame: number;
   elements: TrackElement[];
+  currentDragEl: CurrentDragElement;
   setCurrentDragEl: Dispatch<SetStateAction<CurrentDragElement>>;
 };
 const handleOverlappingElements = ({
@@ -14,14 +15,11 @@ const handleOverlappingElements = ({
   startFrame,
   endFrame,
   elements,
+  currentDragEl,
   setCurrentDragEl,
 }: HandleOverlappingElementsProps) => {
   let isOverlapping = false;
-  // element center
-
-  // new overlapping logic
-  //TODO: have run this fn recursively to check for overlapping after moving the overlapping elements and/or placeholder
-
+  // total frames of current selected/dragging el
   const activeElTotalFrames = endFrame - startFrame;
   if (elements.length === 1 && elements[0].id === elementId) return;
 
@@ -58,12 +56,7 @@ const handleOverlappingElements = ({
       isOverlapping = true;
       // move the active el's placeholder after the element's end frame
       const newEndFrame = el.startFrame - 1;
-
-      console.log('🚀 ~ file: getOverlappingElements.ts:54 ~ newEndFrame:', newEndFrame);
-
       let newStartFrame = newEndFrame - activeElTotalFrames;
-
-      console.log('🚀 ~ file: getOverlappingElements.ts:57 ~ newStartFrame:', newStartFrame);
 
       // check for overlapping el for newState frame
       for (const elLoop of elements) {
@@ -83,7 +76,7 @@ const handleOverlappingElements = ({
       isOverlapping = true;
       // move the active el's placeholder after the element's end frame
       const newEndFrame = el.startFrame - 1;
-      let newStartFrame = Math.max(0, newEndFrame - activeElTotalFrames);
+      let newStartFrame = newEndFrame - activeElTotalFrames;
 
       // check for overlapping el for newState frame
       for (const elLoop of elements) {
@@ -94,20 +87,21 @@ const handleOverlappingElements = ({
 
       setCurrentDragEl(prev => ({
         ...prev,
+        startFrame: Math.max(0, newStartFrame),
         endFrame: newEndFrame,
-        startFrame: newStartFrame,
       }));
     }
     // check if any elements are overlapping the selected el from left side (placeholder will be placed at the end of overlapping element)
-    if (endFrame > elCenterFrame && endFrame <= el.endFrame && el.id !== elementId) {
+    if (endFrame >= elCenterFrame && endFrame <= el.endFrame && el.id !== elementId) {
       isOverlapping = true;
       // move the active el's placeholder after the element's end frame
       const newStartFrame = el.endFrame + 1;
       let newEndFrame = newStartFrame + activeElTotalFrames;
 
-      // check for overlapping el for newState frame
+      // check for overlapping el for newEnd frame
       for (const elLoop of elements) {
-        if (elLoop.startFrame <= newEndFrame && elLoop.endFrame > newEndFrame && elLoop.id !== elementId) {
+        if (elLoop.startFrame <= newEndFrame && elLoop.endFrame > newStartFrame && elLoop.id !== elementId) {
+          //
           newEndFrame = elLoop.startFrame - 1;
         }
       }
@@ -119,8 +113,30 @@ const handleOverlappingElements = ({
       }));
     }
 
-    // if the active element is overlapping between two elements and there is a space/frames in between,
-    // place it in between them
+    // if the active element is overlapping full element or elements under it
+    // move the placeholder to the end of the overlapping element
+    if (startFrame <= el.startFrame && endFrame >= el.endFrame && el.id !== elementId) {
+      isOverlapping = true;
+      // Move placeholder to end of overlapping element
+      const newStartFrame = el.endFrame + 1;
+
+      let newEndFrame = newStartFrame + activeElTotalFrames;
+
+      console.log('🚀 ~ file: getOverlappingElements.ts:132 ~ newStartFrame:', newStartFrame);
+
+      // check for overlapping el for newEnd frame
+      for (const elLoop of elements) {
+        if (elLoop.startFrame <= newEndFrame && elLoop.endFrame > newStartFrame && elLoop.id !== elementId) {
+          //
+          newEndFrame = elLoop.startFrame - 1;
+        }
+      }
+      setCurrentDragEl(prev => ({
+        ...prev,
+        startFrame: newStartFrame,
+        endFrame: newEndFrame,
+      }));
+    }
   }
 
   return isOverlapping;

@@ -34,7 +34,6 @@ export type CurrentDragElement = {
   startFrame: number;
   endFrame: number;
   currentTrack: number;
-  width: number;
 };
 
 // resize handle props
@@ -61,10 +60,6 @@ type HandleOnDragProps = {
 // dragend handle props
 type HandleDragEndProps = {
   id: string;
-  deltaX: number;
-  deltaY: number;
-  startFrame: number;
-  endFrame: number;
   layer: number;
 };
 
@@ -96,7 +91,6 @@ const TracksWrapper = ({
     startFrame: 0,
     endFrame: 0,
     currentTrack: 0,
-    width: 0,
   });
   //  new track
   const [createNewTrack, setCreateNewTrack] = useState<CreateTrackOnDragParams | undefined>(undefined);
@@ -122,7 +116,6 @@ const TracksWrapper = ({
       startFrame: 0,
       endFrame: 0,
       currentTrack: 0,
-      width: 0,
     });
   };
 
@@ -289,6 +282,7 @@ const TracksWrapper = ({
       elements: tracksClone[currentTrackOfEl - 1].elements,
       endFrame: newEndFrame,
       startFrame: newStartFrame,
+      currentDragEl: currentDragEl,
       setCurrentDragEl: setCurrentDragEl,
     });
 
@@ -298,7 +292,6 @@ const TracksWrapper = ({
         currentTrack: currentTrackOfEl,
         startFrame: newStartFrame,
         endFrame: newEndFrame,
-        width,
       });
     }
 
@@ -330,25 +323,13 @@ const TracksWrapper = ({
       setCreateNewTrack(undefined);
     }
 
-    //TODO: overlapping elements while dragging & showing the place holder accordingly
-    //TODO: show new layer line when hovering between layers
-    //TODO: revert back if still drag after overlapping of elements occur
     //TODO: Auto scroll on dragging to the extreme end on X & Y axis
     //TODO: add memo() for all major components under timeline directly
-    //TODO:
 
     // show tooltip
     showTooltipRef.current.elementId = id;
     showTooltipRef.current.startFrame = newStartFrame;
     showTooltipRef.current.endFrame = newEndFrame;
-
-    // handleOverlappingEl({
-    //   elementId: id,
-    //   elements: tracksClone[currentTrackOfEl].elements,
-    //   endFrame: newEndFrame,
-    //   startFrame: newStartFrame,
-    //   currentTrack: currentTrackOfEl,
-    // });
 
     const overlappingFrames = getOverlappingFrames(
       tracksClone,
@@ -397,7 +378,7 @@ const TracksWrapper = ({
   };
 
   // handle drag end elements
-  const handleDragEnd = ({ id, deltaX, deltaY, startFrame, endFrame, layer }: HandleDragEndProps) => {
+  const handleDragEnd = ({ id, layer }: HandleDragEndProps) => {
     //TODO: check if the if the drag was for create new track (users stopped in between the tracks), if yes then handle it
     if (createNewTrack?.trackNum && !currentDragEl.id) {
       createNewTrackOnDrag(createNewTrack);
@@ -465,7 +446,6 @@ const TracksWrapper = ({
                     startFrame,
                     endFrame,
                     id,
-                    width,
                     currentTrack: track.layer,
                   });
                 }}
@@ -483,7 +463,7 @@ const TracksWrapper = ({
                   }
                 }}
                 onDragStop={(deltaX, deltaY) => {
-                  handleDragEnd({ id, deltaX, deltaY, startFrame, endFrame, layer: track.layer });
+                  handleDragEnd({ id, layer: track.layer });
                   resetDragElPos();
                   setCreateNewTrack(undefined);
                 }}
