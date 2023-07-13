@@ -1,6 +1,6 @@
 import Slider from '@/components/common/slider';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
-import { Dispatch, SetStateAction } from 'react';
+import { memo } from 'react';
 import { IoPlayForward, IoPlaySkipForwardSharp } from 'react-icons/io5';
 
 type Props = {
@@ -122,4 +122,4 @@ const VideoControls = ({
   );
 };
 
-export default VideoControls;
+export default memo(VideoControls);

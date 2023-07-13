@@ -7,6 +7,7 @@ import {
   LockClosedIcon,
   LockOpen1Icon,
 } from '@radix-ui/react-icons';
+import { memo } from 'react';
 
 type Props = {
   trackHeight: number;
@@ -81,4 +82,4 @@ const TimelineLayer = ({ trackHeight }: Props) => {
   );
 };
 
-export default TimelineLayer;
+export default memo(TimelineLayer);

@@ -269,6 +269,7 @@ const TracksWrapper = ({
       })
     );
 
+    // calculate the current track of el that is currently dragged
     const currentTrackOfEl =
       posY <= -Math.abs(elementHeight / 2)
         ? layer - Math.round(Math.abs(posY) / elementHeight)
@@ -293,6 +294,8 @@ const TracksWrapper = ({
         startFrame: newStartFrame,
         endFrame: newEndFrame,
       });
+    } else {
+      setCurrentDragEl(prev => ({ ...prev, currentTrack: currentTrackOfEl }));
     }
 
     // check if el is hovering on a track or in between (to create a new track)
