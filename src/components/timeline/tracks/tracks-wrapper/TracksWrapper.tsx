@@ -11,7 +11,7 @@ import _deepClone from 'lodash/cloneDeep';
 import { produce } from 'immer';
 import { useEditorStore } from '@/store';
 
-import { PlusCircledIcon } from '@radix-ui/react-icons';
+import { DraggableData } from 'react-rnd';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -103,14 +103,20 @@ const TracksWrapper = ({
 
   const [tracksClone, setTracksClone] = useState([...tracks]);
 
-  // copy of tracks state for updating elements position while dragging
-  // let tracksClone: TimelineTrack[] = tracks.map(track => ({ ...track }));
-
   useEffect(() => {
     setTracksClone([...tracks]);
-
-    console.log('🚀 ~ file: TracksWrapper.tsx:112 ~ useEffect ~ tracks:', tracks[0]);
   }, [tracks]);
+
+  // scroll ref to handle requestAnimationFrame to scroll when elements are dragged to the edge of the container
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+
+  // to scroll container
+  const scrollContainer = (container: HTMLDivElement, scrollAmount: number) => {
+    container.scrollBy(scrollAmount, 0);
+    scrollAnimationFrameRef.current = requestAnimationFrame(() => scrollContainer(container, scrollAmount));
+  };
+
+  // timeline-tracks-wrapper
 
   const resetDragElPos = () => {
     setCurrentDragEl({
@@ -408,6 +414,29 @@ const TracksWrapper = ({
     updateAllTimelineTracks(currentDragEl, layer);
   };
 
+  // handle element dragged to the edge of the container
+  const handleDragToEdge = (data: DraggableData, elementWidth: number) => {
+    // scrollable tracks container
+    const tracksContainer = document.getElementById('timeline-tracks-wrapper') as HTMLDivElement | null;
+    if (!tracksContainer) return;
+
+    const { x } = data;
+
+    const { right } = tracksContainer.getBoundingClientRect();
+    // Check if the dragged element is near the right edge of the container
+
+    const adjustedX = x - tracksContainer.scrollLeft;
+
+    console.log('🚀 ~ file: TracksWrapper.tsx:432 ~ handleDragToEdge ~ adjustedX:', adjustedX);
+
+    if (adjustedX + elementWidth >= right) {
+      console.log('🚀 ~ file: TracksWrapper.tsx:431 ~ handleDragToEdge ~ right:', right);
+      scrollContainer(tracksContainer, 10);
+    } else {
+      cancelAnimationFrame(scrollAnimationFrameRef.current!);
+    }
+  };
+
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
     return tracksClone.map(track => {
@@ -455,20 +484,21 @@ const TracksWrapper = ({
                     currentTrack: track.layer,
                   });
                 }}
-                onDrag={(deltaX, posY) => {
+                onDrag={(deltaX, data) => {
                   handleOnDrag({
                     id,
                     width,
-                    posY: posY,
+                    posY: data.y,
                     deltaX,
                     startFrame,
                     endFrame,
                     layer: track.layer,
                   });
-                  if (track.layer !== track.layer) {
-                  }
+                  console.log('🚀 ~ file: TracksWrapper.tsx:551 ~ renderElements ~ data:', data);
+
+                  handleDragToEdge(data, width);
                 }}
-                onDragStop={(deltaX, deltaY) => {
+                onDragStop={() => {
                   handleDragEnd({ id, layer: track.layer });
                   resetDragElPos();
                   setCreateNewTrack(undefined);

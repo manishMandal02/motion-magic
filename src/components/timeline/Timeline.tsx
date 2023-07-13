@@ -33,8 +33,6 @@ export default function Timeline() {
 
   const [scale, setScale] = useState(getInitialTimelineScale(durationInFrames));
 
-  const tracksScrollableContainer = useRef<HTMLDivElement | null>(null);
-
   // get timeline width
   useEffect(() => {
     const tracksContainer = document.getElementById('timeline-tracks-wrapper');
@@ -140,7 +138,6 @@ export default function Timeline() {
             <div
               className={`flex-auto w-[96vw] relative h-[28vh] flex flex-col   overflow-scroll CC_customScrollBar bg-brand-darkPrimary `}
               id='timeline-tracks-wrapper'
-              ref={tracksScrollableContainer}
               onScroll={handleScroll}
             >
               {/* timeline ruler */}

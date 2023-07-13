@@ -1,5 +1,5 @@
 import { MutableRefObject, ReactNode, useEffect, useState } from 'react';
-import { Rnd } from 'react-rnd';
+import { DraggableData, Rnd } from 'react-rnd';
 import { IElementFrameDuration } from '@/types/elements.type';
 import throttle from 'raf-throttle';
 import Tooltip from '../../tooltip';
@@ -21,11 +21,11 @@ type Props = {
   translateX: number;
   isLocked: boolean;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
-  onDrag: (deltaX: number, deltaY: number) => void;
+  onDrag: (deltaX: number, data: DraggableData) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
   showTooltipRef: MutableRefObject<TooltipRef>;
-  onDragStop: (deltaX: number, deltaY: number) => void;
+  onDragStop: () => void;
   onDragStart: () => void;
 };
 
@@ -59,12 +59,10 @@ const TimelineElementWrapper = ({
       <Rnd
         size={{ width, height }}
         position={{ x: position.x, y: position.y }}
-        onDrag={throttle((_e, d) => {
-          console.log('🚀 ~ file: TimelineElementWrapper.tsx:64 ~ onDrag={throttle ~ d:', d);
+        onDrag={throttle((_e, data) => {
+          setPosition({ x: data.x, y: data.y });
 
-          setPosition({ x: d.x, y: d.y });
-
-          onDrag(d.x - position.x, d.y);
+          onDrag(data.x - position.x, data);
         })}
         onDragStart={() => {
           onDragStart();
@@ -74,7 +72,7 @@ const TimelineElementWrapper = ({
           setIsResizingORDragging(true);
         }}
         onDragStop={(_e, d) => {
-          onDragStop(d.x - position.x, d.y - position.y);
+          onDragStop();
           setPosition(prevPos => ({ ...prevPos, y: ELEMENT_POS_Y }));
           resetRefLines();
           setIsResizingORDragging(false);
