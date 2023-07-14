@@ -4,7 +4,6 @@ import { useEditorStore } from '@/store';
 
 import { IElementFrameDuration } from '@/types/elements.type';
 
-import { TimelineTrack } from '@/types/timeline.type';
 import TracksWrapper from './tracks-wrapper';
 
 type Props = {
@@ -17,7 +16,6 @@ type Props = {
 const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth, timelineVisibleWidth }: Props) => {
   // global state
   const allTracks = useEditorStore(state => state.timelineTracks);
-
 
   const updateTrackElFrame = useEditorStore(state => state.updateTrackElFrame);
 

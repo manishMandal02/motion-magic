@@ -1,4 +1,4 @@
-import { MutableRefObject, ReactNode, useEffect, useState } from 'react';
+import { MouseEvent, MutableRefObject, ReactNode, useEffect, useState } from 'react';
 import { DraggableData, Rnd } from 'react-rnd';
 import { IElementFrameDuration } from '@/types/elements.type';
 import throttle from 'raf-throttle';
@@ -21,7 +21,7 @@ type Props = {
   translateX: number;
   isLocked: boolean;
   updateElFrameDuration: (id: string, duration: IElementFrameDuration) => void;
-  onDrag: (deltaX: number, data: DraggableData) => void;
+  onDrag: (deltaX: number, data: DraggableData, e: MouseEvent<HTMLElement>) => void;
   handleResize: (deltaWidth: number, direction: 'left' | 'right') => void;
   resetRefLines: () => void;
   showTooltipRef: MutableRefObject<TooltipRef>;
@@ -59,10 +59,10 @@ const TimelineElementWrapper = ({
       <Rnd
         size={{ width, height }}
         position={{ x: position.x, y: position.y }}
-        onDrag={throttle((_e, data) => {
+        onDrag={throttle((e, data) => {
           setPosition({ x: data.x, y: data.y });
 
-          onDrag(data.x - position.x, data);
+          onDrag(data.x - position.x, data, e);
         })}
         onDragStart={() => {
           onDragStart();

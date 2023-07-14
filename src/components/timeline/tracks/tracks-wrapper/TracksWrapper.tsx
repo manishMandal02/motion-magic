@@ -6,7 +6,7 @@ import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBoun
 import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import { nanoid } from 'nanoid';
-import { memo, useEffect, useRef, useState } from 'react';
+import { MouseEvent, memo, useEffect, useRef, useState } from 'react';
 import _deepClone from 'lodash/cloneDeep';
 import { produce } from 'immer';
 import { useEditorStore } from '@/store';
@@ -92,6 +92,7 @@ const TracksWrapper = ({
     endFrame: 0,
     currentTrack: 0,
   });
+
   //  new track
   const [createNewTrack, setCreateNewTrack] = useState<CreateTrackOnDragParams | undefined>(undefined);
   // array of frames to show reference lines
@@ -109,11 +110,59 @@ const TracksWrapper = ({
 
   // scroll ref to handle requestAnimationFrame to scroll when elements are dragged to the edge of the container
   const scrollAnimationFrameRef = useRef<number | null>(null);
+  const AUTO_SCROLL_SPEED = 5;
+
+  const stopAutoScroll = () => {
+    cancelAnimationFrame(scrollAnimationFrameRef.current!);
+    scrollAnimationFrameRef.current = null;
+  };
 
   // to scroll container
-  const scrollContainer = (container: HTMLDivElement, scrollAmount: number) => {
-    container.scrollBy(scrollAmount, 0);
-    scrollAnimationFrameRef.current = requestAnimationFrame(() => scrollContainer(container, scrollAmount));
+  const scrollContainer = (
+    container: HTMLDivElement,
+    scrollDirection: 'top' | 'bottom' | 'left' | 'right',
+    scrollAmount = AUTO_SCROLL_SPEED
+  ) => {
+    console.log('🚀 ~ file: TracksWrapper.tsx:120 ~ scrollDirection:', scrollDirection);
+    if (scrollAnimationFrameRef === null) return;
+    if (scrollDirection === 'top') {
+      if (container.scrollTop <= 0) {
+        stopAutoScroll();
+      }
+
+      container.scrollBy(0, -scrollAmount);
+      scrollAnimationFrameRef.current = requestAnimationFrame(() =>
+        scrollContainer(container, scrollDirection, scrollAmount)
+      );
+      return;
+    }
+    if (scrollDirection === 'bottom') {
+      container.scrollBy(0, scrollAmount);
+
+      if (Math.ceil(container.scrollTop) >= container.scrollHeight - container.clientHeight) {
+        stopAutoScroll();
+      }
+      scrollAnimationFrameRef.current = requestAnimationFrame(() =>
+        scrollContainer(container, scrollDirection, scrollAmount)
+      );
+      return;
+    }
+    if (scrollDirection === 'left') {
+      if (container.scrollLeft <= 0) return;
+
+      container.scrollBy(-scrollAmount, 0);
+      scrollAnimationFrameRef.current = requestAnimationFrame(() =>
+        scrollContainer(container, scrollDirection, scrollAmount)
+      );
+      return;
+    }
+    if (scrollDirection === 'right') {
+      container.scrollBy(scrollAmount, 0);
+      scrollAnimationFrameRef.current = requestAnimationFrame(() =>
+        scrollContainer(container, scrollDirection, scrollAmount)
+      );
+      return;
+    }
   };
 
   // timeline-tracks-wrapper
@@ -277,33 +326,48 @@ const TracksWrapper = ({
       })
     );
 
+    const absolutePosY = trackHeight * layer + posY;
+
+    console.log('🚀 ~ file: TracksWrapper.tsx:331 ~ handleOnDrag ~ absolutePosY:', absolutePosY);
+
+    // TODO: use absolutePosYto calculate the currentTrack of el 
     // calculate the current track of el that is currently dragged
-    const currentTrackOfEl =
-      posY <= -Math.abs(elementHeight / 2)
-        ? layer - Math.round(Math.abs(posY) / elementHeight)
-        : posY >= elementHeight / 2
-        ? layer + Math.round(posY / elementHeight)
+    let currentTrackOfEl =
+      absolutePosY <= -Math.abs(elementHeight / 2)
+        ? layer - Math.round(Math.abs(absolutePosY) / elementHeight)
+        : absolutePosY >= elementHeight / 2
+        ? layer + Math.round(absolutePosY / elementHeight)
         : layer;
 
-    // check if the dragging el is overlapping any other elements
-    const isOverlappingWithOtherElements = handleOverlappingElements({
-      elementId: id,
-      elements: tracksClone[currentTrackOfEl - 1].elements,
-      endFrame: newEndFrame,
-      startFrame: newStartFrame,
-      currentDragEl: currentDragEl,
-      setCurrentDragEl: setCurrentDragEl,
-    });
+    console.log('🚀 ~ file: TracksWrapper.tsx:341 ~ handleOnDrag ~ currentTrackOfEl:', currentTrackOfEl);
+    currentTrackOfEl = currentTrackOfEl || 1;
 
-    if (!isOverlappingWithOtherElements) {
-      setCurrentDragEl({
-        id,
-        currentTrack: currentTrackOfEl,
-        startFrame: newStartFrame,
+    if (currentTrackOfEl > tracksClone.length) {
+      currentTrackOfEl = tracksClone.length;
+    }
+
+    const allElementsOfCurrTrack =
+      tracksClone[currentTrackOfEl - 1] && tracksClone[currentTrackOfEl - 1].elements;
+    if (allElementsOfCurrTrack.length > 0) {
+      // check if the dragging el is overlapping any other elements
+      const isOverlappingWithOtherElements = handleOverlappingElements({
+        elementId: id,
+        elements: allElementsOfCurrTrack,
         endFrame: newEndFrame,
+        startFrame: newStartFrame,
+        currentDragEl: currentDragEl,
+        setCurrentDragEl: setCurrentDragEl,
       });
-    } else {
-      setCurrentDragEl(prev => ({ ...prev, currentTrack: currentTrackOfEl }));
+      if (!isOverlappingWithOtherElements) {
+        setCurrentDragEl({
+          id,
+          currentTrack: currentTrackOfEl,
+          startFrame: newStartFrame,
+          endFrame: newEndFrame,
+        });
+      } else {
+        setCurrentDragEl(prev => ({ ...prev, currentTrack: currentTrackOfEl }));
+      }
     }
 
     // check if el is hovering on a track or in between (to create a new track)
@@ -382,10 +446,6 @@ const TracksWrapper = ({
     } else {
       setShowRefLines([]);
     }
-
-    //
-    //if yes, adjust the frames accordingly
-    // store the new start & end frames while it's being dragged to show a reference placeholder
   };
 
   // handle drag end elements
@@ -410,30 +470,44 @@ const TracksWrapper = ({
         })
       );
     }
-    setTracksClone([...tracks]);
+    // setTracksClone([...tracks]);
     updateAllTimelineTracks(currentDragEl, layer);
   };
 
   // handle element dragged to the edge of the container
-  const handleDragToEdge = (data: DraggableData, elementWidth: number) => {
+  const handleDragToEdge = (data: DraggableData, elementWidth: number, e: MouseEvent<HTMLElement>) => {
     // scrollable tracks container
     const tracksContainer = document.getElementById('timeline-tracks-wrapper') as HTMLDivElement | null;
     if (!tracksContainer) return;
 
-    const { x } = data;
+    const { x, y } = data;
 
-    const { right } = tracksContainer.getBoundingClientRect();
-    // Check if the dragged element is near the right edge of the container
+    // get timeline container
+    const timelineRulerContainer = document.getElementById('timeline-ruler-container');
+    if (!timelineRulerContainer) return;
+
+    const timelineRulerHeight = timelineRulerContainer.clientHeight;
+
+    const rightBound = tracksContainer.clientWidth;
+
+    // calculate container bound - timelineRuler height as both are child of the same parent container
+    const bottomBound = tracksContainer.clientHeight - timelineRulerHeight;
 
     const adjustedX = x - tracksContainer.scrollLeft;
 
-    console.log('🚀 ~ file: TracksWrapper.tsx:432 ~ handleDragToEdge ~ adjustedX:', adjustedX);
+    const adjustedY = e.clientY - tracksContainer.getBoundingClientRect().y;
 
-    if (adjustedX + elementWidth >= right) {
-      console.log('🚀 ~ file: TracksWrapper.tsx:431 ~ handleDragToEdge ~ right:', right);
-      scrollContainer(tracksContainer, 10);
+    // Check if the dragged element is near the right edge of the container
+    if (adjustedX + elementWidth >= rightBound) {
+      scrollContainer(tracksContainer, 'right');
+    } else if (adjustedX < 0) {
+      scrollContainer(tracksContainer, 'left');
+    } else if (adjustedY >= bottomBound) {
+      scrollContainer(tracksContainer, 'bottom');
+    } else if (adjustedY <= timelineRulerHeight + trackHeight / 2) {
+      scrollContainer(tracksContainer, 'top');
     } else {
-      cancelAnimationFrame(scrollAnimationFrameRef.current!);
+      stopAutoScroll();
     }
   };
 
@@ -484,7 +558,7 @@ const TracksWrapper = ({
                     currentTrack: track.layer,
                   });
                 }}
-                onDrag={(deltaX, data) => {
+                onDrag={(deltaX, data, e) => {
                   handleOnDrag({
                     id,
                     width,
@@ -494,14 +568,14 @@ const TracksWrapper = ({
                     endFrame,
                     layer: track.layer,
                   });
-                  console.log('🚀 ~ file: TracksWrapper.tsx:551 ~ renderElements ~ data:', data);
 
-                  handleDragToEdge(data, width);
+                  handleDragToEdge(data, width, e);
                 }}
                 onDragStop={() => {
                   handleDragEnd({ id, layer: track.layer });
                   resetDragElPos();
                   setCreateNewTrack(undefined);
+                  stopAutoScroll();
                 }}
                 handleResize={(deltaWidth, direction) =>
                   handleResize({
@@ -552,9 +626,7 @@ const TracksWrapper = ({
               width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
               height: trackHeight - TRACK_PADDING_SPACING,
               left: currentDragEl.startFrame * frameWidth + 'px',
-              top:
-                (currentDragEl.currentTrack - 1) * (trackHeight + TRACK_PADDING_SPACING / 2) ||
-                TRACK_PADDING_SPACING / 2 + 'px',
+              top: (currentDragEl.currentTrack - 1) * trackHeight || TRACK_PADDING_SPACING / 2 + 'px',
             }}
           ></div>
         </>

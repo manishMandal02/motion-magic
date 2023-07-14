@@ -143,6 +143,7 @@ export default function Timeline() {
               {/* timeline ruler */}
               <div
                 className='overflow-hidden min-w-full h-[3vh] min-h-[3vh] bg-brand-darkSecondary  sticky top-0 z-10'
+                id='timeline-ruler-container'
                 style={{
                   width: totalFrameWidth + 'px',
                 }}
