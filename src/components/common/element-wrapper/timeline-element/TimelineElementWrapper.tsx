@@ -5,7 +5,6 @@ import throttle from 'raf-throttle';
 import Tooltip from '../../tooltip';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 import framesToSeconds from '@/utils/common/framesToSeconds';
-import { DraggableEventHandler } from 'react-draggable';
 
 export type TooltipRef = {
   elementId: string;
@@ -53,6 +52,18 @@ const TimelineElementWrapper = ({
   useEffect(() => {
     setPosition(prev => ({ ...prev, x: translateX }));
   }, [translateX]);
+
+  const renderTooltip = (children: ReactNode) => {
+    return (
+      <Tooltip
+        content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
+        position={'top-left'}
+        isOpen={isResizingORDragging && !!showTooltipRef.current.startFrame}
+      >
+        {children}
+      </Tooltip> 
+    );
+  };
 
   return (
     <>

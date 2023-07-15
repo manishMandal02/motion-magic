@@ -1,5 +1,6 @@
 import * as TooltipRadix from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
+import React from 'react';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right' | 'top-right' | 'top-left';
 
@@ -15,7 +16,9 @@ const Tooltip = ({ children, content, position, isOpen }: Props) => {
     <>
       <TooltipRadix.Provider>
         <TooltipRadix.Root open={isOpen}>
-          <TooltipRadix.Trigger className='w-full h-full cursor-move'>{children}</TooltipRadix.Trigger>
+          <TooltipRadix.Trigger className='w-full h-full cursor-move' asChild>
+            {children}
+          </TooltipRadix.Trigger>
           <TooltipRadix.Portal className=''>
             {position === 'top-right' ? (
               <>

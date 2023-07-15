@@ -1,12 +1,12 @@
 import { CurrentDragElement } from '@/components/timeline/tracks/tracks-wrapper/TracksWrapper';
-import { TrackElement } from '@/types/timeline.type';
+import { ITrackElement } from '@/types/timeline.type';
 import { Dispatch, SetStateAction } from 'react';
 
 export type HandleOverlappingElementsProps = {
   elementId: string;
   startFrame: number;
   endFrame: number;
-  elements: TrackElement[];
+  elements: ITrackElement[];
   currentDragEl: CurrentDragElement;
   setCurrentDragEl: Dispatch<SetStateAction<CurrentDragElement>>;
 };

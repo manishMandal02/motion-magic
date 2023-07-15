@@ -1,7 +1,7 @@
 import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
 import { TooltipRef } from '@/components/common/element-wrapper/timeline-element/TimelineElementWrapper';
 import { IElementFrameDuration } from '@/types/elements.type';
-import { ReferenceLine, TimelineTrack, TrackElement } from '@/types/timeline.type';
+import { ReferenceLine, TimelineTrack, ITrackElement } from '@/types/timeline.type';
 import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBounds';
 import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
@@ -12,6 +12,8 @@ import { produce } from 'immer';
 import { useEditorStore } from '@/store';
 
 import { DraggableData } from 'react-rnd';
+import TrackElement from '../track-element';
+// import TrackElement from '../track-element';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -25,7 +27,7 @@ const tooltipRefInitialData: TooltipRef = {
 
 export type CreateTrackOnDragParams = {
   trackNum: number;
-  element: Omit<TrackElement, 'type'>;
+  element: Omit<ITrackElement, 'type'>;
   elPrevTrack: number;
 };
 
@@ -326,28 +328,19 @@ const TracksWrapper = ({
       })
     );
 
+    // position Y of element relative to parent
     const absolutePosY = trackHeight * layer + posY;
 
-    console.log('🚀 ~ file: TracksWrapper.tsx:331 ~ handleOnDrag ~ absolutePosY:', absolutePosY);
+    // calculate current track that the element is being dragged on
+    let currentTrackOfEl = Math.max(1, Math.round(absolutePosY / trackHeight));
 
-    // TODO: use absolutePosYto calculate the currentTrack of el 
-    // calculate the current track of el that is currently dragged
-    let currentTrackOfEl =
-      absolutePosY <= -Math.abs(elementHeight / 2)
-        ? layer - Math.round(Math.abs(absolutePosY) / elementHeight)
-        : absolutePosY >= elementHeight / 2
-        ? layer + Math.round(absolutePosY / elementHeight)
-        : layer;
+    // track/layer num cannot be grater than track length
+    currentTrackOfEl = Math.min(tracksClone.length, currentTrackOfEl);
 
-    console.log('🚀 ~ file: TracksWrapper.tsx:341 ~ handleOnDrag ~ currentTrackOfEl:', currentTrackOfEl);
-    currentTrackOfEl = currentTrackOfEl || 1;
-
-    if (currentTrackOfEl > tracksClone.length) {
-      currentTrackOfEl = tracksClone.length;
-    }
-
+    // get all elements of the track that placeholder is currently on
     const allElementsOfCurrTrack =
       tracksClone[currentTrackOfEl - 1] && tracksClone[currentTrackOfEl - 1].elements;
+
     if (allElementsOfCurrTrack.length > 0) {
       // check if the dragging el is overlapping any other elements
       const isOverlappingWithOtherElements = handleOverlappingElements({
@@ -371,18 +364,14 @@ const TracksWrapper = ({
     }
 
     // check if el is hovering on a track or in between (to create a new track)
-    const posYByHeight = posY / (elementHeight / 2);
+    const posYByHeight = posY / (trackHeight / 2);
 
     if (Number.isInteger(posYByHeight) && posYByHeight % 2 !== 0) {
-      // reset drag el position
+      // reset drag el position (to hide el placeholder while dragging)
       resetDragElPos();
 
-      const newLayerValue = Math.ceil(Math.abs(posY / elementHeight));
-
-      const newTrackNum =
-        posY > 0
-          ? Math.min(tracksClone.length + 1, layer + newLayerValue)
-          : Math.max(1, layer + 1 - newLayerValue);
+      // const newLayerValue = Math.ceil(Math.abs(posY / elementHeight));
+      const newTrackNum = Math.max(1, Math.round(absolutePosY / trackHeight));
 
       // create new Track with this el in it
       setCreateNewTrack({
@@ -397,9 +386,6 @@ const TracksWrapper = ({
     } else {
       setCreateNewTrack(undefined);
     }
-
-    //TODO: Auto scroll on dragging to the extreme end on X & Y axis
-    //TODO: add memo() for all major components under timeline directly
 
     // show tooltip
     showTooltipRef.current.elementId = id;
@@ -535,7 +521,7 @@ const TracksWrapper = ({
           }}
         >
           {track.elements.map(element => {
-            const { startFrame, endFrame, id } = element;
+            const { startFrame, endFrame, id, type } = element;
             // width of el based on their start & end time
             const width = (endFrame - startFrame) * frameWidth;
             // position of el from left to position them based on their start time
@@ -595,15 +581,12 @@ const TracksWrapper = ({
                 showTooltipRef={showTooltipRef}
                 isLocked={track.isLocked || track.isHidden}
               >
-                <div
-                  key={element.id}
-                  className={`rounded-sm h-full  w-[${width}px] flex text-xs font-medium items-center  justify-center overflow-hidden
-                       ${element.type === 'TEXT' ? 'bg-teal-500' : 'bg-cyan-500'}
-                     ${track.isHidden || track.isLocked ? 'cursor-default' : 'cursor-move'}
-                       `}
-                >
-                  {element.type}
-                </div>
+                <TrackElement
+                  id={id}
+                  type={type}
+                  key={id}
+                  isTrackLocked={!track.isLocked || !track.isHidden}
+                />
               </TimelineElementWrapper>
             );
           })}

@@ -1,4 +1,4 @@
-export interface TrackElement {
+export interface ITrackElement {
   id: string;
   type: string;
   startFrame: number;
@@ -11,7 +11,7 @@ export interface TimelineTrack {
   layer: number; // higher the layer upper the el on z-index
   isLocked: boolean;
   isHidden: boolean;
-  elements: TrackElement[];
+  elements: ITrackElement[];
 }
 
 export interface ReferenceLine {

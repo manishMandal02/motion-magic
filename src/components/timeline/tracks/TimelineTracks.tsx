@@ -16,7 +16,6 @@ type Props = {
 const TimelineTracks = ({ frameWidth, trackHeight, timelineWidth, timelineVisibleWidth }: Props) => {
   // global state
   const allTracks = useEditorStore(state => state.timelineTracks);
-
   const updateTrackElFrame = useEditorStore(state => state.updateTrackElFrame);
 
   const updateElFrameDuration = (id: string, duration: IElementFrameDuration) => {
