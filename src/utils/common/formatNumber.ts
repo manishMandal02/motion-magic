@@ -5,4 +5,9 @@ const toTwoDigitsNum = (num: number) => {
   });
 };
 
-export { toTwoDigitsNum };
+function roundedToFixed(num: number, digits: number) {
+  var rounder = Math.pow(10, digits);
+  return (Math.round(num * rounder) / rounder).toFixed(digits);
+}
+
+export { toTwoDigitsNum, roundedToFixed };

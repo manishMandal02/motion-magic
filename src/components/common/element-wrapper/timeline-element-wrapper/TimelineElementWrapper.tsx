@@ -2,14 +2,14 @@ import { MouseEvent, MutableRefObject, ReactNode, useEffect, useState } from 're
 import { DraggableData, Rnd } from 'react-rnd';
 import { IElementFrameDuration } from '@/types/elements.type';
 import throttle from 'raf-throttle';
-import Tooltip from '../../tooltip';
 import { toTwoDigitsNum } from '@/utils/common/formatNumber';
 import framesToSeconds from '@/utils/common/framesToSeconds';
+import TimestampTooltip from '@/components/timeline/tracks/timeline-element/timestamp-tooltip';
 
 export type TooltipRef = {
   elementId: string;
-  startFrame: number;
-  endFrame: number;
+  startFrame: number | null;
+  endFrame: number | null;
 };
 
 type Props = {
@@ -47,23 +47,12 @@ const TimelineElementWrapper = ({
 }: Props) => {
   const [position, setPosition] = useState({ x: translateX, y: ELEMENT_POS_Y });
 
-  const [isResizingORDragging, setIsResizingORDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setPosition(prev => ({ ...prev, x: translateX }));
   }, [translateX]);
-
-  const renderTooltip = (children: ReactNode) => {
-    return (
-      <Tooltip
-        content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
-        position={'top-left'}
-        isOpen={isResizingORDragging && !!showTooltipRef.current.startFrame}
-      >
-        {children}
-      </Tooltip> 
-    );
-  };
 
   return (
     <>
@@ -77,16 +66,16 @@ const TimelineElementWrapper = ({
         })}
         onDragStart={() => {
           onDragStart();
-          setIsResizingORDragging(true);
-        }}
-        onResizeStart={() => {
-          setIsResizingORDragging(true);
+          setIsDragging(true);
         }}
         onDragStop={(_e, d) => {
           onDragStop();
           setPosition(prevPos => ({ ...prevPos, y: ELEMENT_POS_Y }));
           resetRefLines();
-          setIsResizingORDragging(false);
+          setIsDragging(false);
+        }}
+        onResizeStart={() => {
+          setIsResizing(true);
         }}
         // @ts-ignore
         onResize={throttle((_e, direction, ref: HTMLDivElement) => {
@@ -101,13 +90,13 @@ const TimelineElementWrapper = ({
         })}
         onResizeStop={() => {
           resetRefLines();
-          setIsResizingORDragging(false);
+          setIsResizing(false);
         }}
         dragAxis='both'
         dragGrid={[frameWidth, 1]}
         resizeGrid={[frameWidth, frameWidth]}
         className={`rounded-md transition-opacity outline border-offset-1 duration-150   select-none
-        ${isResizingORDragging && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
+        ${(isResizing || isDragging) && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
         ${!isLocked && 'hover:border-2 hover:border-slate-300'}
         `}
         style={{
@@ -126,19 +115,13 @@ const TimelineElementWrapper = ({
           bottomRight: false,
         }}
       >
-        <Tooltip
-          content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.startFrame, 1)).toString()}
-          position={'top-left'}
-          isOpen={isResizingORDragging && !!showTooltipRef.current.startFrame}
+        <TimestampTooltip
+          startTime={showTooltipRef.current.startFrame}
+          endTime={showTooltipRef.current.endFrame}
+          isOpen={isResizing && (!!showTooltipRef.current.startFrame || !!showTooltipRef.current.endFrame)}
         >
-          <Tooltip
-            content={toTwoDigitsNum(framesToSeconds(showTooltipRef.current.endFrame, 1)).toString()}
-            position={'top-right'}
-            isOpen={isResizingORDragging && !!showTooltipRef.current.endFrame}
-          >
-            {children}
-          </Tooltip>
-        </Tooltip>
+          {children}
+        </TimestampTooltip>
       </Rnd>
     </>
   );

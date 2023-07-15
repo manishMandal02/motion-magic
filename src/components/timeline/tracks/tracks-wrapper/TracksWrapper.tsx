@@ -1,5 +1,5 @@
-import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element';
-import { TooltipRef } from '@/components/common/element-wrapper/timeline-element/TimelineElementWrapper';
+import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element-wrapper';
+import { TooltipRef } from '@/components/common/element-wrapper/timeline-element-wrapper/TimelineElementWrapper';
 import { IElementFrameDuration } from '@/types/elements.type';
 import { ReferenceLine, TimelineTrack, ITrackElement } from '@/types/timeline.type';
 import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBounds';
@@ -12,8 +12,11 @@ import { produce } from 'immer';
 import { useEditorStore } from '@/store';
 
 import { DraggableData } from 'react-rnd';
-import TrackElement from '../track-element';
-// import TrackElement from '../track-element';
+import TimelineElement from '../timeline-element';
+import Tooltip from '../timeline-element/timestamp-tooltip';
+import TimestampTooltip from '../timeline-element/timestamp-tooltip';
+import { toTwoDigitsNum } from '@/utils/common/formatNumber';
+import framesToSeconds from '@/utils/common/framesToSeconds';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -21,8 +24,8 @@ const TRACK_PADDING_SPACING = 6;
 // initial data for tooltip ref object
 const tooltipRefInitialData: TooltipRef = {
   elementId: '',
-  startFrame: 0,
-  endFrame: 0,
+  startFrame: null,
+  endFrame: null,
 };
 
 export type CreateTrackOnDragParams = {
@@ -100,9 +103,7 @@ const TracksWrapper = ({
   // array of frames to show reference lines
   const [showRefLines, setShowRefLines] = useState<ReferenceLine[]>([]);
   // time stamp tooltip
-  const showTooltipRef = useRef<{ elementId: string; startFrame: number; endFrame: number }>(
-    tooltipRefInitialData
-  );
+  const showTooltipRef = useRef<TooltipRef>(tooltipRefInitialData);
 
   const [tracksClone, setTracksClone] = useState([...tracks]);
 
@@ -125,7 +126,6 @@ const TracksWrapper = ({
     scrollDirection: 'top' | 'bottom' | 'left' | 'right',
     scrollAmount = AUTO_SCROLL_SPEED
   ) => {
-    console.log('🚀 ~ file: TracksWrapper.tsx:120 ~ scrollDirection:', scrollDirection);
     if (scrollAnimationFrameRef === null) return;
     if (scrollDirection === 'top') {
       if (container.scrollTop <= 0) {
@@ -305,9 +305,6 @@ const TracksWrapper = ({
 
   // handle on drag elements
   const handleOnDrag = ({ id, width, deltaX, posY, startFrame, endFrame, layer }: HandleOnDragProps) => {
-    // reset the tracks clone state to reset the position of elements that were moved while dragging
-    const elementHeight = trackHeight - TRACK_PADDING_SPACING;
-
     // calculate new start frame
     const newStartFrame = Math.max(0, startFrame + Math.round(deltaX / frameWidth));
 
@@ -396,8 +393,8 @@ const TracksWrapper = ({
       tracksClone,
       id,
       currentTrackOfEl,
-      newStartFrame,
-      newEndFrame
+      currentDragEl.startFrame,
+      currentDragEl.endFrame
     );
 
     // get current frame
@@ -406,7 +403,8 @@ const TracksWrapper = ({
     const currentFrame = Number(seekerEl.getAttribute('data-current-frame')) || 0;
 
     // check if it's current frame (seeker)
-    const isOverlappingWithSeeker = newStartFrame === currentFrame || newEndFrame === currentFrame;
+    const isOverlappingWithSeeker =
+      currentDragEl.startFrame === currentFrame || currentDragEl.endFrame === currentFrame;
 
     const isOverlappingFrames = overlappingFrames.length > 0;
 
@@ -554,7 +552,6 @@ const TracksWrapper = ({
                     endFrame,
                     layer: track.layer,
                   });
-
                   handleDragToEdge(data, width, e);
                 }}
                 onDragStop={() => {
@@ -581,11 +578,11 @@ const TracksWrapper = ({
                 showTooltipRef={showTooltipRef}
                 isLocked={track.isLocked || track.isHidden}
               >
-                <TrackElement
+                <TimelineElement
                   id={id}
                   type={type}
                   key={id}
-                  isTrackLocked={!track.isLocked || !track.isHidden}
+                  isTrackLocked={track.isLocked || track.isHidden}
                 />
               </TimelineElementWrapper>
             );
@@ -602,30 +599,38 @@ const TracksWrapper = ({
       {/* placeholder for element when its dragged  */}
 
       {currentDragEl.id ? (
-        <>
-          <div
-            className='bg-brand-primary bg-opacity-50 rounded-md border-2 border-dashed border-slate-100 absolute top-0 left-0'
-            style={{
-              width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
-              height: trackHeight - TRACK_PADDING_SPACING,
-              left: currentDragEl.startFrame * frameWidth + 'px',
-              top: (currentDragEl.currentTrack - 1) * trackHeight || TRACK_PADDING_SPACING / 2 + 'px',
-            }}
-          ></div>
-        </>
+        <div
+          className='absolute '
+          style={{
+            width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
+            height: trackHeight - TRACK_PADDING_SPACING,
+            left: currentDragEl.startFrame * frameWidth + 'px',
+            top:
+              (currentDragEl.currentTrack - 1) * trackHeight + TRACK_PADDING_SPACING / 2 ||
+              TRACK_PADDING_SPACING / 2 + 'px',
+          }}
+        >
+          <TimestampTooltip
+            startTime={showTooltipRef.current.startFrame}
+            endTime={showTooltipRef.current.endFrame}
+            isOpen={!!showTooltipRef.current.startFrame || !!showTooltipRef.current.endFrame}
+          >
+            <div className='bg-brand-primary bg-opacity-50 rounded-md border-2 border-dashed border-slate-100 h-full w-full'></div>
+          </TimestampTooltip>
+        </div>
       ) : null}
 
       {/* new track line: show a a line between tracks when the element is hovered there */}
       {createNewTrack ? (
         <>
           <div
-            className='w-full h-1 absolute bg-brand-primary left-0'
+            className='w-full h-[2.5px] absolute bg-brand-primary left-0'
             style={{
-              top: (createNewTrack.trackNum - 1) * (trackHeight - 2) + 'px',
+              top: (createNewTrack.trackNum - 1) * (trackHeight - 0.4) + 'px',
             }}
           >
             <div
-              className='absolute -top-[.36rem] bg-slate-200 rounded-full text-brand-primary h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
+              className='absolute -top-[.36rem] bg-brand-primary rounded-full text-white h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
               style={{
                 left: timelineVisibleWidth / 2 + 'px',
               }}
@@ -640,10 +645,10 @@ const TracksWrapper = ({
       {showRefLines.length > 0
         ? showRefLines.map(line => {
             // minus 20 so that they don't touch the border of the other tracks
-            const linePosY = (line.startTrack - 1) * trackHeight + 35;
+            const linePosY = (line.startTrack - 1) * trackHeight;
 
             // minus 26 so that they don't touch the border of the other tracks
-            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight - 16;
+            const lineHeight = (line.endTrack + 1 - line.startTrack) * trackHeight;
 
             return (
               <hr
