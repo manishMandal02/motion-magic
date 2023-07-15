@@ -11,10 +11,10 @@ const getOverlappingFrames = (
 ) => {
   // storing the overlapping elements
   const overlappingFrames: ReferenceLine[] = [];
-  //TODO: update this fn to use for loops instead of forEach
   // checking if other elements have same end frame
-  tracks.forEach(track => {
-    track.elements.forEach(element => {
+  for (const track of tracks) {
+    // loop through all the elements of the current track
+    for (const element of track.elements) {
       // check for overlapping start frame`
       if (typeof startFrame !== 'undefined') {
         if (
@@ -38,8 +38,8 @@ const getOverlappingFrames = (
           });
         }
       }
-    });
-  });
+    }
+  }
   return overlappingFrames;
 };
 export { getOverlappingFrames };

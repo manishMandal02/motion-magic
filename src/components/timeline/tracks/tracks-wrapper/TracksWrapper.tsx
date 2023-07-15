@@ -328,6 +328,30 @@ const TracksWrapper = ({
     // position Y of element relative to parent
     const absolutePosY = trackHeight * layer + posY;
 
+    // check if el is hovering on a track or in between (to create a new track)
+    const posYByHeight = posY / (trackHeight / 2);
+
+    if (Number.isInteger(posYByHeight) && posYByHeight % 2 !== 0) {
+      // reset drag el position (to hide el placeholder while dragging)
+      resetDragElPos();
+
+      // const newLayerValue = Math.ceil(Math.abs(posY / elementHeight));
+      const newTrackNum = Math.max(1, Math.round(absolutePosY / trackHeight));
+
+      // create new Track with this el in it
+      setCreateNewTrack({
+        trackNum: newTrackNum,
+        element: {
+          id,
+          startFrame: newStartFrame,
+          endFrame: newEndFrame,
+        },
+        elPrevTrack: layer,
+      });
+    } else {
+      setCreateNewTrack(undefined);
+    }
+
     // calculate current track that the element is being dragged on
     let currentTrackOfEl = Math.max(1, Math.round(absolutePosY / trackHeight));
 
@@ -360,34 +384,12 @@ const TracksWrapper = ({
       }
     }
 
-    // check if el is hovering on a track or in between (to create a new track)
-    const posYByHeight = posY / (trackHeight / 2);
-
-    if (Number.isInteger(posYByHeight) && posYByHeight % 2 !== 0) {
-      // reset drag el position (to hide el placeholder while dragging)
-      resetDragElPos();
-
-      // const newLayerValue = Math.ceil(Math.abs(posY / elementHeight));
-      const newTrackNum = Math.max(1, Math.round(absolutePosY / trackHeight));
-
-      // create new Track with this el in it
-      setCreateNewTrack({
-        trackNum: newTrackNum,
-        element: {
-          id,
-          startFrame: newStartFrame,
-          endFrame: newEndFrame,
-        },
-        elPrevTrack: layer,
-      });
-    } else {
-      setCreateNewTrack(undefined);
-    }
-
     // show tooltip
     showTooltipRef.current.elementId = id;
     showTooltipRef.current.startFrame = newStartFrame;
     showTooltipRef.current.endFrame = newEndFrame;
+
+    // TODO:  reference lines is not accurate, check the below logic and fix it
 
     const overlappingFrames = getOverlappingFrames(
       tracksClone,
@@ -409,7 +411,9 @@ const TracksWrapper = ({
     const isOverlappingFrames = overlappingFrames.length > 0;
 
     if (isOverlappingFrames || isOverlappingWithSeeker) {
-      if (isOverlappingFrames) {
+      if (isOverlappingWithSeeker) {
+        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
+      } else if (isOverlappingFrames) {
         setShowRefLines([
           ...overlappingFrames.reduce((acc: ReferenceLine[], curr: ReferenceLine) => {
             const existingFrame = acc.find(obj => obj.frame === curr.frame);
@@ -423,9 +427,6 @@ const TracksWrapper = ({
             return acc;
           }, []),
         ]);
-      }
-      if (isOverlappingWithSeeker) {
-        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
       }
     } else {
       setShowRefLines([]);
