@@ -12,8 +12,6 @@ type Props = {
 };
 
 const TimestampTooltip = ({ children, isOpen, startTime, endTime }: Props) => {
-  console.log('🚀 ~ file: TimestampTooltip.tsx:14 ~ TimestampTooltip ~ startTime:', startTime);
-
   return (
     <>
       <TooltipRadix.Provider>

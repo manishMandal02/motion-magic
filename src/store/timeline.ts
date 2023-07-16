@@ -140,6 +140,12 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         elementToUpdate.startFrame = currentDragEl.startFrame;
         elementToUpdate.endFrame = currentDragEl.endFrame;
 
+        console.log(
+          '🚀 ~ file: timeline.ts:142 ~ produce ~  currentDragEl.startFrame:',
+          currentDragEl.startFrame
+        );
+        console.log('🚀 ~ file: timeline.ts:143 ~ produce ~ currentDragEl.endFrame:', currentDragEl.endFrame);
+
         // update total duration if element is moved beyond current limits
         if (elementToUpdate.endFrame > draft.durationInFrames) {
           draft.durationInFrames = elementToUpdate.endFrame;

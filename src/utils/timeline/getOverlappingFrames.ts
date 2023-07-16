@@ -40,6 +40,7 @@ const getOverlappingFrames = (
       }
     }
   }
+  console.log('🚀 ~ file: getOverlappingFrames.ts:45 ~ overlappingFrames:', overlappingFrames);
   return overlappingFrames;
 };
 export { getOverlappingFrames };

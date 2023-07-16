@@ -27,7 +27,6 @@
     "eslint-config-next": "13.4.3",
     "framer-motion": "^10.12.12",
     "immer": "^10.0.2",
-    "lodash": "^4.17.21",
     "nanoid": "^4.0.2",
     "next": "13.4.3",
     "postcss": "8.4.23",
@@ -47,7 +46,6 @@
     "zustand": "^4.3.8"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.195",
     "@types/react-beautiful-dnd": "^13.1.4",
     "@types/react-custom-scrollbars": "^4.0.10",
     "@types/react-scroll-sync": "^0.8.4",

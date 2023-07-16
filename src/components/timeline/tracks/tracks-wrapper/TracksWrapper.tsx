@@ -1,22 +1,20 @@
+import { MouseEvent, memo, useEffect, useRef, useState } from 'react';
+import { DraggableData } from 'react-rnd';
+import { nanoid } from 'nanoid';
+import { produce } from 'immer';
+
 import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element-wrapper';
+import TimelineElement from '../timeline-element';
+import TimestampTooltip from '../timeline-element/timestamp-tooltip';
+
 import { TooltipRef } from '@/components/common/element-wrapper/timeline-element-wrapper/TimelineElementWrapper';
 import { IElementFrameDuration } from '@/types/elements.type';
 import { ReferenceLine, TimelineTrack, ITrackElement } from '@/types/timeline.type';
 import { ResizeBound, getElResizeBounds } from '@/utils/timeline/getElResizeBounds';
 import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElements';
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
-import { nanoid } from 'nanoid';
-import { MouseEvent, memo, useEffect, useRef, useState } from 'react';
-import _deepClone from 'lodash/cloneDeep';
-import { produce } from 'immer';
 import { useEditorStore } from '@/store';
-
-import { DraggableData } from 'react-rnd';
-import TimelineElement from '../timeline-element';
-import Tooltip from '../timeline-element/timestamp-tooltip';
-import TimestampTooltip from '../timeline-element/timestamp-tooltip';
-import { toTwoDigitsNum } from '@/utils/common/formatNumber';
-import framesToSeconds from '@/utils/common/framesToSeconds';
+import { getRefLines } from '@/utils/timeline/showRefLines';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -126,6 +124,8 @@ const TracksWrapper = ({
     scrollDirection: 'top' | 'bottom' | 'left' | 'right',
     scrollAmount = AUTO_SCROLL_SPEED
   ) => {
+    console.log('🚀 ~ file: TracksWrapper.tsx:128 ~ scrollDirection:', scrollDirection);
+
     if (scrollAnimationFrameRef === null) return;
     if (scrollDirection === 'top') {
       if (container.scrollTop <= 0) {
@@ -325,6 +325,11 @@ const TracksWrapper = ({
       })
     );
 
+    // show timestamp tooltips on both the ends
+    showTooltipRef.current.elementId = id;
+    showTooltipRef.current.startFrame = newStartFrame;
+    showTooltipRef.current.endFrame = newEndFrame;
+
     // position Y of element relative to parent
     const absolutePosY = trackHeight * layer + posY;
 
@@ -382,66 +387,33 @@ const TracksWrapper = ({
       } else {
         setCurrentDragEl(prev => ({ ...prev, currentTrack: currentTrackOfEl }));
       }
-    }
 
-    // show tooltip
-    showTooltipRef.current.elementId = id;
-    showTooltipRef.current.startFrame = newStartFrame;
-    showTooltipRef.current.endFrame = newEndFrame;
-
-    // TODO:  reference lines is not accurate, check the below logic and fix it
-
-    const overlappingFrames = getOverlappingFrames(
-      tracksClone,
-      id,
-      currentTrackOfEl,
-      currentDragEl.startFrame,
-      currentDragEl.endFrame
-    );
-
-    // get current frame
-    const seekerEl = document.getElementById('timeline-seeker');
-    if (!seekerEl) return;
-    const currentFrame = Number(seekerEl.getAttribute('data-current-frame')) || 0;
-
-    // check if it's current frame (seeker)
-    const isOverlappingWithSeeker =
-      currentDragEl.startFrame === currentFrame || currentDragEl.endFrame === currentFrame;
-
-    const isOverlappingFrames = overlappingFrames.length > 0;
-
-    if (isOverlappingFrames || isOverlappingWithSeeker) {
-      if (isOverlappingWithSeeker) {
-        setShowRefLines([{ frame: currentFrame, startTrack: 1, endTrack: tracksClone.length + 1 }]);
-      } else if (isOverlappingFrames) {
-        setShowRefLines([
-          ...overlappingFrames.reduce((acc: ReferenceLine[], curr: ReferenceLine) => {
-            const existingFrame = acc.find(obj => obj.frame === curr.frame);
-
-            if (existingFrame) {
-              existingFrame.startTrack = Math.min(existingFrame.startTrack, curr.startTrack);
-              existingFrame.endTrack = Math.max(existingFrame.endTrack, curr.endTrack);
-            } else {
-              acc.push(curr);
-            }
-            return acc;
-          }, []),
-        ]);
+      // check for overlapping frames with current active el frames
+      const refLines = getRefLines({
+        startFrame: isOverlappingWithOtherElements ? currentDragEl.startFrame : newStartFrame,
+        endFrame: isOverlappingWithOtherElements ? currentDragEl.endFrame : newEndFrame,
+        tracks: tracksClone,
+        currentElId: id,
+        currentTrack: currentTrackOfEl,
+      });
+      // show ref line if active el frames are overlapping
+      if (refLines.length > 0) {
+        setShowRefLines(refLines);
+      } else {
+        setShowRefLines([]);
       }
-    } else {
-      setShowRefLines([]);
     }
   };
 
   // handle drag end elements
   const handleDragEnd = ({ id, layer }: HandleDragEndProps) => {
-    //TODO: check if the if the drag was for create new track (users stopped in between the tracks), if yes then handle it
+    //check if the if the drag was for create new track (users stopped in between the tracks), if yes then handle it
     if (createNewTrack?.trackNum && !currentDragEl.id) {
       createNewTrackOnDrag(createNewTrack);
       return;
     }
 
-    //TODO: temporary solution for elements flickering after onDrag completed (it goes to it's previous track and then shit back to new track)
+    //temporary: solution-  for elements flickering after onDrag completed (it goes to it's previous track and then shit back to new track)
     if (layer !== currentDragEl.currentTrack) {
       setTracksClone(prevTracks =>
         produce(prevTracks, (draft: TimelineTrack[]) => {
@@ -653,7 +625,7 @@ const TracksWrapper = ({
 
             return (
               <hr
-                className={`w-[2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
+                className={`w-[2.2px]  h-[${lineHeight}px] rounded-sm absolute top-0 z-[60] bg-transparent CC_dashedBorder_Ref_Lines`}
                 key={nanoid()}
                 style={{
                   transform: ` translate(${line.frame * frameWidth}px, ${linePosY}px)`,
