@@ -4,7 +4,7 @@ import {
 } from '@/components/timeline/tracks/tracks-wrapper/TracksWrapper';
 import { projectConstants } from '@/constants/projectConstants';
 import { IMoveTimelineLayerTo, TimelineTrack } from '@/types/timeline.type';
-import updateTimelineLayer from '@/utils/zustand/updateTimlineLayer';
+import updateTimelineLayer from '@/utils/zustand/updateTimelineLayer';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
@@ -136,15 +136,11 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         const elementToUpdate = currentTrackWithEl.elements.find(el => el.id === currentDragEl.id);
         if (!elementToUpdate) return;
 
+        console.log('🚀 ~ file: timeline.ts:138 ~ produce ~ currentDragEl:', currentDragEl);
+
         // update dragged element time-frame to the placeholder time-frame
         elementToUpdate.startFrame = currentDragEl.startFrame;
         elementToUpdate.endFrame = currentDragEl.endFrame;
-
-        console.log(
-          '🚀 ~ file: timeline.ts:142 ~ produce ~  currentDragEl.startFrame:',
-          currentDragEl.startFrame
-        );
-        console.log('🚀 ~ file: timeline.ts:143 ~ produce ~ currentDragEl.endFrame:', currentDragEl.endFrame);
 
         // update total duration if element is moved beyond current limits
         if (elementToUpdate.endFrame > draft.durationInFrames) {

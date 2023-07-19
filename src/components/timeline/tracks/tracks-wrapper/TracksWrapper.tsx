@@ -37,6 +37,7 @@ export type CurrentDragElement = {
   startFrame: number;
   endFrame: number;
   currentTrack: number;
+  isOnElementConnector: boolean;
 };
 
 // resize handle props
@@ -94,6 +95,7 @@ const TracksWrapper = ({
     startFrame: 0,
     endFrame: 0,
     currentTrack: 0,
+    isOnElementConnector: false,
   });
 
   //  new track
@@ -175,6 +177,7 @@ const TracksWrapper = ({
       startFrame: 0,
       endFrame: 0,
       currentTrack: 0,
+      isOnElementConnector: false,
     });
   };
 
@@ -325,11 +328,6 @@ const TracksWrapper = ({
       })
     );
 
-    // show timestamp tooltips on both the ends
-    showTooltipRef.current.elementId = id;
-    showTooltipRef.current.startFrame = newStartFrame;
-    showTooltipRef.current.endFrame = newEndFrame;
-
     // position Y of element relative to parent
     const absolutePosY = trackHeight * layer + posY;
 
@@ -374,15 +372,16 @@ const TracksWrapper = ({
         elements: allElementsOfCurrTrack,
         endFrame: newEndFrame,
         startFrame: newStartFrame,
-        currentDragEl: currentDragEl,
         setCurrentDragEl: setCurrentDragEl,
       });
+
       if (!isOverlappingWithOtherElements) {
         setCurrentDragEl({
           id,
           currentTrack: currentTrackOfEl,
           startFrame: newStartFrame,
           endFrame: newEndFrame,
+          isOnElementConnector: false,
         });
       } else {
         setCurrentDragEl(prev => ({ ...prev, currentTrack: currentTrackOfEl }));
@@ -392,10 +391,12 @@ const TracksWrapper = ({
       const refLines = getRefLines({
         startFrame: isOverlappingWithOtherElements ? currentDragEl.startFrame : newStartFrame,
         endFrame: isOverlappingWithOtherElements ? currentDragEl.endFrame : newEndFrame,
+
         tracks: tracksClone,
         currentElId: id,
         currentTrack: currentTrackOfEl,
       });
+
       // show ref line if active el frames are overlapping
       if (refLines.length > 0) {
         setShowRefLines(refLines);
@@ -403,6 +404,13 @@ const TracksWrapper = ({
         setShowRefLines([]);
       }
     }
+
+    // show timestamp tooltips on both the ends
+    showTooltipRef.current.elementId = id;
+    showTooltipRef.current.startFrame = currentDragEl.startFrame;
+
+    showTooltipRef.current.endFrame = currentDragEl.endFrame;
+    console.log('🚀 ~ file: TracksWrapper.tsx:412 ~ handleOnDrag ~ currentDragEl:', currentDragEl);
   };
 
   // handle drag end elements
@@ -413,7 +421,7 @@ const TracksWrapper = ({
       return;
     }
 
-    //temporary: solution-  for elements flickering after onDrag completed (it goes to it's previous track and then shit back to new track)
+    //Temporary: solution-  for elements flickering after onDrag completed (it goes to it's previous track and then shit back to new track)
     if (layer !== currentDragEl.currentTrack) {
       setTracksClone(prevTracks =>
         produce(prevTracks, (draft: TimelineTrack[]) => {
@@ -426,12 +434,13 @@ const TracksWrapper = ({
           activeEl.endFrame = 0;
         })
       );
+    } else {
+      setTracksClone([...tracks]);
     }
-    // setTracksClone([...tracks]);
     updateAllTimelineTracks(currentDragEl, layer);
   };
 
-  // handle element dragged to the edge of the container
+  // handle element dragged to the edge of container
   const handleDragToEdge = (data: DraggableData, elementWidth: number, e: MouseEvent<HTMLElement>) => {
     // scrollable tracks container
     const tracksContainer = document.getElementById('timeline-tracks-wrapper') as HTMLDivElement | null;
@@ -453,6 +462,8 @@ const TracksWrapper = ({
     const adjustedX = x - tracksContainer.scrollLeft;
 
     const adjustedY = e.clientY - tracksContainer.getBoundingClientRect().y;
+
+    //TODO: fix the infinite scroll to bottom
 
     // Check if the dragged element is near the right edge of the container
     if (adjustedX + elementWidth >= rightBound) {
@@ -513,6 +524,7 @@ const TracksWrapper = ({
                     endFrame,
                     id,
                     currentTrack: track.layer,
+                    isOnElementConnector: false,
                   });
                 }}
                 onDrag={(deltaX, data, e) => {
@@ -570,40 +582,59 @@ const TracksWrapper = ({
       {renderElements()}
 
       {/* placeholder for element when its dragged  */}
-
-      {currentDragEl.id ? (
-        <div
-          className='absolute '
-          style={{
-            width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
-            height: trackHeight - TRACK_PADDING_SPACING,
-            left: currentDragEl.startFrame * frameWidth + 'px',
-            top:
-              (currentDragEl.currentTrack - 1) * trackHeight + TRACK_PADDING_SPACING / 2 ||
-              TRACK_PADDING_SPACING / 2 + 'px',
-          }}
-        >
-          <TimestampTooltip
-            startTime={showTooltipRef.current.startFrame}
-            endTime={showTooltipRef.current.endFrame}
-            isOpen={!!showTooltipRef.current.startFrame || !!showTooltipRef.current.endFrame}
+      {currentDragEl.id && !createNewTrack ? (
+        !currentDragEl.isOnElementConnector && currentDragEl.endFrame ? (
+          // el placeholder while dragging
+          <div
+            className='absolute '
+            style={{
+              width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
+              height: trackHeight - TRACK_PADDING_SPACING,
+              left: currentDragEl.startFrame * frameWidth + 'px',
+              top:
+                (currentDragEl.currentTrack - 1) * trackHeight + TRACK_PADDING_SPACING / 2 ||
+                TRACK_PADDING_SPACING / 2 + 'px',
+            }}
           >
-            <div className='bg-brand-primary bg-opacity-50 rounded-md border-2 border-dashed border-slate-100 h-full w-full'></div>
-          </TimestampTooltip>
-        </div>
+            <TimestampTooltip
+              startTime={showTooltipRef.current.startFrame}
+              endTime={showTooltipRef.current.endFrame}
+              isOpen={!!showTooltipRef.current.startFrame || !!showTooltipRef.current.endFrame}
+            >
+              <div className='bg-brand-primary bg-opacity-50 rounded-md border-2 border-dashed border-slate-100 h-full w-full'></div>
+            </TimestampTooltip>
+          </div>
+        ) : (
+          // Show placeholder on element connector/transition box in between line (a big in between elements)
+          <div
+            className='bg-brand-secondary border border-brand-darkSecondary border-opacity-80 rounded-md z-[50] absolute'
+            style={{
+              width: 10 + 'px',
+              height: trackHeight - TRACK_PADDING_SPACING,
+              left: currentDragEl.startFrame * frameWidth - 5 + 'px',
+              top:
+                (currentDragEl.currentTrack - 1) * trackHeight + TRACK_PADDING_SPACING / 2 ||
+                TRACK_PADDING_SPACING / 2 + 'px',
+            }}
+          >
+            {/* <div className='absolute bg-brand-primary rounded-full text-slate-100  top-3.5 text-[.65rem]  '>
+              +
+            </div> */}
+          </div>
+        )
       ) : null}
 
       {/* new track line: show a a line between tracks when the element is hovered there */}
       {createNewTrack ? (
         <>
           <div
-            className='w-full h-[2.5px] absolute bg-brand-primary left-0'
+            className='w-full h-[3px] absolute bg-brand-primary left-0'
             style={{
-              top: (createNewTrack.trackNum - 1) * (trackHeight - 0.4) + 'px',
+              top: (createNewTrack.trackNum - 1) * (trackHeight - 0.8) + 'px',
             }}
           >
             <div
-              className='absolute -top-[.36rem] bg-brand-primary rounded-full text-white h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
+              className='absolute -top-[.38rem] bg-brand-primary rounded-full text-white h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
               style={{
                 left: timelineVisibleWidth / 2 + 'px',
               }}

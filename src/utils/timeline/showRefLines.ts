@@ -18,6 +18,8 @@ const getRefLines = ({
 }: ShowRefLinesProps): ReferenceLine[] => {
   const overlappingFrames = getOverlappingFrames(tracks, currentElId, currentTrack, startFrame, endFrame);
 
+  if (endFrame < 1) return [];
+
   // get current frame
   const seekerEl = document.getElementById('timeline-seeker');
   if (!seekerEl) return [];
