@@ -134,13 +134,37 @@ const createTimelineSlice: StateCreator<ITimelineState> = set => ({
         if (!currentTrackWithEl) return;
 
         const elementToUpdate = currentTrackWithEl.elements.find(el => el.id === currentDragEl.id);
-        if (!elementToUpdate) return;
 
-        console.log('🚀 ~ file: timeline.ts:138 ~ produce ~ currentDragEl:', currentDragEl);
+        if (!elementToUpdate) return;
 
         // update dragged element time-frame to the placeholder time-frame
         elementToUpdate.startFrame = currentDragEl.startFrame;
+
         elementToUpdate.endFrame = currentDragEl.endFrame;
+
+        console.log('🚀 ~ file: timeline.ts:138 ~ produce ~ currentDragEl:', currentDragEl);
+
+        // if element is on connector (between 2 elements with no space in between)
+        // move all other elements after that to accommodate space
+        if (currentDragEl.isOnElementConnector) {
+          // el current track
+          const elCurrentTrack = draft.timelineTracks.find(
+            track => track.layer === currentDragEl.currentTrack
+          );
+          if (!elCurrentTrack) return;
+
+          // move elements after the
+          for (const el of elCurrentTrack.elements) {
+            if (el.startFrame >= currentDragEl.startFrame && el.id !== currentDragEl.id) {
+              const activeElTotalFrames = currentDragEl.endFrame - currentDragEl.startFrame;
+              const elTotalFrames = el.endFrame - el.startFrame;
+              const newStartFrame = el.startFrame + activeElTotalFrames + 1;
+              const newEndFrame = newStartFrame + elTotalFrames;
+              el.startFrame = newStartFrame;
+              el.endFrame = newEndFrame;
+            }
+          }
+        }
 
         // update total duration if element is moved beyond current limits
         if (elementToUpdate.endFrame > draft.durationInFrames) {

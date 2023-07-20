@@ -41,8 +41,8 @@ const handleOverlappingElements = ({
         // if there is an el immediately after the overlapping el and not space/frames for the placeholder
         // then show a line representing that the current active el will be place there
         if (elLoop.startFrame === newStartFrame && elLoop.id !== elementId) {
-          newStartFrame = el.startFrame;
-          newEndFrame = 0;
+          newStartFrame = elLoop.startFrame;
+          newEndFrame = newStartFrame + activeElTotalFrames;
           isOnElementConnector = true;
         } else if (
           elLoop.startFrame <= newEndFrame &&
@@ -74,8 +74,8 @@ const handleOverlappingElements = ({
         // if there is an el immediately before the overlapping el and not space/frames for the placeholder
         // then show a line representing that the current active el will be place there
         if (elLoop.endFrame === newEndFrame && elLoop.id !== elementId) {
-          newStartFrame = el.endFrame;
-          newEndFrame = 0;
+          newStartFrame = elLoop.endFrame;
+          newEndFrame = newStartFrame + activeElTotalFrames;
           isOnElementConnector = true;
         } else if (
           elLoop.endFrame >= newStartFrame &&
@@ -108,7 +108,7 @@ const handleOverlappingElements = ({
         // then show a line representing that the current active el will be place there
         if (elLoop.endFrame === newEndFrame && elLoop.id !== elementId) {
           newStartFrame = elLoop.endFrame;
-          newEndFrame = 0;
+          newEndFrame = newStartFrame + activeElTotalFrames;
           isOnElementConnector = true;
         } else if (
           elLoop.endFrame >= newStartFrame &&
@@ -143,7 +143,7 @@ const handleOverlappingElements = ({
         console.log('🚀 ~ file: getOverlappingElements.ts:144 ~ elLoop.startFrame:', elLoop.startFrame);
         if (elLoop.startFrame === newStartFrame && elLoop.id !== elementId) {
           newStartFrame = elLoop.startFrame;
-          newEndFrame = 0;
+          newEndFrame = newStartFrame + activeElTotalFrames;
           isOnElementConnector = true;
         } else if (
           elLoop.startFrame <= newEndFrame &&
@@ -178,7 +178,7 @@ const handleOverlappingElements = ({
         // then show a line representing that the current active el will be place there
         if (elLoop.startFrame === newStartFrame && elLoop.id !== elementId) {
           newStartFrame = elLoop.startFrame;
-          newEndFrame = 0;
+          newEndFrame = newStartFrame + activeElTotalFrames;
           isOnElementConnector = true;
         } else if (
           elLoop.startFrame <= newEndFrame &&

@@ -3,10 +3,6 @@ import { DraggableData } from 'react-rnd';
 import { nanoid } from 'nanoid';
 import { produce } from 'immer';
 
-import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element-wrapper';
-import TimelineElement from '../timeline-element';
-import TimestampTooltip from '../timeline-element/timestamp-tooltip';
-
 import { TooltipRef } from '@/components/common/element-wrapper/timeline-element-wrapper/TimelineElementWrapper';
 import { IElementFrameDuration } from '@/types/elements.type';
 import { ReferenceLine, TimelineTrack, ITrackElement } from '@/types/timeline.type';
@@ -15,6 +11,10 @@ import { handleOverlappingElements } from '@/utils/timeline/getOverlappingElemen
 import { getOverlappingFrames } from '@/utils/timeline/getOverlappingFrames';
 import { useEditorStore } from '@/store';
 import { getRefLines } from '@/utils/timeline/showRefLines';
+
+import TimelineElementWrapper from '@/components/common/element-wrapper/timeline-element-wrapper';
+import TimelineElement from '../timeline-element';
+import TimestampTooltip from '../timeline-element/timestamp-tooltip';
 
 // track spacing top & bottom
 const TRACK_PADDING_SPACING = 6;
@@ -410,7 +410,8 @@ const TracksWrapper = ({
     showTooltipRef.current.startFrame = currentDragEl.startFrame;
 
     showTooltipRef.current.endFrame = currentDragEl.endFrame;
-    console.log('🚀 ~ file: TracksWrapper.tsx:412 ~ handleOnDrag ~ currentDragEl:', currentDragEl);
+
+    console.log('🚀 ~ file: TracksWrapper.tsx:414 ~ handleOnDrag ~ currentDragEl:', currentDragEl);
   };
 
   // handle drag end elements
@@ -580,13 +581,12 @@ const TracksWrapper = ({
   return (
     <>
       {renderElements()}
-
       {/* placeholder for element when its dragged  */}
       {currentDragEl.id && !createNewTrack ? (
-        !currentDragEl.isOnElementConnector && currentDragEl.endFrame ? (
+        !currentDragEl.isOnElementConnector ? (
           // el placeholder while dragging
           <div
-            className='absolute '
+            className='absolute'
             style={{
               width: (currentDragEl.endFrame - currentDragEl.startFrame) * frameWidth,
               height: trackHeight - TRACK_PADDING_SPACING,
