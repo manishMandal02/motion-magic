@@ -95,8 +95,8 @@ const TimelineElementWrapper = ({
         dragAxis='both'
         dragGrid={[frameWidth, 1]}
         resizeGrid={[frameWidth, frameWidth]}
-        className={`rounded-md transition-opacity outline border-offset-1 duration-150   select-none
-        ${(isResizing || isDragging) && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-10'}
+        className={`rounded-md transition-opacity outline border-offset-1 duration-150 select-none
+        ${(isResizing || isDragging) && 'opacity-[.85] border-opacity-100 border-2 border-slate-100 z-20'}
         ${!isLocked && 'hover:border-2 hover:border-slate-300'}
         `}
         style={{

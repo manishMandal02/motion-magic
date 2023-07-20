@@ -1,4 +1,4 @@
-import { MouseEvent, memo, useEffect, useRef, useState } from 'react';
+import { MouseEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableData } from 'react-rnd';
 import { nanoid } from 'nanoid';
 import { produce } from 'immer';
@@ -480,6 +480,112 @@ const TracksWrapper = ({
     }
   };
 
+  const renderElementConnectors = () => {
+    return tracksClone.map(track => {
+      // loop though all the elements to find the ones that connect with others (no space/time-frames in between)
+      console.log('🚀 ~ file: TracksWrapper.tsx:541 ~ renderElementConnectors ~ track:', track);
+      return (
+        <div className='' style={{}}>
+          {track.elements.map(element => {
+            console.log('🚀 ~ file: TracksWrapper.tsx:488 ~ renderElementConnectors ~ element:', element);
+
+            const width = (element.endFrame - element.startFrame) * frameWidth;
+            let showLeftConnector = false;
+            let showRightConnector = false;
+            // loop through all other elements to check if element 👆 is connecting with other elements
+            for (const elLoop of track.elements) {
+              if (element.startFrame - 1 === elLoop.endFrame && element.id !== elLoop.id) {
+                showLeftConnector = true;
+
+                console.log(
+                  '🚀 ~ file: TracksWrapper.tsx:495 ~ renderElementConnectors ~ showLeftConnector:'
+                );
+              }
+              if (element.endFrame + 1 === elLoop.startFrame && element.id !== elLoop.id) {
+                showRightConnector = true;
+
+                console.log(
+                  '🚀 ~ file: TracksWrapper.tsx:500 ~ renderElementConnectors ~ showRightConnector:'
+                );
+              }
+            }
+
+            if (showRightConnector) {
+              console.log(
+                '🚀 ~ file: TracksWrapper.tsx:510 ~ renderElementConnectors ~ showRightConnector: rendering 🔥🔥🔥',
+                showRightConnector
+              );
+
+              return (
+                <>
+                  <div
+                    className='absolute w-3 bg-brand-darkSecondary  rounded-md -right-2 top-0 z-[50] opacity-80.'
+                    style={{
+                      width: '12px',
+                      height: trackHeight - TRACK_PADDING_SPACING * 2,
+                      left: element.startFrame * frameWidth + width - 5,
+                      top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                    }}
+                  ></div>
+                </>
+              );
+            }
+
+            if (showLeftConnector) {
+              return (
+                <>
+                  <div
+                    className='absolute w-3 bg-brand-darkSecondary rounded-md -right-2 top-0 z-[50] opacity-80.'
+                    style={{
+                      width: '12px',
+                      height: trackHeight - TRACK_PADDING_SPACING * 2,
+                      left: element.startFrame * frameWidth - 5,
+                      top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                    }}
+                  ></div>
+                </>
+              );
+            }
+
+            if (showRightConnector && showLeftConnector) {
+              return (
+                <>
+                  {/* left side connector  */}
+
+                  <>
+                    <div
+                      className='absolute w-3 bg-brand-darkSecondary  rounded-md -right-2 top-0 z-[50] opacity-80.'
+                      style={{
+                        width: '12px',
+                        height: trackHeight - TRACK_PADDING_SPACING * 2,
+                        left: element.startFrame * frameWidth + width - 5,
+                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                      }}
+                    ></div>
+                  </>
+
+                  {/* right side connector */}
+
+                  <>
+                    <div
+                      className='absolute w-3 bg-brand-darkSecondary rounded-md -right-2 top-0 z-[50] opacity-80.'
+                      style={{
+                        width: '12px',
+                        height: trackHeight - TRACK_PADDING_SPACING * 2,
+                        left: element.startFrame * frameWidth - 5,
+                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                      }}
+                    ></div>
+                  </>
+                </>
+              );
+            }
+          })}
+          ;
+        </div>
+      );
+    });
+  };
   // renders all el on timeline tracks based on their layer levels
   const renderElements = () => {
     return tracksClone.map(track => {
@@ -573,6 +679,7 @@ const TracksWrapper = ({
               </TimelineElementWrapper>
             );
           })}
+          <>{/* connector in between elements with no time frames/space */}</>
         </div>
       );
     });
@@ -580,7 +687,10 @@ const TracksWrapper = ({
 
   return (
     <>
+      {/* tracks and elements within tracks */}
       {renderElements()}
+      {/* connector in between elements with no time frames/space */}
+      {renderElementConnectors()}
       {/* placeholder for element when its dragged  */}
       {currentDragEl.id && !createNewTrack ? (
         !currentDragEl.isOnElementConnector ? (
@@ -623,7 +733,6 @@ const TracksWrapper = ({
           </div>
         )
       ) : null}
-
       {/* new track line: show a a line between tracks when the element is hovered there */}
       {createNewTrack ? (
         <>
@@ -644,7 +753,6 @@ const TracksWrapper = ({
           </div>
         </>
       ) : null}
-
       {/* reference lines when two or more elements have same frames */}
       {showRefLines.length > 0
         ? showRefLines.map(line => {
