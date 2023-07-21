@@ -165,7 +165,6 @@ const TracksWrapper = ({
       scrollAnimationFrameRef.current = requestAnimationFrame(() =>
         scrollContainer(container, scrollDirection, scrollAmount)
       );
-      return;
     }
   };
 
@@ -483,12 +482,9 @@ const TracksWrapper = ({
   const renderElementConnectors = () => {
     return tracksClone.map(track => {
       // loop though all the elements to find the ones that connect with others (no space/time-frames in between)
-      console.log('🚀 ~ file: TracksWrapper.tsx:541 ~ renderElementConnectors ~ track:', track);
       return (
-        <div className='' style={{}}>
+        <div key={nanoid()}>
           {track.elements.map(element => {
-            console.log('🚀 ~ file: TracksWrapper.tsx:488 ~ renderElementConnectors ~ element:', element);
-
             const width = (element.endFrame - element.startFrame) * frameWidth;
             let showLeftConnector = false;
             let showRightConnector = false;
@@ -496,90 +492,48 @@ const TracksWrapper = ({
             for (const elLoop of track.elements) {
               if (element.startFrame - 1 === elLoop.endFrame && element.id !== elLoop.id) {
                 showLeftConnector = true;
-
-                console.log(
-                  '🚀 ~ file: TracksWrapper.tsx:495 ~ renderElementConnectors ~ showLeftConnector:'
-                );
               }
               if (element.endFrame + 1 === elLoop.startFrame && element.id !== elLoop.id) {
                 showRightConnector = true;
-
-                console.log(
-                  '🚀 ~ file: TracksWrapper.tsx:500 ~ renderElementConnectors ~ showRightConnector:'
-                );
               }
             }
-
-            if (showRightConnector) {
-              console.log(
-                '🚀 ~ file: TracksWrapper.tsx:510 ~ renderElementConnectors ~ showRightConnector: rendering 🔥🔥🔥',
-                showRightConnector
-              );
-
-              return (
+            return (
+              <div key={nanoid()}>
+                {/* left side connector  */}
                 <>
-                  <div
-                    className='absolute w-3 bg-brand-darkSecondary  rounded-md -right-2 top-0 z-[50] opacity-80.'
-                    style={{
-                      width: '12px',
-                      height: trackHeight - TRACK_PADDING_SPACING * 2,
-                      left: element.startFrame * frameWidth + width - 5,
-                      top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
-                    }}
-                  ></div>
-                </>
-              );
-            }
-
-            if (showLeftConnector) {
-              return (
-                <>
-                  <div
-                    className='absolute w-3 bg-brand-darkSecondary rounded-md -right-2 top-0 z-[50] opacity-80.'
-                    style={{
-                      width: '12px',
-                      height: trackHeight - TRACK_PADDING_SPACING * 2,
-                      left: element.startFrame * frameWidth - 5,
-                      top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
-                    }}
-                  ></div>
-                </>
-              );
-            }
-
-            if (showRightConnector && showLeftConnector) {
-              return (
-                <>
-                  {/* left side connector  */}
-
-                  <>
+                  {showRightConnector ? (
                     <div
-                      className='absolute w-3 bg-brand-darkSecondary  rounded-md -right-2 top-0 z-[50] opacity-80.'
+                      className='absolute bg-brand-darkSecondary  rounded-md z-[50] text-white flex items-center  justify-center'
                       style={{
                         width: '12px',
-                        height: trackHeight - TRACK_PADDING_SPACING * 2,
-                        left: element.startFrame * frameWidth + width - 5,
-                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                        height: trackHeight - TRACK_PADDING_SPACING * 3,
+                        left: element.startFrame * frameWidth + width - 6,
+                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING * 1.5,
                       }}
-                    ></div>
-                  </>
+                    >
+                      +
+                    </div>
+                  ) : null}
+                </>
 
-                  {/* right side connector */}
-
-                  <>
+                {/* right side connector */}
+                <>
+                  {showLeftConnector ? (
                     <div
-                      className='absolute w-3 bg-brand-darkSecondary rounded-md -right-2 top-0 z-[50] opacity-80.'
+                      className='absolute bg-brand-darkSecondary rounded-md z-[50] text-white flex items-center  justify-center'
                       style={{
                         width: '12px',
-                        height: trackHeight - TRACK_PADDING_SPACING * 2,
-                        left: element.startFrame * frameWidth - 5,
-                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING,
+                        height: trackHeight - TRACK_PADDING_SPACING * 3,
+                        left: element.startFrame * frameWidth - 6,
+                        top: trackHeight * (track.layer - 1) + TRACK_PADDING_SPACING * 1.5,
                       }}
-                    ></div>
-                  </>
+                    >
+                      +
+                    </div>
+                  ) : null}
                 </>
-              );
-            }
+              </div>
+            );
           })}
           ;
         </div>
@@ -638,10 +592,10 @@ const TracksWrapper = ({
                   handleOnDrag({
                     id,
                     width,
-                    posY: data.y,
                     deltaX,
                     startFrame,
                     endFrame,
+                    posY: data.y,
                     layer: track.layer,
                   });
                   handleDragToEdge(data, width, e);
@@ -659,8 +613,8 @@ const TracksWrapper = ({
                     direction,
                     startFrame,
                     endFrame,
-                    layer: track.layer,
                     resizeBounds,
+                    layer: track.layer,
                   })
                 }
                 resetRefLines={() => {
@@ -745,7 +699,7 @@ const TracksWrapper = ({
             <div
               className='absolute -top-[.38rem] bg-brand-primary rounded-full text-white h-4 w-4 flex justify-center items-center font-medium scale-125 pb-px'
               style={{
-                left: timelineVisibleWidth / 2 + 'px',
+                left: `${timelineVisibleWidth / 2}px`,
               }}
             >
               +

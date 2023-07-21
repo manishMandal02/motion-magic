@@ -9,6 +9,7 @@ export type HandleOverlappingElementsProps = {
   elements: ITrackElement[];
   setCurrentDragEl: Dispatch<SetStateAction<CurrentDragElement>>;
 };
+//TODO: refactor this fn, too many complexities
 const handleOverlappingElements = ({
   elementId,
   startFrame,
@@ -21,10 +22,7 @@ const handleOverlappingElements = ({
   const activeElTotalFrames = endFrame - startFrame;
   if (elements.length === 1 && elements[0].id === elementId) return;
 
-  for (let i = 0; i < elements.length; i++) {
-    // get current el
-    const el = elements[i];
-
+  for (const el of elements) {
     const elCenterFrame = el.startFrame + Math.round((el.endFrame - el.startFrame) / 2);
 
     // check if any elements are overlapping the selected el from right side
